@@ -1,7 +1,7 @@
 ---
 domain: software-craft
 tags: [test-stubs, traceability, pytest-beehave, scenario-outline, hypothesis]
-last-updated: 2026-05-14
+last-updated: 2026-05-19
 ---
 
 # Test Stubs
@@ -67,6 +67,8 @@ Override by defining a variable with the placeholder name as a Hypothesis strate
 Stubs (functions with `...` body) are exempt from placeholder and literal checks — these only apply once the `...` is replaced with implementation.
 
 **Test File Layout**. pytest-beehave organizes tests as: Feature title → directory, Rule → test file, Example/Scenario Outline → function name. Test files are placed in `tests/features/<feature_slug>/<rule_slug>_test.py`.
+
+**Spec Value Fidelity in Tests**. Every literal and placeholder from the spec must appear in the test body — `beehave check` verifies this. Per Spec Value Fidelity ([[software-craft/test-design#concepts]]), the test must use each value in a way that reflects its domain purpose. If `"BTC/USD"` represents a trading pair, use it to construct or identify one. If `42` is a boundary value, use it at the boundary. Never satisfy traceability with noise: assigning to `_`, stuffing strings into assert messages, or writing helper functions whose sole purpose is consuming a literal. These mask the real issue — the value's domain purpose is not reflected in the test.
 
 ## Related
 
