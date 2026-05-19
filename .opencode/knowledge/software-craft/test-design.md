@@ -13,6 +13,7 @@ last-updated: 2026-05-14
 - Test coupling exists on a spectrum: feature tests (most resilient) > unit contract tests > property-based tests > white-box tests (most brittle, avoid).
 - One observable behaviour per test: each test should fail for exactly one reason and pass for exactly one reason.
 - Hard-coded values are acceptable when the test only requires that value; parameterising prematurely couples the test to assumptions about future needs.
+- Spec Value Fidelity: every value in the specification carries domain intent; the test must use it in a way that reflects that intent — no noise patterns to satisfy traceability.
 - Property tests: all invariant/structural rules, not just @bug Examples. Examples alone cannot prove an invariant (MacIver, 2016).
 
 ## Concepts
@@ -26,6 +27,8 @@ last-updated: 2026-05-14
 **Characterization Tests** (Feathers, 2004). When modifying code without existing tests, write characterization tests first: tests that document what the code currently does, not what it should do. This creates a regression net before any changes. Characterization tests are temporary. Once the code is under test, replace them with specification tests that assert desired behaviour.
 
 **Semantic Depth**. A test that exists for an Example but exercises domain logic directly instead of through the entry point described in the acceptance criterion has correct structural traceability but wrong semantic depth. Every feature test must exercise the entry point the AC describes: if the AC specifies a command-line invocation, the test must invoke the command handler; if the AC specifies an API call, the test must call the API endpoint. Structural traceability (every Example has a test function) without semantic depth (every test exercises the right entry point) creates a false sense of coverage.
+
+**Spec Value Fidelity**. Every literal, placeholder, and Examples table column in a specification exists because the PO judged it domain-meaningful — an entity identifier, a boundary value, a configuration, a concrete expected outcome. The test must use each value in a way that reflects that domain purpose. Noise patterns that satisfy structural traceability without domain meaning — assigning to `_`, stuffing strings into assert messages, helper functions whose sole purpose is consuming a literal — violate this fidelity. If a spec value does not fit naturally in the test, the mismatch signals a spec clarity issue, not a test workaround opportunity.
 
 **Invariant Property Tests**. Structural (invariant) rules describe properties that must hold across all inputs, not specific behaviours. Examples alone cannot prove an invariant — they only confirm it holds for the selected cases (MacIver, 2016). When a Rule asserts an invariant (e.g., "total must equal sum of parts," "output must be sorted," "balance must never go negative"), the specification pre-mortem and behavior pre-mortem surface candidate counterexamples. These counterexamples become assertions in a Hypothesis property test (`tests/unit/`) that verifies the invariant across a generated range of inputs, catching failure modes that no finite set of hand-picked Examples could have found.
 

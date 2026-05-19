@@ -25,4 +25,8 @@ Available knowledge: [[requirements/gherkin]], [[requirements/moscow]], [[requir
 7. IF a Rule has more than 8 Must behaviors (after grouping by Then-outcome and collapsing Scenario Outlines) → this is a soft flag for PO review. Do NOT split or modify the Rule — Rule structure is frozen after define-flow. Decomposition was applied during refine-features; this check catches edge cases that slipped through. A Rule with 9+ Must behaviors is acceptable if the behaviour genuinely requires that many distinct cases.
 8. Evaluate each Rule's Examples for quality, checking every criterion per [[requirements/gherkin#concepts]]:
     Evaluate Example quality per criteria in [[requirements/gherkin#concepts]]. Every criterion that fails is a hard blocker: fix before advancing.
-9. Run `beehave check <feature_id>` to verify structural traceability catches issues at write time — title character violations, placeholder name problems, literal format issues. Fix any errors before committing. This prevents downstream rework when the SE generates stubs.
+9. For each literal and `<placeholder>` in every Example, verify it carries domain meaning per Spec Value Fidelity ([[software-craft/test-design#concepts]]):
+    a) Every quoted string or bare number must identify an entity, boundary, configuration, or error case — not serve as display text.
+    b) Every column in a Scenario Outline Examples table must be referenced in at least one step. If the expected outcome is a deterministic function of inputs, express the relationship in the `Then` step rather than adding a computed output column.
+    Remove or reword any value that fails this check before advancing.
+10. Run `beehave check <feature_id>` to verify structural traceability catches issues at write time. Fix any errors before committing.
