@@ -8,7 +8,7 @@ description: "Apply full project conventions — naming, docstrings, formatting,
 Available knowledge: [[software-craft/tdd#key-takeaways]], [[writing/ai-language-markers#key-takeaways]]. `in` artifacts: read all before starting work.
 
 1. Run `task conventions` to see all convention violations (naming, docstrings, formatting, import sorting, etc.).
-2. Fix each violation manually. Do NOT use `--fix` (it can break code).
+2. Fix **all** violations codebase-wide, not just those introduced in the current feature. Resolve each at its source; do not suppress with `noqa`. Do NOT use `--fix` (it can break code).
 3. Run `ruff format .` to apply consistent formatting.
 4. Add Google-style docstrings to all public classes and methods where missing.
 5. Add type annotations to all public signatures where missing.

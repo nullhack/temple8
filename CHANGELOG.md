@@ -137,7 +137,7 @@ All notable changes to this template will be documented in this file.
 - **Committed-to-main guards**: Project-phase exit transitions (discovery, architecture, planning, branding, setup) now require `committed_to_main_locally: ==verified` evidence before advancing. Ensures artifacts are persisted before moving to the next phase.
 - **flowr 0.4.0 adoption**: Upgraded dependency from `>=0.3` to `>=0.4`. Added `[tool.flowr]` config section to pyproject.toml (flows_dir, sessions_dir, default_flow, default_session).
 - **Session management**: `.flowr/sessions/` directory for persisting workflow progress. AGENTS.md updated with session init, `--session` flag usage, and session-based workflow pattern.
-- **Flow params**: Feature-scoped flows (planning, development, delivery, tdd-cycle, review-gate, feature-development) now declare `params: [feature_name]` for session parameter tracking.
+- **Flow params**: Feature-scoped flows (planning, development, delivery, tdd-cycle, review-gate, feature-development) now declare `params: [feature_title]` for session parameter tracking.
 - **Flowr commands**: AGENTS.md and knowledge files updated with session commands (`init`, `show`, `set-state`, `list`), `--session` flag on check/next/transition, `config` command, short flow name resolution, and `--evidence-json` flag.
 - **flowr-spec.md knowledge**: Session model (flow, state, name, stack, params), configuration resolution, MUST/SHOULD severity levels on validation rules, atomic session writes principle.
 - **flowr-operations.md knowledge**: Session commands, session-based workflow pattern, configuration section, evidence syntax with condition operators.

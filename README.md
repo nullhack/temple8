@@ -31,7 +31,7 @@ Flow definitions in YAML declare what happens at each state: who owns it, what t
 
 ### Developers moving from vibe coding to agentic engineering
 
-You have shipped code with AI assistants and hit the wall: the agent writes code, you review it, the spec drifts. Vibe coding works for prototypes. It breaks at scale. temple8 replaces "prompt and pray" with spec-driven development: BDD scenarios from interviews, `@id` traceability from scenario to test function, red-green-refactor cycles enforced by default, three-tier review that catches what linters miss.
+You have shipped code with AI assistants and hit the wall: the agent writes code, you review it, the spec drifts. Vibe coding works for prototypes. It breaks at scale. temple8 replaces "prompt and pray" with spec-driven development: BDD scenarios from interviews, title-based traceability from Example to test function, red-green-refactor cycles enforced by default, three-tier review that catches what linters miss.
 
 ### Teams wanting structured agent orchestration without lock-in
 

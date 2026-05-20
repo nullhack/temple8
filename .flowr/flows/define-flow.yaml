@@ -1,8 +1,8 @@
 flow: define-flow
 version: 2.0.0
+params: [feature_title]
 exits:
   - validated
-  - needs-reinterview
 
 states:
   - id: discovery
@@ -37,7 +37,7 @@ states:
         - glossary.md
         - "features/*.feature"
       out:
-        - "features/<feature_id>.feature":
+        - "features/<feature_title>.feature":
             - feature_header
             - constraints
             - rules

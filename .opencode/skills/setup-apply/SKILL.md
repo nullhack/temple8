@@ -5,7 +5,7 @@ description: "Apply text substitutions, rename package directory, and write temp
 
 # Setup Apply
 
-`in` artifacts: read all before starting work.
+Available knowledge: [[software-craft/versioning]]. `in` artifacts: read all before starting work.
 
 1. Rename the package directory: `mv app {package_name}`
 2. Apply every substitution from `template-config.yaml` substitutions section in order:

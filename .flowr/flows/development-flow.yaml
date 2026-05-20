@@ -1,6 +1,6 @@
 flow: development-flow
 version: 13.0.0
-params: [feature_id]
+params: [feature_title]
 exits:
   - done
 
@@ -13,7 +13,7 @@ states:
       skills:
         - structure-feature
       in:
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - glossary.md
         - product_definition.md
@@ -30,7 +30,7 @@ states:
       skills:
         - create-py-stubs
       in:
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - glossary.md
         - product_definition.md
@@ -86,7 +86,7 @@ states:
       in:
         - test-implementations
         - source-implementations
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - "adr/*.md"  # optional
       out: []
@@ -104,7 +104,7 @@ states:
       in:
         - source-implementations
         - test-implementations
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
       out:
         - feature-commits
     conditions:

@@ -7,7 +7,7 @@ Post-mortem analysis shows these practices prevent most project failures. Violat
 3. **Never collapse progressive gates.** Multi-step gates (review: design → structure) are separate for a reason. Each one can fail independently and send work back. Conventions (naming, docstrings, formatting) are enforced in a separate polish state after feature acceptance.
 4. **Never decompose a feature without stakeholder approval.** If a feature is too large for INVEST, propose the split to the stakeholder with rationale. They decide what's core vs. deferred.
 5. **Verify inputs exist before entering a state.** Every state's `in` artifacts must be readable on disk. If they're missing, stop and reconstruct them. Don't proceed with assumed knowledge.
-6. **A feature is not done until every interview requirement is traced.** Every stakeholder Q&A must map to either a passing @id test or an explicit stakeholder deferral. Untraced requirements = incomplete delivery.
+6. **A feature is not done until every interview requirement is traced.** Every stakeholder Q&A must map to either a passing traceable test or an explicit stakeholder deferral. Untraced requirements = incomplete delivery.
 7. **Respect git branch discipline.** Every state declares `git: dev`, `git: feature`, or `git: main` in its attrs. **Verify the current branch matches `attrs.git` before starting any work.** If the branch is wrong, checkout or create the correct branch before proceeding. Never switch branches mid-state. Before exiting a project-phase flow (discovery, architecture, branding, setup), set `committed-to-dev-locally: ==verified` evidence. Changes must be committed to dev before advancing.
 8. **Every feature branch must be merged back to dev.** A feature is not delivered until its commits are squash-merged into local dev and `task test-fast` passes on dev. The develop-flow exits to deliver-flow which handles the merge, but the orchestrator must never leave a feature branch dangling — if the session ends mid-feature, resume and complete the merge before starting new work.
 
@@ -21,10 +21,10 @@ Post-mortem analysis shows these practices prevent most project failures. Violat
 
 When creating a document, use the template in `.templates/` that matches the artifact type. Strip the `.templates/` prefix and `.template` suffix to determine the destination path. For example:
 - `.templates/docs/adr/ADR_YYYYMMDD_<adr_id>.md.template` → `docs/adr/ADR_20260430_my_decision.md`
-- `.templates/docs/features/<feature_name>.feature.template` → `docs/features/my_feature.feature`
+- `.templates/docs/features/<feature_title>.feature.template` → `docs/features/my_feature.feature`
 - `.templates/.cache/interview-notes/IN_YYYYMMDD_<session_id>.md.template` → `.cache/interview-notes/IN_20260430_session_management.md`
 - `.templates/.cache/sim/simulation_results_YYYYMMDDTHHMMSS.md.template` → `.cache/sim/simulation_results_20260517T143000.md`
-- `.templates/.cache/acceptance/<feature_id>.md.template` → `.cache/acceptance/domain_value_objects.md`
+- `.templates/.cache/acceptance/<feature_title>.md.template` → `.cache/acceptance/domain_value_objects.md`
 
 If no template exists for an artifact type, create the document without one.
 
@@ -76,7 +76,7 @@ Artifact names in `in` and `out` lists use these conventions:
 | Pattern | Meaning | Example |
 |---------|---------|---------|
 | `filename.md` | A specific document | `domain_spec.md`, `product_definition.md` |
-| `dir/<param>.ext` | A specific instance identified by parameter | `features/<feature_id>.feature`, `.cache/interview-notes/<session_id>.md`, `adr/<adr_id>.md` |
+| `dir/<param>.ext` | A specific instance identified by parameter | `features/<feature_title>.feature`, `.cache/interview-notes/<session_id>.md`, `adr/<adr_id>.md` |
 | `dir/*.ext` | Multiple documents of that type available in `in` | `.cache/interview-notes/*.md`, `adr/*.md` |
 | `conceptual_name` | A runtime artifact that passes between states within a flow | `typed-source-stubs`, `test-implementations` |
 
@@ -86,9 +86,9 @@ Placeholders in template filenames and flow artifact paths use the `<type_id>` p
 
 **Wildcards (`*`)** in `in` indicate that multiple documents of that type are available. List the directory contents first, then read selectively based on the task. When a state creates a single instance, use a `<parameter>` name instead.
 
-**Runtime artifacts** (not backed by files) use descriptive names that make their purpose clear: `typed-source-stubs` (source files with type signatures only), `test-skeletons` (test files with structure only), `test-implementations` (tests with bodies), `source-implementations` (production code with behavior), `refactored-source` (code after refactoring pass), `feature-commits` (git commits for one feature), `merged-commits` (commits merged to local main), `root-cause-analysis` (analysis findings), `polished-source` (code after convention application).
+**Runtime artifacts** (not backed by files) use descriptive names that make their purpose clear: `typed-source-stubs` (source files with type signatures only), `test-skeletons` (test files with structure only), `test-implementations` (tests with bodies), `source-implementations` (production code with behavior), `refactored-source` (code after refactoring pass), `feature-commits` (git commits for one feature), `merged-commits` (commits merged to local dev), `root-cause-analysis` (analysis findings), `polished-source` (code after convention application).
 
-**Cache artifacts** are persisted to `.cache/` for cross-session durability. They are not spec documents but process evidence that survives session boundaries: `.cache/acceptance/<feature_id>.md` (PO acceptance record with traceability matrix), `.cache/interview-notes/<session_id>.md` (raw stakeholder input, archival after discovery), `.cache/sim/simulation_results_<timestamp>.md` (simulation evidence per iteration).
+**Cache artifacts** are persisted to `.cache/` for cross-session durability. They are not spec documents but process evidence that survives session boundaries: `.cache/acceptance/<feature_title>.md` (PO acceptance record with traceability matrix), `.cache/interview-notes/<session_id>.md` (raw stakeholder input, archival after discovery), `.cache/sim/simulation_results_<timestamp>.md` (simulation evidence per iteration).
 
 **Environment artifacts** are produced by tooling rather than flow states: `coverage-reports` (test coverage output), `test-output` (test runner output), `linter-output` (linter output). These exist on disk after running the relevant tool and are referenced in `in` but not in any state's `out`.
 
@@ -96,7 +96,7 @@ Placeholders in template filenames and flow artifact paths use the `<type_id>` p
 
 All commands output **JSON by default**. Use `--text` for human-readable output. All commands require the virtual environment: `source .venv/bin/activate`. See [[workflow/flowr-operations]] for full command reference, output formats, and workflow pattern.
 
-Commands accept short flow names (e.g., `planning-flow`) or full file paths. Use `--session <name>` to resolve flow/state from a session instead of specifying them explicitly.
+Commands accept short flow names (e.g., `define-flow`) or full file paths. Use `--session <name>` to resolve flow/state from a session instead of specifying them explicitly.
 
 | Command | Purpose |
 |---------|---------|
@@ -144,7 +144,7 @@ Every state transition must go through flowr. Do not skip steps or guess transit
 
 1. **State entry:** Run `python -m flowr check --session` to see current state, owner, skills, and available transitions (JSON output: parse `attrs.owner`, `attrs.skills`, `attrs.in`, `attrs.out`, `transitions`). Verify all `in` artifacts exist on disk. If any are missing, stop and flag rather than proceeding with assumed knowledge. Announce the state in one line, e.g. `→ specify-feature`. No preamble, no recap of how you got here.
 2. **Dispatch to owner agent:** The state's `owner` field names the responsible agent. Call that agent as a subagent with the state's `skills` loaded, passing the state attrs as context. Owner mapping: `PO` → product-owner, `DE` → domain-expert, `SE` → software-engineer, `SA` → system-architect, `R` → reviewer, `Design Agent` → design-agent, `Setup Agent` → setup-agent.
-3. **Do the work:** Load and execute the skill(s) listed in the state's `skills` field. Read all `in` artifacts before starting work — they are mandatory context. Write only to `out` artifacts. Commit changes to the branch indicated by the state's `git` attribute (`main` or `feature`). Never switch branches mid-state.
+3. **Do the work:** Load and execute the skill(s) listed in the state's `skills` field. Read all `in` artifacts before starting work — they are mandatory context. Write only to `out` artifacts. Commit changes to the branch indicated by the state's `git` attribute (`dev` or `feature`). Never switch branches mid-state.
 4. **State exit:** The anchor item in the todo handles this (see [[workflow/todo-anchor-protocol#key-takeaways]]).
 
 ### Convention Boundary
@@ -202,7 +202,7 @@ When post-mortem-flow exits `needs-architecture`, follow the same procedure: re-
 ### Branch Discipline
 
 States declare their git context in `attrs.git`:
-- `git: main`: all changes are committed to the local main branch
+- `git: dev`: all changes are committed to the local dev branch
 - `git: feature`: all changes are committed to the current feature branch
 
 Before exiting a project-phase flow (define, branding, setup), the exit transition requires `committed-to-dev-locally: ==verified` evidence. This guarantees project artifacts are persisted before advancing to the next phase.

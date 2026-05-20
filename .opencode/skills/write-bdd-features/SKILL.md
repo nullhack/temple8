@@ -29,4 +29,4 @@ Available knowledge: [[requirements/gherkin]], [[requirements/moscow]], [[requir
     a) Every quoted string or bare number must identify an entity, boundary, configuration, or error case — not serve as display text.
     b) Every column in a Scenario Outline Examples table must be referenced in at least one step. If the expected outcome is a deterministic function of inputs, express the relationship in the `Then` step rather than adding a computed output column.
     Remove or reword any value that fails this check before advancing.
-10. Run `beehave check <feature_id>` to verify structural traceability catches issues at write time. Fix any errors before committing.
+10. Run `beehave check <feature_title>` to verify structural traceability catches issues at write time. Fix any errors before committing.

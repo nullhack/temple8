@@ -1,6 +1,6 @@
 flow: tdd-cycle-flow
 version: 8.0.0
-params: [feature_id]
+params: [feature_title]
 exits:
   - all-green
 
@@ -15,7 +15,7 @@ states:
       in:
         - test-skeletons
         - typed-source-stubs
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - glossary.md
       out:
@@ -33,7 +33,7 @@ states:
       in:
         - test-implementations
         - typed-source-stubs
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - glossary.md
       out:
@@ -51,7 +51,7 @@ states:
       in:
         - source-implementations
         - test-implementations
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - domain_spec.md
         - glossary.md
       out:
