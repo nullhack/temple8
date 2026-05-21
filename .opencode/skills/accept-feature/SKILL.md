@@ -5,12 +5,12 @@ description: "Validate business behavior against BDD examples from the end user'
 
 # Accept Feature
 
-Available knowledge: [[requirements/gherkin#key-takeaways]], [[software-craft/test-design#key-takeaways]]. `in` artifacts: read all before starting work.
+Available knowledge: [[requirements/gherkin#key-takeaways]], [[software-craft/test-design#key-takeaways]], [[software-craft/test-stubs#concepts]]. `in` artifacts: read all before starting work.
 
 1. Run `task test-build` to verify all tests pass with coverage.
 2. Verify all BDD examples pass from the end user's perspective, not the test harness, per [[software-craft/test-design#key-takeaways]].
 3. IF an example passes in the test harness but fails from the user's perspective → flag it as a semantic alignment gap per [[software-craft/test-design#concepts]].
-4. Verify structural traceability via `beehave check`: every Example in the feature file must have exactly one corresponding test function, and every test function must trace back to an Example. pytest-beehave enforces this via title-based mapping. Any violations reported by `beehave check` mean the feature is not done.
+4. Verify structural traceability: run `beehave status --json` for stage overview, then `beehave check` for detailed violations per [[software-craft/test-stubs#concepts]]. Every Example in the feature file must have exactly one corresponding test function, and every test function must trace back to an Example. The feature stage must be `ok` and `beehave check` must produce no output.
 5. Verify semantic depth per [[software-craft/test-design#concepts]].
 6. Verify quality attributes are met.
 7. Verify definition of done criteria are satisfied.

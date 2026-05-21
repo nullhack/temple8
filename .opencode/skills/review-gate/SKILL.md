@@ -5,7 +5,7 @@ description: "Two-tier review with fail-fast: design -> structure"
 
 # Review Gate
 
-Available knowledge: [[software-craft/code-review]], [[software-craft/test-design]], [[software-craft/smell-catalogue]], [[architecture/reconciliation#key-takeaways]]. `in` artifacts: read all before starting work.
+Available knowledge: [[software-craft/code-review]], [[software-craft/test-design]], [[software-craft/test-stubs]], [[software-craft/smell-catalogue]], [[architecture/reconciliation#key-takeaways]]. `in` artifacts: read all before starting work.
 
 **Fail-fast rule**: Stop at first failure in any tier. Do NOT proceed to next tier if current tier fails.
 

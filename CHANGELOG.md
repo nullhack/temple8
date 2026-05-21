@@ -2,6 +2,22 @@
 
 All notable changes to this template will be documented in this file.
 
+## [v9.1.0] - 2026-05-20: beehave 1.0.0 Knowledge Integration
+
+### Added
+
+- **`[dependency-groups]`**: added `flowr>=1.0.0` to dev dependency group (PEP 735).
+
+### Changed
+
+- **`test-stubs.md` (software-craft)**: full rewrite incorporating beehave 1.0.0 features — `beehave status` (6 development stages, `--json`, `--include-unmapped`), `beehave list`/`list -v`, `beehave clean`, collision detection, feature stem = title slug requirement, and behavioral notes (validate_all_titles crash, generate pre-flight scope, single-feature check skip). Added `## Content` section with reference tables.
+- **`select-feature/SKILL.md`**: replaced manual per-feature checking with `beehave status --json` for project-wide development stage overview. Added `[[software-craft/test-stubs#key-takeaways]]` to available knowledge.
+- **`accept-feature/SKILL.md`**: added `beehave status --json` as pre-check before `beehave check`. Added `[[software-craft/test-stubs#concepts]]` to available knowledge.
+- **`verify-traceability/SKILL.md`**: added optional `beehave status --json` summary view. Added `[[software-craft/test-stubs#concepts]]` to available knowledge.
+- **`review-gate/SKILL.md`**: added `[[software-craft/test-stubs]]` to available knowledge for consistency.
+- **`source-stubs.md` (software-craft)**: updated creation order to include `beehave status` for development stage confirmation.
+- **`gherkin.md` (requirements)**: updated Related link to reference `beehave status` for development stage tracking.
+
 ## [v9.0.0+20260518] - 2026-05-18: Adversarial Audit
 
 ### Breaking

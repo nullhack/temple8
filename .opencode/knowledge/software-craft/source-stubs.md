@@ -13,7 +13,7 @@ last-updated: 2026-05-08
 - Source stubs contain the absolute minimum to compile and trace: Protocol signatures with `raise NotImplementedError` bodies, no docstrings, no type hints beyond the contract.
 - Package structure mirrors the module structure from technical design; the domain package depends on nothing.
 - Feature branches are created from the latest main.
-- Create artifacts in this order: branch, directories, port interfaces, Protocol stubs, run beehave generate to create test stubs, run beehave check.
+- Create artifacts in this order: branch, directories, port interfaces, Protocol stubs, run beehave generate to create test stubs, verify with `beehave check` and `beehave status` for development stage confirmation per [[software-craft/test-stubs#concepts]].
 
 ## Concepts
 
