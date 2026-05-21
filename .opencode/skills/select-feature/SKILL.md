@@ -5,24 +5,16 @@ description: "Select the next feature to develop by detecting delivery status fr
 
 # Select Feature
 
-Available knowledge: [[requirements/wsjf#key-takeaways]]. `in` artifacts: read all before starting work.
+Available knowledge: [[requirements/wsjf#key-takeaways]], [[software-craft/test-stubs#key-takeaways]]. `in` artifacts: read all before starting work.
 
 1. List available feature files in `docs/features/`.
 2. IF no feature files exist → exit via `no-features`; features need discovery first.
-3. For each feature, determine delivery status — do NOT open or read individual feature or test files:
-
-   a. Check if the feature file has Example blocks (any line starting with `Example:`).
-      If none, the feature has not been broken down into BDD examples yet → feature is incomplete.
-
-   b. Run `beehave check <slug>` to verify structural traceability:
-      - Any output (errors) → some Examples lack matching test functions or there are orphan tests → feature is incomplete.
-      - No output (clean) → all Examples have matching test functions.
-
-   c. If beehave check is clean, run `task test-fast` scoped to that feature's test directory.
-      - Any failures → feature is incomplete.
-      - All pass → feature is delivered (skip).
-
-   d. If the test directory does not exist, beehave check will report errors → feature is incomplete.
+3. Run `beehave status --json` for project-wide overview per [[software-craft/test-stubs#concepts]]. For each feature, determine delivery status from its stage:
+   - Any stage other than `ok` → feature is incomplete.
+   - Stage `ok` → all Examples have implemented tests with no structural violations, but functional correctness must still be verified.
+   For features at `ok` stage, run `task test-fast` scoped to that feature's test directory:
+   - Any failures → feature is incomplete.
+   - All pass → feature is delivered (skip).
 
 4. IF every feature is delivered → exit via `no-features`.
 5. Collect all incomplete features. Derive dependency count for each from `domain_spec.md` context map:

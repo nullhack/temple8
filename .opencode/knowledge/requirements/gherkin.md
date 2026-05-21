@@ -195,5 +195,5 @@ Test path conventions (`tests/features/<feature_slug>/`), the feature-test vs un
 - [[requirements/decomposition]]: splitting Rules with too many Examples
 - [[requirements/pre-mortem]]: finding hidden failure modes in rules
 - [[software-craft/test-design]]: property-based testing for invariant rules
-- [[software-craft/test-stubs]]: how beehave generates test stubs from feature files
+- [[software-craft/test-stubs]]: how beehave generates test stubs from feature files, development stage tracking via `beehave status`
 - [[software-craft/external-fixtures]]: real data fixtures for external adapter mocking

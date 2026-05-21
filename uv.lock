@@ -47,14 +47,14 @@ wheels = [
 
 [[package]]
 name = "beehave"
-version = "0.4.0"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gherkin-official" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/7e/b64d1cd39f6e6a25479b616ed3bdc9d62f9cd7e52555c4c3960498763c8d/beehave-0.4.0.tar.gz", hash = "sha256:f0a17b4964b6d8f38f1a378032bf942edd31c364a8c3ca74f6a871e46ab40275", size = 55081, upload-time = "2026-05-13T15:53:02.276Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/01/9b90dec3e14a429b3a54fc69715152b3ca9b34bc5dc9852763d97487f27b/beehave-1.0.0.tar.gz", hash = "sha256:59e959959a0fa7a0e487b6bef4a2af8b9abcad55381e02bbfe11d2433d5aec42", size = 110601, upload-time = "2026-05-20T19:22:02.357Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2a/fa/b00734b18ff765b412b1021c7eca9bdf38f30eaeac81b0005c675140edf6/beehave-0.4.0-py3-none-any.whl", hash = "sha256:c2a0335671a4f865c1fdad1e5e7511297faf0f1d2a93dc14c0ea83461f323616", size = 17187, upload-time = "2026-05-13T15:53:00.404Z" },
+    { url = "https://files.pythonhosted.org/packages/67/55/1ce4d584ba4e50a8dfcfafb1d27c3e61d17af5cc304ba3705b80a7ceb021/beehave-1.0.0-py3-none-any.whl", hash = "sha256:8ecc505d5a53d48cdb44fa28f67ff5b39840debe8df3733bc71b6470b3325054", size = 25557, upload-time = "2026-05-20T19:22:01.018Z" },
 ]
 
 [[package]]
@@ -665,14 +665,14 @@ wheels = [
 
 [[package]]
 name = "pytest-beehave"
-version = "0.2.2"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beehave" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c3/ea/6ac241d175e595f79403a4d1d8b8413c3cfb21dedfe81e6cd29a7d5b854c/pytest_beehave-0.2.2.tar.gz", hash = "sha256:e90a165c8b6853c545bbea971536ff4c81710623fe89bc0cd3e4f7c29a5f3406", size = 12896, upload-time = "2026-05-13T18:53:27.801Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/29/5137c2909394ae2933e5be6aa034a7584c9e7e66b7731e46042408f7e6e4/pytest_beehave-1.0.0.tar.gz", hash = "sha256:e2d745027a58619a06568b3bdb2f88986be6bb4a863e2c5c6fe1a2824cdf2c71", size = 13324, upload-time = "2026-05-20T20:15:11.988Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/56/3d3cc2130d8cf800be084549f7c32351cb3ea5817ca865dae4098bee7fec/pytest_beehave-0.2.2-py3-none-any.whl", hash = "sha256:f0e9ab4bb5cc3d0abf5ad52d553b3762f42172db89fae40425bfb6882147ea12", size = 9973, upload-time = "2026-05-13T18:53:26.618Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/60/6c0e9ca196f6634a0cc1654b6ea0f46e41269ad3b5868ceae241ed901e20/pytest_beehave-1.0.0-py3-none-any.whl", hash = "sha256:2cbcfdf44fc6f328590e324901388731596f0d4c2ab402a593a79363e6b1bd8d", size = 10183, upload-time = "2026-05-20T20:15:10.272Z" },
 ]
 
 [[package]]
@@ -978,14 +978,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "beehave", marker = "extra == 'dev'", specifier = ">=0.4.0" },
+    { name = "beehave", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "flowr", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "ghp-import", marker = "extra == 'dev'", specifier = ">=2.1.0" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.148.4" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0" },
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.407" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
-    { name = "pytest-beehave", marker = "extra == 'dev'", specifier = ">=0.2.2" },
+    { name = "pytest-beehave", marker = "extra == 'dev'", specifier = ">=1.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=6.1.1" },
     { name = "pytest-html", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "pytest-mock", marker = "extra == 'dev'", specifier = ">=3.14.0" },
