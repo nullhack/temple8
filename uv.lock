@@ -955,7 +955,7 @@ wheels = [
 
 [[package]]
 name = "temple8"
-version = "9.0.1"
+version = "9.1.0"
 source = { virtual = "." }
 
 [package.optional-dependencies]
@@ -976,6 +976,11 @@ dev = [
     { name = "taskipy" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "flowr" },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "beehave", marker = "extra == 'dev'", specifier = ">=1.0.0" },
@@ -994,6 +999,9 @@ requires-dist = [
     { name = "taskipy", marker = "extra == 'dev'", specifier = ">=1.14.1" },
 ]
 provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "flowr", specifier = ">=1.0.0" }]
 
 [[package]]
 name = "tenacity"
