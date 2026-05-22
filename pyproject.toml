@@ -1,6 +1,6 @@
 [project]
 name = "temple8"
-version = "9.2.0"
+version = "9.2.1"
 description = "Spec-driven agent orchestration template with YAML flow definitions, multi-agent dispatch, and BDD traceability"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -31,7 +31,7 @@ dev = [
     "hypothesis>=6.148.4",
     "pyright>=1.1.407",
     "ghp-import>=2.1.0",
-    "flowr>=1.1.0",
+    "flowr>=1.2.0",
     "beehave>=1.0.0",
     "pytest-beehave>=1.0.0",
     "safety>=3.7.0",
@@ -52,7 +52,7 @@ packages = ["app"]
 
 [dependency-groups]
 dev = [
-    "flowr>=1.0.0",
+    "flowr[viz]>=1.2.0",
 ]
 
 [tool.ruff.lint]
