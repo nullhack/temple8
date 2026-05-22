@@ -41,7 +41,7 @@ Hybrid approaches are valid: a monolith with hexagonal internals, or microservic
 ### Module Structure Template
 
 ```
-feature_name/
+feature_title/
   domain/        # Business logic, zero infrastructure imports
   application/   # Use case orchestration
   infrastructure/ # External concerns (DB, HTTP, queues)

@@ -9,7 +9,7 @@ Available knowledge: [[architecture/technical-design]], [[software-craft/source-
 
 1. Read the feature file and identify the domain entities, value objects, and use cases referenced by the Examples and Scenario Outlines.
 2. For each referenced entity/value object/use case not yet implemented, create a minimal typed stub per [[software-craft/source-stubs#concepts]]: Protocol method signatures with `raise NotImplementedError` bodies, no docstrings, no type hints beyond the contract. These stubs are breadcrumbs from the domain spec. The SE can add, remove, or modify them during implementation.
-3. Run `beehave generate <feature_id>` to generate test stubs from the feature file per [[software-craft/test-stubs#concepts]]:
+3. Run `beehave generate <feature_title>` to generate test stubs from the feature file per [[software-craft/test-stubs#concepts]]:
    - Plain Examples → bare function stubs with `...` body
    - Scenario Outlines → `@given` decorated stubs with inferred Hypothesis strategies + `@example` decorators for each Examples table row
    - Placeholder names become function parameters; strategy is inferred from Examples table column types

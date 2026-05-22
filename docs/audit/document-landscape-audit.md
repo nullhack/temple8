@@ -150,7 +150,7 @@ How many states READ each document. Higher consumption = higher system value.
 | `Rules (Business)` | **COULD** | Coarse rules from discovery (feature-discovery state). **Superseded by `rules` after feature-breakdown runs.** The refined `rules` section contains the same information in INVEST-validated form. |
 | `Constraints` | **MUST** | Non-functional requirements specific to this feature. References product_definition quality_attributes. |
 | `Rules` | **MUST** | INVEST-validated rule blocks with user stories. The actual specification. |
-| `Examples` | **MUST** | Given/When/Then BDD scenarios with @id tags. These ARE the test specification. The most critical section for code generation. |
+| `Examples` | **MUST** | Given/When/Then BDD scenarios. These ARE the test specification. The most critical section for code generation. |
 | `Questions` | **SHOULD** | Open/resolved Q&A. Useful for audit but not needed for rebuild. |
 | `Changes` | **COULD** | Audit trail. |
 
@@ -339,7 +339,7 @@ Each layer consumes the one below it. No document can be eliminated without losi
 | 2 | `glossary.md` | Consistent naming across all generated code | All entries |
 | 3 | `technical_design.md` | Stack choice, module layout, API contracts, event contracts, port interfaces, dependencies, config keys | All 10 sections (C4 Diagrams optional) |
 | 4 | `product_definition.md` | Scope boundaries, users, quality attributes, definition of done, deployment checklist | 7 of 8+ sections (Why optional, Branch Strategy not needed) |
-| 5 | `features/*.feature` | Per-feature: rules (user stories) and examples (BDD Given/When/Then with @id tags) | title, description, Rules, Examples, Constraints (5 of 6+ sections) |
+| 5 | `features/*.feature` | Per-feature: rules (user stories) and examples (BDD Given/When/Then) | title, description, Rules, Examples, Constraints (5 of 6+ sections) |
 | 6 | `system.md` | Current-state architecture, key decisions, active constraints | Summary, Delivery, Context, Container, Module Structure, Domain Model Documentation, Active Constraints, Key Decisions (8 of 9+ sections) |
 
 ### What rebuild would miss without SHOULD documents

@@ -276,14 +276,14 @@ wheels = [
 
 [[package]]
 name = "flowr"
-version = "1.0.0"
+version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0c/73/22cf442d7dee23efb6b79a30d204c8b8dcef883a37293f495c506d129c8f/flowr-1.0.0.tar.gz", hash = "sha256:87e4672b41826d1f7e7f1c0c587427f1bb6b25cf462dc5889a0fb919e599f833", size = 27152, upload-time = "2026-05-06T15:45:05.704Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/6e/ae/92f43a73ca36b6b019eeefcc7f0238327c0bf4c9ad4c60fe327d5bbe0b6b/flowr-1.1.0.tar.gz", hash = "sha256:20f26b0544fb2302a17dd3c06d82cd7f16e4116da1d403ba01190cbaf948cad7", size = 37558, upload-time = "2026-05-19T20:41:00.569Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6b/ea/620ffffa51516c809309d8ccc79dddef2b050f851f3a297214b901a9ffb4/flowr-1.0.0-py3-none-any.whl", hash = "sha256:4b1aac01198ee4a14cca6b55299481db955bc111f48a57c228a7f8649d920444", size = 27168, upload-time = "2026-05-06T15:45:04.088Z" },
+    { url = "https://files.pythonhosted.org/packages/69/5e/610aec9a6e6e7c39e75c647cb48ab517d4a4c1af0385ddfea0a32744db4f/flowr-1.1.0-py3-none-any.whl", hash = "sha256:15100762733e7f915b4877425ab28f1e6f512124e83e4404a5c6731f947cd728", size = 39778, upload-time = "2026-05-19T20:40:59.239Z" },
 ]
 
 [[package]]
@@ -955,7 +955,7 @@ wheels = [
 
 [[package]]
 name = "temple8"
-version = "9.1.0"
+version = "9.2.0"
 source = { virtual = "." }
 
 [package.optional-dependencies]
@@ -984,7 +984,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "beehave", marker = "extra == 'dev'", specifier = ">=1.0.0" },
-    { name = "flowr", marker = "extra == 'dev'", specifier = ">=1.0.0" },
+    { name = "flowr", marker = "extra == 'dev'", specifier = ">=1.1.0" },
     { name = "ghp-import", marker = "extra == 'dev'", specifier = ">=2.1.0" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.148.4" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0" },

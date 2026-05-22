@@ -1,6 +1,6 @@
 flow: deliver-flow
 version: 1.0.0
-params: [feature_id]
+params: [feature_title]
 exits:
   - published
   - accumulate
@@ -16,8 +16,8 @@ states:
       skills:
         - merge-local
       in:
-        - ".cache/acceptance/<feature_id>.md"
-        - features/<feature_id>.feature
+        - ".cache/acceptance/<feature_title>.md"
+        - features/<feature_title>.feature
       out:
         - merged-commits
     next:
@@ -47,7 +47,7 @@ states:
         - create-pr
       in:
         - merged-commits
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
       out: []
     conditions:
       merged:

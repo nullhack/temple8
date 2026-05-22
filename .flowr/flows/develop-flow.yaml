@@ -1,10 +1,9 @@
 flow: develop-flow
 version: 2.0.0
-params: [feature_id]
+params: [feature_title]
 exits:
   - completed
   - needs-architecture
-  - cancelled
 
 states:
   - id: feature-selection
@@ -17,7 +16,7 @@ states:
       in:
         - product_definition.md
         - domain_spec.md
-        - "features/<feature_id>.feature"
+        - "features/<feature_title>.feature"
       out: []
     next:
       selected: feature-examples
@@ -32,12 +31,12 @@ states:
       skills:
         - write-bdd-features
       in:
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - product_definition.md
         - domain_spec.md
         - glossary.md
       out:
-        - features/<feature_id>.feature:
+        - features/<feature_title>.feature:
             - examples
     conditions:
       examples-complete:
@@ -55,7 +54,7 @@ states:
       skills:
         - review-spec
       in:
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - product_definition.md
         - domain_spec.md
         - glossary.md
@@ -87,13 +86,13 @@ states:
         - accept-feature
         - verify-traceability
       in:
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
         - product_definition.md
         - domain_spec.md
         - glossary.md
         - ".cache/interview-notes/*.md"
       out:
-        - ".cache/acceptance/<feature_id>.md"
+        - ".cache/acceptance/<feature_title>.md"
     conditions:
       feature-accepted:
         acceptance-verified: ==verified
@@ -113,7 +112,7 @@ states:
       in:
         - source-implementations
         - test-implementations
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
       out:
         - polished-source
     next:
@@ -129,7 +128,7 @@ states:
       in:
         - polished-source
         - test-implementations
-        - features/<feature_id>.feature
+        - features/<feature_title>.feature
       out:
         - feature-commits
     conditions:

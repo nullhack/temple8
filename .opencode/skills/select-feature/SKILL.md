@@ -25,4 +25,4 @@ Available knowledge: [[requirements/wsjf#key-takeaways]], [[software-craft/test-
    - Estimate Value (1-5, mapped to Kano categories) and Effort (1-5, mapped to complexity).
    - Compute WSJF = Value / Effort.
    - Select the highest WSJF score; ties broken by Value.
-8. Set the `feature_id` session param to the selected feature's filename stem (without `.feature` extension).
+8. Set the `feature_title` session param to the selected feature's filename stem (without `.feature` extension).
