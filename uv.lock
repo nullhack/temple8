@@ -266,6 +266,22 @@ wheels = [
 ]
 
 [[package]]
+name = "fastapi"
+version = "0.136.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "annotated-doc" },
+    { name = "pydantic" },
+    { name = "starlette" },
+    { name = "typing-extensions" },
+    { name = "typing-inspection" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5d/45/c130091c2dfa061bbfe3150f2a5091ef1adf149f2a8d2ae769ecaf6e99a2/fastapi-0.136.1.tar.gz", hash = "sha256:7af665ad7acfa0a3baf8983d393b6b471b9da10ede59c60045f49fbc89a0fa7f", size = 397448, upload-time = "2026-04-23T16:49:44.046Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5a/ff/2e4eca3ade2c22fe1dea7043b8ee9dabe47753349eb1b56a202de8af6349/fastapi-0.136.1-py3-none-any.whl", hash = "sha256:a6e9d7eeada96c93a4d69cb03836b44fa34e2854accb7244a1ece36cd4781c3f", size = 117683, upload-time = "2026-04-23T16:49:42.437Z" },
+]
+
+[[package]]
 name = "filelock"
 version = "3.29.0"
 source = { registry = "https://pypi.org/simple" }
@@ -276,14 +292,20 @@ wheels = [
 
 [[package]]
 name = "flowr"
-version = "1.1.0"
+version = "1.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6e/ae/92f43a73ca36b6b019eeefcc7f0238327c0bf4c9ad4c60fe327d5bbe0b6b/flowr-1.1.0.tar.gz", hash = "sha256:20f26b0544fb2302a17dd3c06d82cd7f16e4116da1d403ba01190cbaf948cad7", size = 37558, upload-time = "2026-05-19T20:41:00.569Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/34/2c6bdca43fa262323e54043a3413fcb7b3ce32c1aec638b70d0d7cfdc388/flowr-1.2.0.tar.gz", hash = "sha256:f78deed9984e524226e345d84c2a8f8b04bf44c99ec8b649663af25e3b05b8d9", size = 210725, upload-time = "2026-05-22T17:53:37.325Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/5e/610aec9a6e6e7c39e75c647cb48ab517d4a4c1af0385ddfea0a32744db4f/flowr-1.1.0-py3-none-any.whl", hash = "sha256:15100762733e7f915b4877425ab28f1e6f512124e83e4404a5c6731f947cd728", size = 39778, upload-time = "2026-05-19T20:40:59.239Z" },
+    { url = "https://files.pythonhosted.org/packages/53/50/4b4093d9101fe854b1d59d253539baf3db70b9dd3c8c349c0106546d0406/flowr-1.2.0-py3-none-any.whl", hash = "sha256:058614aadb215d81246b802618817dd9d0f1ce93bb98c89e896881de8eb2d480", size = 214468, upload-time = "2026-05-22T17:53:35.791Z" },
+]
+
+[package.optional-dependencies]
+viz = [
+    { name = "fastapi" },
+    { name = "uvicorn" },
 ]
 
 [[package]]
@@ -939,6 +961,18 @@ wheels = [
 ]
 
 [[package]]
+name = "starlette"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/08/a3/84e821cc54b4ab50ae6dbc6ac3800a651b65ec35f045cc73785380654057/starlette-1.0.1.tar.gz", hash = "sha256:512399c5f1de7fac99c88572212ded9ddeddef2fb32afa82d724000e88b38f4f", size = 2659596, upload-time = "2026-05-21T21:58:58.433Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/e1/b2df4bc09a1e51ff664c1e17018a4274b42e5e9352e4a478ea540512dc88/starlette-1.0.1-py3-none-any.whl", hash = "sha256:7c0e69b2ee1c848bd54669d908500117a3ee13de603a21427e5c6fc1adf98dcd", size = 72802, upload-time = "2026-05-21T21:58:56.551Z" },
+]
+
+[[package]]
 name = "taskipy"
 version = "1.14.1"
 source = { registry = "https://pypi.org/simple" }
@@ -955,7 +989,7 @@ wheels = [
 
 [[package]]
 name = "temple8"
-version = "9.2.0"
+version = "9.2.1"
 source = { virtual = "." }
 
 [package.optional-dependencies]
@@ -978,13 +1012,13 @@ dev = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "flowr" },
+    { name = "flowr", extra = ["viz"] },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "beehave", marker = "extra == 'dev'", specifier = ">=1.0.0" },
-    { name = "flowr", marker = "extra == 'dev'", specifier = ">=1.1.0" },
+    { name = "flowr", marker = "extra == 'dev'", specifier = ">=1.2.0" },
     { name = "ghp-import", marker = "extra == 'dev'", specifier = ">=2.1.0" },
     { name = "hypothesis", marker = "extra == 'dev'", specifier = ">=6.148.4" },
     { name = "pdoc", marker = "extra == 'dev'", specifier = ">=14.0" },
@@ -1001,7 +1035,7 @@ requires-dist = [
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "flowr", specifier = ">=1.0.0" }]
+dev = [{ name = "flowr", extras = ["viz"], specifier = ">=1.2.0" }]
 
 [[package]]
 name = "tenacity"
@@ -1103,4 +1137,17 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/53/0c/06f8b233b8fd13b9e5ee11424ef85419ba0d8ba0b3138bf360be2ff56953/urllib3-2.7.0.tar.gz", hash = "sha256:231e0ec3b63ceb14667c67be60f2f2c40a518cb38b03af60abc813da26505f4c", size = 433602, upload-time = "2026-05-07T16:13:18.596Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl", hash = "sha256:9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897", size = 131087, upload-time = "2026-05-07T16:13:17.151Z" },
+]
+
+[[package]]
+name = "uvicorn"
+version = "0.47.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+    { name = "h11" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f6/b1/8e7077a8641086aea449e1b5752a570f1b5906c64e0a33cd6d93b63a066b/uvicorn-0.47.0.tar.gz", hash = "sha256:7c9a0ea1a9414106bbab7324609c162d8fa0cdcdcb703060987269d77c7bb533", size = 90582, upload-time = "2026-05-14T18:16:54.455Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/15/41/ac2dfdbc1f60c7af4f994c7a335cfa7040c01642b605d65f611cecc2a1e4/uvicorn-0.47.0-py3-none-any.whl", hash = "sha256:2c5715bc12d1892d84752049f400cd1c3cb018514967fdfeb97640443a6a9432", size = 71301, upload-time = "2026-05-14T18:16:51.762Z" },
 ]

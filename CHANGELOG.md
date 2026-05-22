@@ -2,6 +2,18 @@
 
 All notable changes to this template will be documented in this file.
 
+## [v9.2.1] - 2026-05-22: Steadfast Hephaestus
+
+### Fixed
+
+- **`flowr serve` crash**: upgraded flowr from 1.1.0 to 1.2.0 (Whole Rye) which includes the missing static frontend assets in the wheel. The `flowr serve` command now finds `index.html`, `css/`, and `js/` and starts the visualization server without errors.
+- **Dropped `html` extra**: `flowr[html,viz]` changed to `flowr[viz]` — the `html` extra never existed in flowr and caused a resolution warning.
+
+### Changed
+
+- **flowr**: `>=1.1.0` → `>=1.2.0`
+- **flowr[viz]**: `>=1.0.0` → `>=1.2.0`
+
 ## [v9.1.0] - 2026-05-20: beehave 1.0.0 Knowledge Integration
 
 ### Added
