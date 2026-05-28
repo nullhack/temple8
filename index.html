@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>temple8 — Documentation</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --parchment:    #faf7f2;
+      --parchment-mid:#ede8e0;
+      --stone:        #f0ece4;
+      --stone-mid:    #c8c0b8;
+      --stone-dark:   #a09890;
+      --brown:        #5c3d1e;
+      --brown-deep:   #3b2410;
+      --gold:         #c9a84c;
+      --gold-light:   #e8c96a;
+      --aegean:       #7baabf;
+      --aegean-deep:  #4a7a96;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      background: var(--parchment);
+      color: var(--brown-deep);
+      min-height: 100vh;
+    }
+
+    body::before, body::after {
+      content: "";
+      display: block;
+      height: 5px;
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2.5rem 3rem 1.5rem;
+      border-bottom: 1px solid var(--stone-mid);
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .logo-wrap svg { width: 64px; height: 64px; }
+    .header-text h1 {
+      font-size: 1.8rem;
+      font-weight: normal;
+      letter-spacing: 0.12em;
+      color: var(--brown-deep);
+      text-transform: uppercase;
+    }
+    .header-text h1 span {
+      color: var(--gold);
+    }
+    .header-text p {
+      font-size: 0.9rem;
+      color: var(--stone-dark);
+      font-style: italic;
+      margin-top: 0.2rem;
+    }
+
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 3rem 4rem;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: normal;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--stone-dark);
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      flex-shrink: 0;
+    }
+
+    .role-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.15rem;
+    }
+
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+    a.doc-card {
+      display: block;
+      background: var(--stone);
+      border: 1px solid var(--stone-mid);
+      border-top: 3px solid var(--gold);
+      border-radius: 4px;
+      padding: 1.5rem 1.25rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-top-color 0.15s, box-shadow 0.15s;
+    }
+    a.doc-card:hover {
+      border-top-color: var(--aegean);
+      box-shadow: 0 4px 12px rgba(59,36,16,0.08);
+    }
+    .doc-card-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--stone-dark);
+      margin-bottom: 0.4rem;
+    }
+    .doc-card-title {
+      font-size: 1.05rem;
+      color: var(--brown-deep);
+      margin-bottom: 0.35rem;
+    }
+    .doc-card-desc {
+      font-size: 0.82rem;
+      color: var(--stone-dark);
+      font-style: italic;
+      line-height: 1.5;
+    }
+
+    footer {
+      border-top: 1px solid var(--stone-mid);
+      padding: 1.5rem 3rem;
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--stone-dark);
+    }
+    footer a { color: var(--aegean-deep); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      header, main, footer { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .docs-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="temple8 logo">
+        <g transform="translate(50,52) scale(0.55)">
+          <polygon points="0,-90 80,-54 -80,-54" fill="#ede8e0" stroke="#c8c0b8" stroke-width="1.4" stroke-linejoin="round"/>
+          <line x1="0" y1="-90" x2="80" y2="-54" stroke="#a09890" stroke-width="1" opacity="0.4"/>
+          <rect x="-13" y="-42" width="26" height="3" fill="#5c3d1e" opacity="0.28"/>
+          <rect x="-13" y="25" width="26" height="3" fill="#5c3d1e" opacity="0.28"/>
+          <rect x="-13" y="-9.5" width="26" height="5" fill="#ede8e0" stroke="#5c3d1e" stroke-width="0.9"/>
+          <rect x="-13" y="-4.5" width="26" height="2" fill="#5c3d1e" opacity="0.38"/>
+          <rect x="-13" y="-9.5" width="26" height="1.5" fill="#5c3d1e" opacity="0.38"/>
+          <rect x="-80" y="-54" width="160" height="12" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.9"/>
+          <rect x="-80" y="-43" width="160" height="2" fill="#a09890" opacity="0.3"/>
+          <rect x="-68" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+          <rect x="-55" y="-42" width="3" height="70" fill="#a09890" opacity="0.2"/>
+          <rect x="-28" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+          <rect x="-15" y="-42" width="3" height="70" fill="#a09890" opacity="0.2"/>
+          <rect x="-15" y="-42" width="2" height="70" fill="#5c3d1e" opacity="0.50"/>
+          <rect x="13" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+          <rect x="26" y="-42" width="3" height="70" fill="#a09890" opacity="0.2"/>
+          <rect x="13" y="-42" width="2" height="70" fill="#5c3d1e" opacity="0.50"/>
+          <rect x="53" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+          <rect x="66" y="-42" width="3" height="70" fill="#a09890" opacity="0.2"/>
+          <rect x="-80" y="28" width="160" height="9" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.7"/>
+          <rect x="-85" y="37" width="170" height="8" fill="#d8d4cc"/>
+          <rect x="-90" y="45" width="180" height="7" fill="#a09890" opacity="0.6"/>
+        </g>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>TEMPLE<span>·</span>VIII</h1>
+      <p>From zero to hero — production-ready Python, without the ceremony.</p>
+    </div>
+  </header>
+
+  <main>
+
+    <p class="section-title">Stakeholder</p>
+    <div class="docs-grid">
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/product_definition.md">
+        <div class="doc-card-label">Product</div>
+        <div class="doc-card-title">Product Definition</div>
+        <div class="doc-card-desc">What the product is, who it's for, and scope boundaries</div>
+      </a>
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/glossary.md">
+        <div class="doc-card-label">Language</div>
+        <div class="doc-card-title">Glossary</div>
+        <div class="doc-card-desc">Living domain glossary — append-only, source-traced definitions</div>
+      </a>
+    </div>
+
+    <p class="section-title">Architect</p>
+    <div class="docs-grid">
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/system.md">
+        <div class="doc-card-label">Architecture</div>
+        <div class="doc-card-title">System Overview</div>
+        <div class="doc-card-desc">Current-state snapshot — domain model, context/container tables, ADR index</div>
+      </a>
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/technical_design.md">
+        <div class="doc-card-label">Architecture</div>
+        <div class="doc-card-title">Technical Design</div>
+        <div class="doc-card-desc">Architectural style, stack, module structure, contracts, and C4 diagrams</div>
+      </a>
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/context_map.md">
+        <div class="doc-card-label">Architecture</div>
+        <div class="doc-card-title">Context Map</div>
+        <div class="doc-card-desc">Bounded context relationships, integration points, and anti-corruption layers</div>
+      </a>
+      <a class="doc-card" href="https://github.com/nullhack/temple8/blob/main/docs/spec/domain_model.md">
+        <div class="doc-card-label">Architecture</div>
+        <div class="doc-card-title">Domain Model</div>
+        <div class="doc-card-desc">Entities, relationships, and aggregate boundaries</div>
+      </a>
+    </div>
+
+    <p class="section-title">Engineer</p>
+    <div class="docs-grid">
+      <a class="doc-card" href="api/app.html">
+        <div class="doc-card-label">Reference</div>
+        <div class="doc-card-title">API Docs</div>
+        <div class="doc-card-desc">Auto-generated from source docstrings</div>
+      </a>
+      <a class="doc-card" href="coverage/index.html">
+        <div class="doc-card-label">Quality</div>
+        <div class="doc-card-title">Coverage Report</div>
+        <div class="doc-card-desc">Line-by-line test coverage</div>
+      </a>
+      <a class="doc-card" href="tests/report.html">
+        <div class="doc-card-label">Quality</div>
+        <div class="doc-card-title">Test Report</div>
+        <div class="doc-card-desc">Full pytest run — results, durations, and pass/fail breakdown</div>
+      </a>
+    </div>
+
+  </main>
+
+  <footer>
+    <span>Generated documentation</span>
+    <span>temple8 &nbsp;·&nbsp; <a href="https://github.com/nullhack/temple8">github.com/nullhack/temple8</a></span>
+  </footer>
+
+</body>
+</html>
