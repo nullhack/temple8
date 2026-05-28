@@ -12,3 +12,8 @@ Available knowledge: [[software-craft/git-conventions#key-takeaways]]. `in` arti
 3. IF the PR is approved → write results to output artifacts, advance to next state.
 4. IF changes are requested → address feedback on a fix branch per [[software-craft/git-conventions#concepts]], then re-push and update the PR.
 5. IF the PR is cancelled → write results to output artifacts, route to post-mortem.
+6. After PR is merged to main on remote: sync local branches for next cycle.
+   - `git fetch origin`
+   - `git checkout main && git merge --ff-only origin/main`
+   - `git checkout dev && git reset --hard origin/main`
+   - This prevents history divergence on the next dev → main PR.

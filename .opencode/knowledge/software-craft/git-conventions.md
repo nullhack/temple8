@@ -1,7 +1,7 @@
 ---
 domain: software-craft
 tags: [git, branching, commits, squash, pull-requests, conflict-resolution]
-last-updated: 2026-05-14
+last-updated: 2026-05-28
 ---
 
 # Git Conventions
@@ -9,7 +9,8 @@ last-updated: 2026-05-14
 ## Key Takeaways
 
 - Feature branches use granular commits per achievement; local dev receives single squashed commits per feature.
-- Before merging to local dev: pull latest remote dev, resolve any conflicts feature by feature, then squash-merge.
+- Before merging to local dev: sync main with remote, reset dev to origin/main, then squash-merge. Delete feature branch after merge.
+- After PR merge to main: reset local dev to origin/main to prevent history divergence on next PR.
 - Granular commit format: `<type>(<scope>): <specific achievement>` (e.g., `feat(auth): add JWT signing method`).
 - Squashed commit format includes Example title traceability, feature metadata, and approval trail.
 - Multiple features can accumulate on local dev before creating a PR: the stakeholder decides when to publish.
@@ -21,9 +22,11 @@ last-updated: 2026-05-14
 
 **Local Dev as Staging Area**. Local dev accumulates squashed feature commits. Multiple features can be developed and squash-merged to local dev before publishing to remote. This allows integration testing of multiple features together and reduces PR noise. The stakeholder decides after each feature whether to continue developing more features or publish the batch. PRs go from dev to main on the remote.
 
-**Conflict Prevention**. Before squash-merging, pull the latest remote dev to detect conflicts early. Resolve conflicts feature by feature on the feature branch. If conflicts require design decisions, present options to the stakeholder with consequences.
+**Conflict Prevention**. Before squash-merging, sync local main with remote (`git merge --ff-only origin/main`), then reset local dev to origin/main to prevent history divergence from previous PR merges. Resolve conflicts feature by feature on the feature branch. If conflicts require design decisions, present options to the stakeholder with consequences.
 
-**Administrative PR**. The PR (dev → main) serves the git hosting platform's approval requirement, not merge mechanics. Changes are already on local dev. The PR documents what was built, provides traceability via Example titles, and enables the review/approval workflow.
+**Administrative PR**. The PR (dev → main) serves the git hosting platform's approval requirement, not merge mechanics. Changes are already on local dev. The PR documents what was built, provides traceability via Example titles, and enables the review/approval workflow. After the PR is squash-merged to main on the remote, sync local main and reset local dev to origin/main so the next feature cycle starts clean.
+
+**Branch Lifecycle**. Feature branches are short-lived: create from main, develop, squash-merge to dev, delete. No feature branch persists after its squash-merge. This prevents stale branches from accumulating and ensures a clean `git branch` output. Only `main` and `dev` are long-lived branches.
 
 **Conventional Commits**. Every commit follows `<type>(<scope>): <description>`. Types: `feat` (feature), `fix` (bug fix), `test` (test addition/modification), `refactor` (structural change with no behavior change), `chore` (tooling, deps, CI), `docs` (documentation). Forbidden: `wip`, `temp`, any commit without a type prefix.
 
