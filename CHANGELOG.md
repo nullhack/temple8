@@ -2,6 +2,15 @@
 
 All notable changes to this template will be documented in this file.
 
+## [v9.4.0] - 2026-05-28: Branch Lifecycle Discipline
+
+### Changed
+
+- **merge-local/SKILL.md**: sync local main with remote before merge, reset dev to origin/main to prevent history divergence, delete feature branch after squash-merge
+- **create-pr/SKILL.md**: after PR merged, sync local main and reset dev to origin/main for clean next cycle
+- **structure-feature/SKILL.md**: pull remote main before creating feature branch from current main
+- **git-conventions.md**: added Branch Lifecycle concept (short-lived feature branches, only main/dev persist), updated Conflict Prevention and Administrative PR sections with post-merge sync discipline
+
 ## [v9.3.0] - 2026-05-28: V10 Agentic Reform
 
 ### Changed
