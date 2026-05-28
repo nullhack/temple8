@@ -2,6 +2,26 @@
 
 All notable changes to this template will be documented in this file.
 
+## [v9.3.0] - 2026-05-28: V10 Agentic Reform
+
+### Changed
+
+- **AGENTS.md**: full rewrite — caveman-style throughout, Main Directive at top, Golden Rules tightened, feature lifecycle phases documented, runtime artifact resolution convention, review loop relay protocol, loop exit detection in anchor, multi-skill ordering explicit, beehave violations = test failures, convention boundary for design-phase states
+- **refactor/SKILL.md**: added `beehave check` before `task test-fast` (step 9), added loop exit detection via `beehave status --json` (step 10)
+- **write-test/SKILL.md**: added no-docstrings rule for test functions with self-heal ruff instruction
+- **review-gate/SKILL.md**: added no-docstrings enforcement in structure review (step 8)
+- **structure-feature/SKILL.md**: clarified `out: git_branch` as Runtime artifact meaning branch creation
+- **todo-anchor-protocol.md**: synced notation to native status fields, added loop resolution and review relay to anchor checklist
+- **test-design.md**: added comment/docstring noise pattern to Spec Value Fidelity
+- **test-stubs.md**: documented auto-generation on every pytest, stale stub accumulation, `beehave clean --force` usage
+- **skill-design/principles.md**: added imperative language standard for skill writing
+- **pyproject.toml**: added `"D"` to `per-file-ignores` for `tests/**` (no docstrings required in tests)
+
+### Simulation-Driven
+
+- Walked full 24-state define-flow → develop-flow path for "Add Task" feature
+- Identified and resolved 5 critical pain points: runtime artifact ambiguity, feature file lifecycle, multi-skill ordering, review feedback survival, loop exit detection
+
 ## [v9.2.1] - 2026-05-22: Steadfast Hephaestus
 
 ### Fixed

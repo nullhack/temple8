@@ -7,5 +7,5 @@ description: "Create feature branch and package structure from design artifacts"
 
 Available knowledge: [[software-craft/source-stubs#concepts]], [[software-craft/git-conventions#key-takeaways]]. `in` artifacts: read all before starting work.
 
-1. Create feature branch per [[software-craft/git-conventions#content]]: `feat/<stem>` from latest main.
+1. Create feature branch per [[software-craft/git-conventions#content]]: `feat/<stem>` from latest main. `out: git_branch` is a Runtime artifact — the output of this step IS the branch creation, not a file on disk.
 2. Create package structure per [[software-craft/source-stubs#concepts]] and [[architecture/technical-design#key-takeaways]].

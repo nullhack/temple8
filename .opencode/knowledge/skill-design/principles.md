@@ -28,6 +28,8 @@ last-updated: 2026-04-29
 
 **Lean Skill Design**: Target lengths: under 150 lines for focused skills, under 250 lines for complex multi-phase skills. Cut without hesitation: exhaustive examples (one is enough), reference documentation (use wikilinks), boilerplate configuration (belongs in project files), knowledge content (extract to knowledge files).
 
+**Imperative Language Standard**: Write skills in imperative style. Verb-first. No articles ("the", "a", "an"). No pronouns ("it", "they", "you"). Fragments OK. Drop filler words. Every sentence starts with an action verb. Examples: "Run `beehave check`" not "You should run beehave check". "Write test body" not "The next step is to write the test body". "No skip" not "You must not skip this step". This style reduces token count, eliminates ambiguity about who acts, and forces procedural clarity.
+
 ## Content
 
 ### Skill = Procedure Only (No Duplication)
@@ -56,7 +58,7 @@ description: "<one-line description of what this skill does>"
 
 Available knowledge: [[domain/concept]]. `in` artifacts: read all before starting work.
 
-1. <procedural step>
+1. <verb-first procedural step>
 2. <step referencing knowledge per [[domain/concept]]>  ← Link at point of use
 3. ...remaining procedural steps
 ```

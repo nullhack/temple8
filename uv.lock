@@ -697,6 +697,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/8d/60/6c0e9ca196f6634a0cc1654b6ea0f46e41269ad3b5868ceae241ed901e20/pytest_beehave-1.0.0-py3-none-any.whl", hash = "sha256:2cbcfdf44fc6f328590e324901388731596f0d4c2ab402a593a79363e6b1bd8d", size = 10183, upload-time = "2026-05-20T20:15:10.272Z" },
 ]
 
+[package.optional-dependencies]
+html = [
+    { name = "pytest-html" },
+]
+
 [[package]]
 name = "pytest-cov"
 version = "7.1.0"
@@ -1013,6 +1018,7 @@ dev = [
 [package.dev-dependencies]
 dev = [
     { name = "flowr", extra = ["viz"] },
+    { name = "pytest-beehave", extra = ["html"] },
 ]
 
 [package.metadata]
@@ -1035,7 +1041,10 @@ requires-dist = [
 provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "flowr", extras = ["viz"], specifier = ">=1.2.0" }]
+dev = [
+    { name = "flowr", extras = ["viz"], specifier = ">=1.2.0" },
+    { name = "pytest-beehave", extras = ["html"], specifier = ">=1.0.0" },
+]
 
 [[package]]
 name = "tenacity"
