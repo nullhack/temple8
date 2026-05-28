@@ -29,7 +29,7 @@ Available knowledge: [[software-craft/code-review]], [[software-craft/test-desig
 ## Tier 2: Structure Review
 
 7. Run `beehave status --json` per [[software-craft/test-stubs#concepts]]. IF feature stage is `ok` with no violations → structural traceability is clean. IF not `ok` → run `beehave check` per [[software-craft/test-stubs#concepts]] and verify all violations resolved.
-8. Verify test quality per [[software-craft/test-design#concepts]]: tests follow AAA pattern, clear assertions, behavior-focused not implementation-coupled.
+8. Verify test quality per [[software-craft/test-design#concepts]]: tests follow AAA pattern, clear assertions, behavior-focused not implementation-coupled. No docstrings on test functions, classes, or helpers — function name = beehave traceability link.
 9. Run `task test` and verify all tests pass with coverage.
 10. Run `ruff check .` and verify no functional lint violations (the default ruff config only includes bug-catching rules).
 11. **FAIL-FAST**: If any structure violations found → exit `fail` with specific citations.
