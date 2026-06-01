@@ -49,7 +49,7 @@ jobs:
           exit 1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@ba17a16c0afc72ea47311891c76009518d0cf1aa # v4.0.0
+        uses: astral-sh/setup-uv@a92cb430984b4b2b34c9c47e020cf035089958fa # v4.0.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
