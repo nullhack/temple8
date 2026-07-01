@@ -174,7 +174,13 @@ cython_debug/
 # Session files and simulation cache (local working state)
 .cache/
 
+# Explore-flow throwaway probe scripts (captured cassettes ARE committed under tests/cassettes/)
+explore/
+
 # Generated flow visualization data (regenerate with: task regenerate-flowviz)
 .flowr/viz/data.js
 
 # Trigger CI run to verify linting fixes
+
+# Local-only backup of the previous system (clean-slate rebuild)
+.backup/

@@ -1,8 +1,0 @@
-Feature: <Feature title>
-
-  <2-4 sentence description of what this feature does and why it exists.
-  Written in plain language, always kept current by the PO.
-
-  Discovered rules are written as Rule blocks during simulation, then
-  refined into feature boundaries by refine-features. Examples and
-  Scenario Outline blocks are added later during feature-examples flow.>

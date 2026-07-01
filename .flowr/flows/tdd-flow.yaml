@@ -1,0 +1,138 @@
+flow: tdd-flow
+version: 2.4.0
+exits:
+  - all-built
+  - needs-contracts
+states:
+  - id: select
+    attrs:
+      description: >
+        Pull the next source contract to build from the pending backlog,
+        respecting outside-in layer order.
+      dispatch_to: product-owner
+      git branch: feature
+      skills: [select-build-target]
+      input artifacts:
+        - "<package>/**/*.pyi"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts:
+        - ".cache/<session_id>/build-target.md"
+    next:
+      selected: red
+      none-left: all-built
+
+  - id: red
+    attrs:
+      description: >
+        Confirm the target contract's tests fail for the right reason
+        (ImportError for new work, assertion failure for rework).
+      dispatch_to: software-engineer
+      git branch: feature
+      skills: [confirm-red-failure]
+      input artifacts:
+        - ".cache/<session_id>/build-target.md"
+        - "<package>/**/*.pyi"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts: []
+    conditions:
+      really_red:
+        test-status: red
+        red-reason-is-ours: "==true"
+    next:
+      contract-red:
+        to: green
+        when: really_red
+      reveals-gap: needs-contracts
+
+  - id: green
+    attrs:
+      description: >
+        Write the minimum production code to turn the target's tests green from
+        its fixed .pyi; emit migrations/fixtures as needed.
+      dispatch_to: software-engineer
+      specialists: [data-architect, integration-engineer, ux-engineer, security-engineer]
+      git branch: feature
+      skills: [implement-from-stub]
+      input artifacts:
+        - ".cache/<session_id>/build-target.md"
+        - "<package>/**/*.pyi"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts:
+        - "<package>/**/*.py"
+        - "migrations/**"
+        - "tests/cassettes/**"
+        - "tests/fixtures/**"
+    conditions:
+      green:
+        test-status: green
+        stubtest-clean: "==true"
+    next:
+      test-green:
+        to: refactor
+        when: green
+
+  - id: refactor
+    attrs:
+      description: >
+        Improve the source structure under green tests with the .pyi and tests
+        fixed.
+      dispatch_to: software-engineer
+      git branch: feature
+      skills: [refactor-green]
+      input artifacts:
+        - "<package>/**/*.pyi"
+        - "<package>/**/*.py"
+      output artifacts:
+        - "<package>/**/*.py"
+    next:
+      more-refactor: refactor
+      clean: review
+
+  - id: review
+    attrs:
+      description: >
+        Gate. Review the implementation against its contract for correctness,
+        quality, drift, and green tests.
+      dispatch_to: reviewer
+      specialists: [security-engineer]
+      git branch: feature
+      skills: [review-implementation]
+      input artifacts:
+        - "<package>/**/*.pyi"
+        - "<package>/**/*.py"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts: []
+    conditions:
+      approved:
+        impl-matches-contract: "==true"
+        source-quality-clean: "==true"
+        stubtest-clean: "==true"
+        tests-green: "==true"
+    next:
+      approved:
+        to: ship
+        when: approved
+      changes-needed: green
+      reveals-gap: needs-contracts
+
+  - id: ship
+    attrs:
+      description: >
+        Commit the unit as one logical change with a descriptive imperative
+        message.
+      dispatch_to: software-engineer
+      git branch: feature
+      skills: [ship-unit]
+      input artifacts:
+        - "<package>/**/*.py"
+        - "migrations/**"
+        - "tests/cassettes/**"
+        - "tests/fixtures/**"
+      output artifacts:
+        - "feature-commits"
+    next:
+      shipped: select

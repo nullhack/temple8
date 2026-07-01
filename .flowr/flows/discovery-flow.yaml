@@ -1,62 +1,70 @@
 flow: discovery-flow
-version: 12.0.0
+version: 2.1.0
 exits:
-  - complete
-
+  - interview-ready
 states:
-  - id: stakeholder-interview
+  - id: interview-general
     attrs:
-      description: "PO interviews stakeholders to understand pain points, business goals, and domain terms"
-      owner: PO
-      git: dev
-      skills:
-        - conduct-interview
-      in:
-        - ".cache/interview-notes/*.md"  # optional
-        - "domain_spec.md"  # optional — for re-interview context
-        - "product_definition.md"  # optional — for re-interview context
-      out:
-        - ".cache/interview-notes/<session_id>.md"
+      description: >
+        Funnel level 1 - General. Establish the big picture with the seven broad
+        questions; begin the running interview-notes artifact.
+      dispatch_to: product-owner
+      specialists: [domain-expert]
+      git branch: dev
+      skills: [interview-general]
+      output artifacts:
+        - ".cache/<session_id>/interview-notes.md"
     next:
-      needs-spec: spec-creation
-      already-known: complete
+      general-done: interview-cross-cutting
 
-  - id: spec-creation
+  - id: interview-cross-cutting
     attrs:
-      description: "SA and DE create a structural domain specification per bounded context from interview notes"
-      owner: SA
-      git: dev
-      skills:
-        - create-domain-spec
-        - define-ubiquitous-language
-      in:
-        - .cache/interview-notes/*.md
-        - "domain_spec.md"  # optional — cumulative edit across iterations
-        - "glossary.md"  # optional — cumulative edit across iterations
-        - "product_definition.md"  # optional — cumulative edit across iterations
-      out:
-        - product_definition.md:
-            - what_is
-            - what_is_not
-            - why
-            - users
-            - out_of_scope
-            - quality_attributes
-        - domain_spec.md:
-            - context_map
-            - context
-            - entities
-            - relationships
-            - aggregate_boundaries
-            - data_shapes
-            - integration_points
-            - external_contracts
-        - glossary.md
-    conditions:
-      committed-to-dev-locally:
-        committed-to-dev-locally: ==verified
+      description: >
+        Funnel level 2 - Cross-cutting. Structure the domain (behaviour groups,
+        bounded contexts, integration points, lifecycle); append to the
+        interview-notes.
+      dispatch_to: product-owner
+      specialists: [domain-expert]
+      git branch: dev
+      skills: [interview-cross-cutting]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+      output artifacts:
+        - ".cache/<session_id>/interview-notes.md"
     next:
-      done:
-        to: complete
-        when: committed-to-dev-locally
-      needs-reinterview: stakeholder-interview
+      cross-cutting-done: interview-features
+
+  - id: interview-features
+    attrs:
+      description: >
+        Funnel level 3 - Feature identification. Capture feature NAMES and rough
+        boundaries only; run gap analysis; append to the interview-notes.
+      dispatch_to: product-owner
+      specialists: [domain-expert]
+      git branch: dev
+      skills: [interview-features]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+      output artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+    next:
+      features-identified: consolidate-interview
+
+  - id: consolidate-interview
+    attrs:
+      description: >
+        Active listening L3. Synthesize all three levels into the final notes
+        for stakeholder approval and author the glossary; the accuracy gate for
+        plan.
+      dispatch_to: product-owner
+      specialists: [domain-expert]
+      git branch: dev
+      skills: [consolidate-interview]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+      output artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+    next:
+      consolidated: interview-ready
+      needs-more-elicitation: interview-general

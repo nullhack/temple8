@@ -1,0 +1,123 @@
+flow: plan-flow
+version: 1.4.0
+exits:
+  - contracts-ready
+  - needs-elicitation
+states:
+  - id: author-test-stubs
+    attrs:
+      description: >
+        Author the test .pyi (integration + E2E only) from the interview and
+        captured reality - the first contract surface.
+      dispatch_to: test-architect
+      specialists: [integration-engineer, data-architect, ux-engineer, domain-expert, security-engineer]
+      git branch: dev
+      skills: [author-test-stubs]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+      output artifacts:
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "docs/glossary.md"
+    next:
+      test-stubs-authored: review-test-stubs
+
+  - id: review-test-stubs
+    attrs:
+      description: >
+        Gate. Review the test stubs for consistency, scope (integration/E2E
+        only), and happy-path completeness against the interview.
+      dispatch_to: reviewer
+      git branch: dev
+      skills: [review-test-stubs]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts: []
+    conditions:
+      accepted:
+        interview-consistent: "==true"
+        scope-integration-e2e-only: "==true"
+        happy-paths-complete: "==true"
+    next:
+      accepted:
+        to: write-test-py
+        when: accepted
+      needs-stubs-rework: author-test-stubs
+
+  - id: write-test-py
+    attrs:
+      description: >
+        Write the test .py bodies under the code-quality gate; mark each
+        @pytest.mark.pending so the suite stays green-with-skips.
+      dispatch_to: test-architect
+      specialists: [integration-engineer, data-architect, ux-engineer]
+      git branch: dev
+      skills: [write-test-py]
+      input artifacts:
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+      output artifacts:
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.py"
+    next:
+      test-py-written: derive-source-stubs
+
+  - id: derive-source-stubs
+    attrs:
+      description: >
+        Derive <package>/**/*.pyi from the reviewed test .py - every type the
+        tests reference gets a definition.
+      dispatch_to: system-architect
+      specialists: [data-architect, integration-engineer, ux-engineer, domain-expert, security-engineer]
+      git branch: dev
+      skills: [derive-source-stubs]
+      input artifacts:
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts:
+        - "<package>/**/*.pyi"
+    next:
+      source-stubs-derived: simulate-contracts
+
+  - id: simulate-contracts
+    attrs:
+      description: >
+        Gate. Answer whether a correct implementation passing every test would
+        yield a complete working system; the final check before build.
+      dispatch_to: reviewer
+      git branch: dev
+      skills: [simulate-contracts]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "<package>/**/*.pyi"
+      output artifacts: []
+    conditions:
+      accepted:
+        pyright-consistent: "==true"
+        no-orphans: "==true"
+        traceability-complete: "==true"
+        layer-order-respected: "==true"
+        test-stubs-consistent: "==true"
+        simulation-passed: "==true"
+    next:
+      accepted:
+        to: contracts-ready
+        when: accepted
+      needs-source-stubs: derive-source-stubs
+      needs-test-bodies: write-test-py
+      needs-elicitation: needs-elicitation
