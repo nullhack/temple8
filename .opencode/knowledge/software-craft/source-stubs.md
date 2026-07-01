@@ -23,7 +23,7 @@ last-updated: 2026-07-01
 
 **Fixed during build.** Once derived, the source `.pyi` is frozen for the whole build cycle: green writes the `.py` to satisfy it, refactor restructures the `.py` while the `.pyi` stays put, and the tests (already written) stay put too. If implementation discovers the `.pyi` is wrong — a missing parameter, a wrong return type, an impossible signature — the response is never to edit the stub in place; it is to escalate a contract gap at review, which routes back to plan for a proper re-derivation. The frozen stub is what keeps the contract the single source of truth.
 
-**No layout, no config artifact.** The tests say where the source lives and what it is called; the stub does not prescribe a package structure on top. Adapters, connectors, and domain types live under the package alongside one another — there is no separate skeleton category to author. Configuration is twelve-factor: environment variables are the default, loaded locally from a gitignored `.env`, and a typed Settings model is optional — if it earns its place, it is a normal source stub, not a special artifact the flow requires.
+**No layout, no config artifact.** The tests say where the source lives and what it is called; the stub does not prescribe a package structure on top. Adapters, connectors, and domain types live under the package alongside one another. Configuration is twelve-factor: environment variables are the default, loaded locally from a gitignored `.env`, and a typed Settings model is optional — if it earns its place, it is a normal source stub alongside the rest.
 
 **Structural artifacts keyed to the module.** Some modules carry an artifact beyond the `.py` pair. An ORM model owns an Alembic migration — the migration is the schema spec, born in green, committed in ship, never edited only appended. An external adapter replays the cassettes captured during explore (`VCR_RECORD_MODE=none`). The stub itself does not generate these; it declares the module's surface, and green emits whatever that surface implies.
 
@@ -65,7 +65,7 @@ The asymmetry is deliberate: the `.pyi` and the tests are the contract, and cont
 
 ### No layout, no config artifact
 
-The package takes whatever shape the tests import from; there is no separate skeleton or ports layer to author. Configuration is twelve-factor — environment variables are the source, a gitignored `.env` carries local secrets, `python-dotenv` loads it. A `Settings` model is not required by the flow; if it is worth the code, it is one normal source stub among the rest, reading `os.environ` in its `from_env()`.
+The package takes whatever shape the tests import from. Configuration is twelve-factor — environment variables are the source, a gitignored `.env` carries local secrets, `python-dotenv` loads it. A `Settings` model is optional; if it is worth the code, it is one normal source stub among the rest, reading `os.environ` in its `from_env()`.
 
 ### Structural artifacts keyed to the module
 

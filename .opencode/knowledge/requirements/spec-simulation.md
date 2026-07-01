@@ -8,16 +8,16 @@ last-updated: 2026-07-01
 
 ## Key Takeaways
 
-- Simulation is a **mental execution of the contract set** — the test `.pyi`, the test `.py`, and the source `.pyi` together — asking whether a correct implementation that passes every test would actually work end-to-end and be complete. The spec is the tests, not prose; the simulation walks the tests.
+- Simulation is a **mental execution of the contract set** — the test `.pyi`, the test `.py`, and the source `.pyi` together — asking whether a correct implementation that passes every test would actually work end-to-end and be complete.
 - The e2e-affecting failures live in **composition and cross-test coherence**, where tools are blind: a type imported from a module that does not re-export it, a value whose shape differs between the tests that produce and consume it, a shared module no test drives, a dependency graph with no valid build order. These surface only when a human walks the contracts.
 - **Walk the e2e path hop by hop** — entry point → adapter → domain → persistence. At each hop confirm the type passed, the value carried, and the side effect performed each trace to a backing contract; a broken hop is the simulation's main catch.
 - **Trace each domain value across every test that touches it.** If two tests pass the same concept in different shapes, the contract is incoherent; pin one canonical form or split the concept. No tool performs this — it is a reading, not a check.
 - The tool floor is **necessary but not sufficient**: pyright (zero errors, tolerate `reportMissingModuleSource` pre-build), stubtest over the test pairs (drift), no-orphans (every source symbol exercised, every test reference backed), traceability (every interview finding → a test or deferral; every external service → a captured cassette). Each catches a class of defect; none catches composition.
-- The output is a **judgment with evidence, not an artifact.** No per-walkthrough JSON, no cache of I/O pairs — the simulation's value is the understanding, which lives in the gate decision and the specific gaps it names.
+- The output is a **judgment with evidence**: the gate decision — advance, or a named gap — backed by the walkthroughs and traces that justify it. The simulation's value is the understanding that informs the decision.
 
 ## Concepts
 
-**Mental execution of the contract set.** The plan phase produces the contract set: every test written as an executable body, every source symbol recorded as a `.pyi` signature. Simulation is the act of reading that set as if it were already implemented and asking the one question that gates the build: *if a correct implementation made every one of these tests pass, would the resulting system work as intended and be complete?* It is a prediction of the future, made by walking the contracts the future will be built from. The spec being walked is the tests themselves — there is no separate prose document to simulate against — which is what makes the prediction answerable rather than a comparison of two texts.
+**Mental execution of the contract set.** The plan phase produces the contract set: every test written as an executable body, every source symbol recorded as a `.pyi` signature. Simulation is the act of reading that set as if it were already implemented and asking the one question that gates the build: *if a correct implementation made every one of these tests pass, would the resulting system work as intended and be complete?* It is a prediction of the future, made by walking the contracts the future will be built from. Because the contracts are executable, the prediction is answerable: every type, call, and side effect the simulation reasons about is one a test will enforce.
 
 **Why the tool floor is not enough.** pyright, stubtest, and the traceability counts each police a class of defect the others miss, and together they form a real floor — but every one of them reads files in isolation or checks a structural invariant, and none of them reads *across* the contract set the way a reader does. A type imported from a module that does not re-export it resolves fine for the checker and breaks at the composition. A value carried as a bare filesystem path by one test and as a `sqlite:///` URL by another is typed `str` in both stubs and passes every check, while the contract it implies is incoherent. A shared data module with no external boundary of its own has no test driving it, and no tool notices the gap. These are the failures that ship to build and surface as e2e breakage; simulation is the step that exists to catch them, because nothing else does.
 
@@ -27,7 +27,7 @@ last-updated: 2026-07-01
 
 **The tool floor.** Beneath the readings run the mechanical checks, and they are not optional. pyright at zero errors (tolerating `reportMissingModuleSource`, which is expected when source `.pyi` exist but no `.py` yet) confirms the types are internally consistent. stubtest over the test pairs confirms each test `.pyi` agrees with its `.pyi` sibling. The no-orphans check confirms every source symbol a test could reach is exercised and every test reference is backed by a source `.pyi`. Traceability confirms every interview finding maps to a test or an explicit deferral and every external service has a captured cassette its tests replay. Each is a real filter; none is the simulation.
 
-**Judgment, not artifact.** The old ceremony — a per-walkthrough JSON pair written to a cache directory to prove the simulation was thorough — is gone, because the artifact was the symptom of the failure: the understanding never made it into the gate decision, it was offloaded into files no one acted on, and the e2e issues shipped to build unsolved. The output of a real simulation is the gate decision itself — *the contract set is coherent and complete; a passing implementation will work* — backed by the specific walkthroughs and traces that justify it, or a named gap that routes back to plan. Where a gap is found it is stated precisely (which hop, which value, which contradiction); where none is found the understanding lives in the decision to advance, not in a file.
+**Judgment with evidence.** The output is the gate decision itself — *the contract set is coherent and complete; a passing implementation will work* — backed by the walkthroughs and traces that justify it, or a named gap that routes back to plan. Where a gap is found it is stated precisely (which hop, which value, which contradiction); where none is found, the understanding lives in the decision to advance. The simulation's value is that understanding, held at the gate.
 
 ## Content
 
@@ -41,7 +41,7 @@ last-updated: 2026-07-01
 | `docs/glossary.md` | the names the tests should use consistently |
 | `tests/cassettes/**` | the real external shapes the boundary tests must assert against |
 
-There is no `domain_spec.md` to walk; the tests are the spec. A finding that cannot be grounded in one of these artefacts is not a simulation finding.
+A finding that cannot be grounded in one of these artefacts is not a simulation finding.
 
 ### The composition failures tools miss
 
@@ -95,7 +95,7 @@ The simulation produces one of two outcomes, and nothing else:
 - **coherent and complete** — the walkthrough reached no broken hop, the value traces found no disagreement, the tool floor is clean; advance to build.
 - **a named gap** — which hop broke, which value disagreed, which module has no driver; route back to plan with the specifics.
 
-No JSON, no cache directory, no I/O pairs. The understanding is the output, and it lives in the gate decision.
+The understanding is the output, and it lives in the gate decision.
 
 ## Related
 
