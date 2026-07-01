@@ -1,5 +1,5 @@
 flow: plan-flow
-version: 1.4.0
+version: 1.5.0
 exits:
   - contracts-ready
   - needs-elicitation
@@ -82,8 +82,8 @@ states:
       git branch: dev
       skills: [derive-source-stubs]
       input artifacts:
-        - "tests/integration/**/*_test.pyi"
-        - "tests/e2e/**/*_test.pyi"
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.py"
       output artifacts:
         - "<package>/**/*.pyi"
     next:

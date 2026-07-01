@@ -67,6 +67,31 @@ external services → vcrpy cassettes) → `plan` (author test `.pyi` → review
 `plan` on a contract gap; `plan` and `explore` escalate to `discover` when the
 interview itself is insufficient. See `TODO.md` for what's owed.
 
+## Project layout
+
+Committed (the source of truth):
+
+| Path | Holds |
+|------|-------|
+| `<package>/` | source — `.pyi` stubs + `.py` bodies |
+| `tests/integration/`, `tests/e2e/` | integration + E2E tests only (no unit) |
+| `tests/cassettes/` | recorded vcrpy cassettes — the external contract |
+| `tests/fixtures/` | test fixtures |
+| `migrations/` | Alembic migrations — the schema spec |
+| `docs/glossary.md` | ubiquitous language |
+| `.flowr/flows/` | flow definitions |
+| `.opencode/`, `.templates/`, `.github/` | methodology, templates, CI |
+
+Gitignored (local working state, regenerated on demand):
+
+| Path | Holds |
+|------|-------|
+| `.cache/<session_id>/` | interview notes, external contracts, probe research, build target |
+| `.cache/explore/` | throwaway probe scripts (run once to record cassettes; never imported) |
+| `.cache/sessions/` | flowr session state |
+| `.backup/` | previous system (recoverable from `origin/main`) |
+| `.env` | local config (12-factor) |
+
 ## Agents, skills & knowledge
 
 The methodology layer lives under `.opencode/` (not loaded every session —

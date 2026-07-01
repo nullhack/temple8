@@ -6,7 +6,7 @@ states:
   - id: discover
     attrs:
       description: >
-        Run the interview funnel (general -> cross-cutting -> features ->
+        Run the interview funnel (general -> cross-cutting -> building-blocks ->
         consolidate) to elicit requirements and author the glossary. Emits
         interview notes and glossary only - no tests, source, or external
         contracts.

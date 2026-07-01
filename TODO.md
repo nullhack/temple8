@@ -16,7 +16,7 @@ one commit.
 
 Flow: `pipeline-flow` orchestrates five subflows.
 - `discovery-flow`: `interview-general → interview-cross-cutting →
-  interview-features → consolidate-interview` (exit `interview-ready`).
+  interview-building-blocks → consolidate-interview` (exit `interview-ready`).
 - `explore-flow`: `select-external-target → research-provider → write-probe →
   record-cassette` (loop, one service per pass; exits `explored-ready`,
   `needs-elicitation`).
@@ -49,9 +49,9 @@ Sequence (the authoritative development order):
 2. **interview-cross-cutting** *(discover)* — Funnel L2: behaviour groups,
    bounded contexts, integration points, lifecycle events; active listening L2
    (synthesis per group). Appends to interview-notes.
-3. **interview-features** *(discover)* — Funnel L3: feature names + rough
+3. **interview-building-blocks** *(discover)* — Funnel L3: building-block names + rough
    boundaries only (no detailed spec); gap analysis (every context / quality
-   attribute → ≥1 feature). Appends to interview-notes.
+   attribute → ≥1 building block). Appends to interview-notes.
 4. **consolidate-interview** *(discover)* — active listening L3: full synthesis
    → stakeholder approval; author `docs/glossary.md`. Exit `interview-ready`.
 5. **explore external services** *(explore)* — a four-state loop, one external
@@ -64,7 +64,7 @@ Sequence (the authoritative development order):
    until docs are read), determines the access shape, and recommends the ≤1
    advisory specialist (→ `.cache/<session_id>/probe-research.md`).
    `write-probe` authors the minimal probe script (success + ≥1 error) under
-   `explore/<service>/` (gitignored throwaway). `record-cassette` runs the
+   `.cache/explore/<service>/` (gitignored throwaway). `record-cassette` runs the
    probe, RECORDS the real exchange into `tests/cassettes/<service>/` with
    decode + secret/volatile scrubbing, and appends
    `.cache/<session_id>/external-contracts.md`; then `captured` back to
@@ -84,7 +84,7 @@ Sequence (the authoritative development order):
    not BDD features. No `.py` yet.
 7. **review-test-stubs** *(plan)* — gate: consistency vs interview + ubiquitous
    language (external stubs match the cassettes); scope is integration + E2E
-   only; happy-path completeness (every feature → ≥1 stub). Not a code-quality
+   only; happy-path completeness (every building block → ≥1 stub). Not a code-quality
    gate (that's next).
 8. **write-test-py** *(plan)* — transform the reviewed stubs into
    `tests/**/*_test.py` bodies (no docstrings, no comments). Bodies define how
@@ -141,7 +141,7 @@ Design decisions:
   loaded by each of the four `interview-*` skills (one skill per funnel state).
 - Explore produces two sharply separated artifacts: committed vcrpy cassettes
   (`tests/cassettes/**` — the authoritative external contract, replayed by
-  tests/CI offline) and gitignored throwaway probe scripts (`explore/` —
+  tests/CI offline) and gitignored throwaway probe scripts (`.cache/explore/` —
   reference for the green implementer, never imported by `<package>` or tests).
   Capture needs real 12-factor credentials; CI never runs explore, it replays
   the cassettes.
@@ -224,33 +224,35 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 - [ ] Escalations re-enter subflows at the FIRST state (flowr has no position memory); rework re-runs the whole chain and full gates. Document the cost or accept it.
 
 ## Knowledge to author (Stage 3 — derived from the skills' `[[...]]` citations)
-18 distinct knowledge files cited across the 21 skills. Re-derived from `.opencode/skills/`; priority = citation count (most-cited first = highest leverage to author). Raw material lives in `.backup/.opencode/knowledge/` — restore selectively and rewrite (the backup is beehave-stale; do NOT bulk-copy). Skills' forward-ref wikilinks resolve once these exist; track as debt until authored.
+18 distinct knowledge files cited across the 21 skills. Ordered by LIFECYCLE — the sequence in which an agent meets them as a session runs (discover → explore → plan → build → deliver); each appears once, at its first encounter. Raw material lives in `.backup/.opencode/knowledge/` — restore selectively and rewrite (the backup is beehave-stale; do NOT bulk-copy). Skills' forward-ref wikilinks resolve once these exist; track as debt until authored.
 
-**Cited by 4 skills:**
-- [x] `requirements/interview-techniques.md` — CIT, Laddering, CI Perspective, Funnel, Active Listening L1/L2/L3. *(interview-general, interview-cross-cutting, interview-features, consolidate-interview)*. AUTHORED.
+**Discover (interview funnel):**
+- [x] `requirements/interview-techniques.md` — Elicitation methods (CIT, Laddering/Means-End, CI Perspective Change, Funnel, Active Listening L1-L3) applied at each funnel depth. *(interview-general, interview-cross-cutting)*. AUTHORED.
+- [x] `requirements/domain-decomposition.md` — Decomposing each bounded context into DDD building blocks (aggregate-first); gap analysis as a coverage matrix (every context → ≥1 block; every quality attribute → ≥1 block). *(interview-building-blocks, review-test-stubs)*. AUTHORED.
+- [x] `requirements/aggregate-boundaries.md` — Sizing and splitting aggregates: single-entity default, reference-by-identity, split on invariant seams (Evans ch 4; Vernon ch 10). *(interview-building-blocks)*. AUTHORED.
+- [ ] `requirements/ubiquitous-language.md` — Curating the glossary: term extraction, genus-differentia definitions, bounded-context grouping (Evans DDD). *(consolidate-interview)*
 
-**Cited by 3 skills:**
-- [ ] `software-craft/solid.md` — SOLID criteria. *(write-test-py, refactor-green, review-implementation)*
-- [ ] `software-craft/smell-catalogue.md` — smell taxonomy. *(write-test-py, refactor-green, review-implementation)*
-- [ ] `software-craft/tdd.md` — red/green/refactor discipline, pending-mark cycle. *(select-build-target, confirm-red-failure, implement-from-stub)*
-- [ ] `software-craft/external-fixtures.md` — probe patterns, vcrpy cassette hygiene, kind-dispatch table. *(research-provider, write-probe, record-cassette)*
-- [ ] `software-craft/git-conventions.md` — imperative messages, squash-merge. *(ship-unit, merge-to-dev, publish-release)*
+**Explore (ground externals):**
+- [ ] `software-craft/external-fixtures.md` — Capturing external reality: vcrpy record/replay, cassette hygiene (decode + scrub volatile headers/secrets), probe-script conventions, 12-factor creds, kind-dispatch table. *(research-provider, write-probe, record-cassette)*
 
-**Cited by 2 skills:**
-- [ ] `software-craft/test-stubs.md` — test `.pyi` conventions, stubtest on test pairs. *(author-test-stubs, simulate-contracts)*
-- [ ] `software-craft/test-design.md` — what to test, body patterns. *(author-test-stubs, write-test-py)*
-- [ ] `software-craft/code-review.md` — review method. *(review-test-stubs, review-implementation)*
-- [ ] `software-craft/object-calisthenics.md` — Object Calisthenics rules. *(write-test-py, refactor-green)*
-- [ ] `software-craft/source-stubs.md` — source `.pyi` conventions, stubtest scope, canonical data-shape. *(derive-source-stubs, implement-from-stub)*
-- [ ] `requirements/feature-discovery.md` — bounded-context → feature, gap analysis. *(interview-features, review-test-stubs)*
+**Plan (author contracts):**
+- [ ] `software-craft/test-stubs.md` — Test `.pyi` conventions: declare every module-level name (constants/fixtures/class+methods), no third-party imports, kept in sync with `.py`; test-pair stubtest drift rules. *(author-test-stubs, simulate-contracts)*
+- [ ] `software-craft/test-design.md` — Designing integration + E2E tests only (no unit): scenario selection, fixture/parametrize conventions, deferred-SUT-import, depend-on-contracts. *(author-test-stubs, write-test-py)*
+- [ ] `software-craft/code-review.md` — Review criteria + checklist for impl-matches-contract and source-quality. *(review-test-stubs, review-implementation)*
+- [ ] `software-craft/solid.md` — SOLID principles (SRP/OCP/LSP/ISP/DIP) applied to source + test structure. *(write-test-py, refactor-green, review-implementation)*
+- [ ] `software-craft/object-calisthenics.md` — Object Calisthenics rules (1-level indent, no getters, etc.) for structural quality. *(write-test-py, refactor-green)*
+- [ ] `software-craft/smell-catalogue.md` — Code-smell detection signals (long method, god class, duplication, …). *(write-test-py, refactor-green, review-implementation)*
+- [ ] `software-craft/source-stubs.md` — Source `.pyi` conventions: signature-only, ellipsis body, no prescribed layout, canonical data-shape pinning; stubtest scope rules. *(derive-source-stubs, implement-from-stub)*
+- [ ] `requirements/spec-simulation.md` — Mental-simulation technique: "if an impl passes these tests, is the result complete + correct?" *(simulate-contracts)*
 
-**Cited by 1 skill:**
-- [ ] `requirements/ubiquitous-language.md` — genus-differentia definitions, term extraction. *(consolidate-interview)*
-- [ ] `requirements/feature-boundaries.md` — naming + boundary sizing. *(interview-features)*
-- [ ] `requirements/spec-simulation.md` — "would-passing-yield-a-working-system" method. *(simulate-contracts)*
-- [ ] `software-craft/design-patterns.md` — implementation patterns. *(implement-from-stub)*
-- [ ] `software-craft/refactoring-techniques.md` — refactoring moves. *(refactor-green)*
-- [ ] `software-craft/versioning.md` — release/tag policy. *(publish-release)*
+**Build (implement):**
+- [ ] `software-craft/tdd.md` — Red-green-refactor cycle; right-reason-for-failure rule; pending-mark/backlog discipline; scoped-vs-whole stubtest. *(select-build-target, confirm-red-failure, implement-from-stub)*
+- [ ] `software-craft/design-patterns.md` — Design patterns (adapter, facade, …) for composing source from a stub. *(implement-from-stub)*
+- [ ] `software-craft/refactoring-techniques.md` — Refactoring moves (extract method, etc.) applied under green tests with `.pyi` fixed. *(refactor-green)*
+
+**Deliver (ship):**
+- [ ] `software-craft/git-conventions.md` — Commit + branch conventions (imperative messages, one logical change, feature/dev/release branches). *(ship-unit, merge-to-dev, publish-release)*
+- [ ] `software-craft/versioning.md` — Semantic versioning + release tagging. *(publish-release)*
 
 
 ## pyproject + tooling

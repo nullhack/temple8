@@ -1,5 +1,5 @@
 flow: discovery-flow
-version: 2.1.0
+version: 2.2.0
 exits:
   - interview-ready
 states:
@@ -32,23 +32,24 @@ states:
       output artifacts:
         - ".cache/<session_id>/interview-notes.md"
     next:
-      cross-cutting-done: interview-features
+      cross-cutting-done: interview-building-blocks
 
-  - id: interview-features
+  - id: interview-building-blocks
     attrs:
       description: >
-        Funnel level 3 - Feature identification. Capture feature NAMES and rough
-        boundaries only; run gap analysis; append to the interview-notes.
+        Funnel level 3 - Tactical decomposition. Capture building-block NAMES
+        and rough boundaries only; run gap analysis; append to the
+        interview-notes.
       dispatch_to: product-owner
       specialists: [domain-expert]
       git branch: dev
-      skills: [interview-features]
+      skills: [interview-building-blocks]
       input artifacts:
         - ".cache/<session_id>/interview-notes.md"
       output artifacts:
         - ".cache/<session_id>/interview-notes.md"
     next:
-      features-identified: consolidate-interview
+      building-blocks-done: consolidate-interview
 
   - id: consolidate-interview
     attrs:

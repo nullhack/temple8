@@ -40,7 +40,7 @@ Ask about a specific past event, not a general description.
 
 ### Laddering / Means-End Chain (Reynolds & Gutman, 1988)
 
-Climb from surface feature to underlying consequence to terminal value.
+Climb from surface attribute to underlying consequence to terminal value.
 
 - "Why is that important to you?"
 - "What does that enable?"
@@ -70,5 +70,5 @@ Do not introduce topic labels during active listening; the summary reflects what
 ## Related
 
 - [[requirements/ubiquitous-language]] — term extraction feeding the glossary authored at consolidation
-- [[requirements/feature-discovery]] — gap analysis applied at feature identification
-- [[requirements/feature-boundaries]] — sizing feature boundaries
+- [[requirements/domain-decomposition]] — gap analysis applied at building-block identification
+- [[requirements/aggregate-boundaries]] — sizing block boundaries

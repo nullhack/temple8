@@ -1,5 +1,5 @@
 flow: explore-flow
-version: 1.4.0
+version: 1.5.0
 exits:
   - explored-ready
   - needs-elicitation
@@ -52,7 +52,7 @@ states:
       input artifacts:
         - ".cache/<session_id>/probe-research.md"
       output artifacts:
-        - "explore/**"
+        - ".cache/explore/**"
     next:
       probe-written: record-cassette
 
@@ -67,7 +67,7 @@ states:
       skills: [record-cassette]
       input artifacts:
         - ".cache/<session_id>/probe-research.md"
-        - "explore/**"
+        - ".cache/explore/**"
       output artifacts:
         - "tests/cassettes/**"
         - ".cache/<session_id>/external-contracts.md"
