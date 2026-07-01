@@ -251,8 +251,8 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 - [x] `software-craft/refactoring-techniques.md` — Fowler's (1999) refactor moves organised by problem (composing methods, moving features, organising data, simplifying conditionals/calls, generalisation); reference index pointing at the right move, mechanics deferred to the skill/book; `.pyi` fixed under green. *(refactor-green)*. AUTHORED.
 
 **Deliver (ship):**
-- [ ] `software-craft/git-conventions.md` — Commit + branch conventions (imperative messages, one logical change, feature/dev/release branches). *(ship-unit, merge-to-dev, publish-release)*
-- [ ] `software-craft/versioning.md` — Semantic versioning + release tagging. *(publish-release)*
+- [x] `software-craft/git-conventions.md` — Conventional Commits (`<type>(<scope>): <imperative>`); one logical change per commit (ship-unit: one contract, `.pyi` unchanged); refactor separate from feature; three-branch model `feature`→`dev`→`release`/`main`; squash-merge into dev gates whole-suite + stubtest. *(ship-unit, merge-to-dev, publish-release)*. AUTHORED.
+- [x] `software-craft/versioning.md` — SemVer 2.0.0 bump rules + 0.x instability; PEP 440 for Python (`X.Y.Z` core, `+local` stripped by indexes); CalVer when timing matters more than compatibility; pyproject `version` is the single source of truth; publish picks notes / PR to main / `v{version}` tag. *(publish-release)*. AUTHORED.
 
 
 ## pyproject + tooling
