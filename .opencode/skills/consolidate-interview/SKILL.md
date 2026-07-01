@@ -5,7 +5,7 @@ description: "End of session — replace running notes with the full synthesis a
 
 # Consolidate Interview
 
-1. Load [[requirements/interview-techniques]], [[requirements/ubiquitous-language]] — the active-listening protocol and term extraction.
+1. Load [[requirements/ubiquitous-language]] — term extraction for the glossary. This level synthesises (Active Listening L3, applied in step 3); it does not probe.
 2. Read the running interview-notes across all three levels.
 3. Apply Active Listening L3: replace the running notes with the full synthesis across all three funnel levels and present it to the stakeholder for approval. The summary reflects what the stakeholder said — no new framing or topic labels.
 4. Author and refine the glossary of ubiquitous language from the stakeholder's own terms so it leads all subsequent naming per [[requirements/ubiquitous-language]].

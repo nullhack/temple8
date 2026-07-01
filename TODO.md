@@ -216,43 +216,51 @@ Known constraints (revisit if they bite):
 - Committed vcrpy cassettes can leak secrets unless `filter_headers` /
   `before_record` scrub them at record time; review cassettes before commit.
 
-Markers: `[ ]` pending · `[~]` in progress.
+Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 
-## Knowledge to author (Stage 3 — cited by the skills via `[[...]]`)
-Raw material lives in `.backup/.opencode/knowledge/`; restore selectively and rewrite (the backup is beehave-stale — do NOT bulk-copy). Track as debt until authored; skills' forward-ref wikilinks resolve once these exist.
+## Flow design debt (rework path — happy path verified in simulation, rework path untested)
+- [ ] `needs-contracts` carries no persisted handoff — build/red `output artifacts: []`, so the gap relies on undocumented orchestrator prompt-stuffing. Add a `.cache/<session_id>/contract-gap.md` that `author-test-stubs` reads on re-entry, or document the prompt-stuffing convention explicitly.
+- [ ] Plan authoring states (`author-test-stubs`, `write-test-py`, `derive-source-stubs`) list their OUTPUT globs but not the EXISTING instances — a fresh pass is explicit, a rework pass is implicit ("read what's on disk"). Add the existing-output globs as inputs.
+- [ ] Escalations re-enter subflows at the FIRST state (flowr has no position memory); rework re-runs the whole chain and full gates. Document the cost or accept it.
 
-`requirements/`:
-- [x] `interview-techniques.md` — CIT, Laddering, CI Perspective, Funnel, Active Listening L1/L2/L3 (cited by interview-general, interview-cross-cutting, interview-features, consolidate-interview). AUTHORED.
-- [ ] `ubiquitous-language.md` — genus-differentia definitions, term extraction (consolidate-interview).
-- [ ] `feature-discovery.md` — bounded-context → feature, gap analysis (interview-features, review-test-stubs).
-- [ ] `feature-boundaries.md` — naming + boundary sizing (interview-features).
-- [ ] `spec-simulation.md` — "would-passing-yield-a-working-system" method (simulate-contracts).
+## Knowledge to author (Stage 3 — derived from the skills' `[[...]]` citations)
+18 distinct knowledge files cited across the 21 skills. Re-derived from `.opencode/skills/`; priority = citation count (most-cited first = highest leverage to author). Raw material lives in `.backup/.opencode/knowledge/` — restore selectively and rewrite (the backup is beehave-stale; do NOT bulk-copy). Skills' forward-ref wikilinks resolve once these exist; track as debt until authored.
 
-`software-craft/`:
-- [ ] `external-fixtures.md` — probe patterns, vcrpy cassette hygiene, kind-dispatch table (research-provider, write-probe, record-cassette).
-- [ ] `test-stubs.md` — test `.pyi` conventions, stubtest on test pairs (author-test-stubs, simulate-contracts).
-- [ ] `test-design.md` — what to test, body patterns (author-test-stubs, write-test-py).
-- [ ] `code-review.md` — review method (review-test-stubs, review-implementation).
-- [ ] `solid.md` — SOLID criteria (write-test-py, refactor-green, review-implementation).
-- [ ] `object-calisthenics.md` — Object Calisthenics rules (write-test-py, refactor-green).
-- [ ] `smell-catalogue.md` — smell taxonomy (write-test-py, refactor-green, review-implementation).
-- [ ] `source-stubs.md` — source `.pyi` conventions, stubtest scope, canonical data-shape (derive-source-stubs, implement-from-stub).
-- [ ] `tdd.md` — red/green/refactor discipline, pending-mark cycle (select-build-target, confirm-red-failure, implement-from-stub).
-- [ ] `design-patterns.md` — implementation patterns (implement-from-stub).
-- [ ] `refactoring-techniques.md` — refactoring moves (refactor-green).
-- [ ] `git-conventions.md` — imperative messages, squash-merge (ship-unit, merge-to-dev, publish-release).
-- [ ] `versioning.md` — release/tag policy (publish-release).
+**Cited by 4 skills:**
+- [x] `requirements/interview-techniques.md` — CIT, Laddering, CI Perspective, Funnel, Active Listening L1/L2/L3. *(interview-general, interview-cross-cutting, interview-features, consolidate-interview)*. AUTHORED.
+
+**Cited by 3 skills:**
+- [ ] `software-craft/solid.md` — SOLID criteria. *(write-test-py, refactor-green, review-implementation)*
+- [ ] `software-craft/smell-catalogue.md` — smell taxonomy. *(write-test-py, refactor-green, review-implementation)*
+- [ ] `software-craft/tdd.md` — red/green/refactor discipline, pending-mark cycle. *(select-build-target, confirm-red-failure, implement-from-stub)*
+- [ ] `software-craft/external-fixtures.md` — probe patterns, vcrpy cassette hygiene, kind-dispatch table. *(research-provider, write-probe, record-cassette)*
+- [ ] `software-craft/git-conventions.md` — imperative messages, squash-merge. *(ship-unit, merge-to-dev, publish-release)*
+
+**Cited by 2 skills:**
+- [ ] `software-craft/test-stubs.md` — test `.pyi` conventions, stubtest on test pairs. *(author-test-stubs, simulate-contracts)*
+- [ ] `software-craft/test-design.md` — what to test, body patterns. *(author-test-stubs, write-test-py)*
+- [ ] `software-craft/code-review.md` — review method. *(review-test-stubs, review-implementation)*
+- [ ] `software-craft/object-calisthenics.md` — Object Calisthenics rules. *(write-test-py, refactor-green)*
+- [ ] `software-craft/source-stubs.md` — source `.pyi` conventions, stubtest scope, canonical data-shape. *(derive-source-stubs, implement-from-stub)*
+- [ ] `requirements/feature-discovery.md` — bounded-context → feature, gap analysis. *(interview-features, review-test-stubs)*
+
+**Cited by 1 skill:**
+- [ ] `requirements/ubiquitous-language.md` — genus-differentia definitions, term extraction. *(consolidate-interview)*
+- [ ] `requirements/feature-boundaries.md` — naming + boundary sizing. *(interview-features)*
+- [ ] `requirements/spec-simulation.md` — "would-passing-yield-a-working-system" method. *(simulate-contracts)*
+- [ ] `software-craft/design-patterns.md` — implementation patterns. *(implement-from-stub)*
+- [ ] `software-craft/refactoring-techniques.md` — refactoring moves. *(refactor-green)*
+- [ ] `software-craft/versioning.md` — release/tag policy. *(publish-release)*
 
 
 ## pyproject + tooling
-- [ ] Wire `stubtest` task targets once the package name is finalized (currently
-      uses the stale `app` placeholder, consistent with `[tool.setuptools]` /
-      `--cov=app` / `static-check = "pyright app tests"`).
-- [ ] Drop `beehave` / `pytest-beehave` deps + `[tool.beehave]` (feature-file
-      stubbing no longer used); keep `flowr`, `pytest`.
-- [ ] Strip stale `[tool.setuptools] packages = ["app"]`, `--cov=app`,
-      `requires-python>=3.14`, taskipy/pdoc/hypothesis/pyright/safety until
-      decided.
+- [ ] `[project].readme = "README.md"` and `[project.urls]` reference files deleted in the clean-slate commit (README.md, `docs/api/`) — pyproject points at ghosts. Author a fresh README + drop stale URLs, or remove the fields.
+- [ ] Reset `version` and `description` (still "9.4.0" / "Spec-driven ... BDD traceability" — pre-clean-slate).
+- [ ] Two dev-dependency sections overlap and diverge: `[project.optional-dependencies].dev` vs `[dependency-groups].dev` (the latter carries `flowr[viz]` + `pytest-beehave[html]`). Consolidate to one; decide `uv run --extra dev` vs `uv sync --group dev`.
+- [ ] `conventions` task selects `ANN` (flake8-annotations) which flags the un-annotated `conftest.py` hook and diverges from `ruff check .` (main select has no ANN). Reconcile — drop `ANN` from `conventions`, or drop the `conventions` task in favour of `ruff check .`.
+- [ ] Wire `stubtest` / `static-check` / coverage (`--cov`) / `doc-serve` / `doc-build` / `run` tasks to the real package once named (all target the stale `app` placeholder, matching `[tool.setuptools] packages = ["app"]`).
+- [ ] Drop `beehave` / `pytest-beehave` deps + `[tool.beehave]` (feature-file stubbing is gone); keep `flowr`, `pytest`.
+- [ ] Decide `requires-python` (currently `>=3.14`).
 - [ ] Decide task runner: `taskipy` vs plain `uv run`.
 
 ## Package + tests skeleton
@@ -270,6 +278,10 @@ Raw material lives in `.backup/.opencode/knowledge/`; restore selectively and re
 - [ ] Typed Settings model — config parameter definitions (12-factor: env vars).
 - [ ] External-adapter cassettes — recorded in explore; replayed in tests.
 - [ ] `docs/glossary.md` — ubiquitous language; drives naming (from template).
+
+## Docs
+- [ ] `README.md` — author a fresh one for the rebuild (deleted in clean-slate; pyproject references it).
+- [ ] `CHANGELOG.md` — decide whether to maintain (deleted; `publish-release` implies one may be wanted).
 
 ## Docs-as-derived
 - [ ] Decide the derivation mechanism (tool? extraction script? manual?) that
