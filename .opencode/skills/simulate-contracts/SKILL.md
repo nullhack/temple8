@@ -6,7 +6,7 @@ description: "Answer whether a correct implementation passing every test would y
 # Simulate Contracts
 
 1. Load [[requirements/spec-simulation]], [[software-craft/test-stubs]] — the simulation method and test-pair drift rules.
-2. Answer one question: IF a correct implementation made every test in the set pass THEN would the result work as intended and be complete per [[requirements/spec-simulation]]?
+2. Answer the gate question per [[requirements/spec-simulation]]: IF a correct implementation made every test in the set pass THEN would the result work as intended and be complete? Answer it by walking — walk the e2e path hop by hop (each type handed across, each value carried, each side effect performed tracing to a backing contract), then trace each domain value across every test that touches it for shape coherence. The tool checks below are the floor that makes the walk safe to trust; they are not the walk. IF a hop breaks or two tests disagree on a value's shape THEN name the gap precisely and stop — route back to plan, do not advance on a clean tool run alone.
 3. Run pyright on the combined set. The gate is zero errors; `reportMissingModuleSource` is expected (source .pyi exist but no .py yet) and is tolerated.
 4. Check no-orphans: every source .pyi symbol is exercised by at least one test, and every test reference is backed by a source .pyi.
 5. Check traceability: every consolidated interview finding maps to at least one test or an explicit deferral, and every external service has a captured cassette its tests replay.
