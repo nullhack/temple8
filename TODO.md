@@ -233,7 +233,7 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 - [ ] `requirements/ubiquitous-language.md` — Curating the glossary: term extraction, genus-differentia definitions, bounded-context grouping (Evans DDD). *(consolidate-interview)*
 
 **Explore (ground externals):**
-- [ ] `software-craft/external-fixtures.md` — Capturing external reality: vcrpy record/replay, cassette hygiene (decode + scrub volatile headers/secrets), probe-script conventions, 12-factor creds, kind-dispatch table. *(research-provider, write-probe, record-cassette)*
+- [x] `software-craft/external-fixtures.md` — Capturing external reality: record-once-replay-forever (vcrpy HTTP cassettes; CI under `VCR_RECORD_MODE=none`), the kind-dispatch table (recorder/docs-focus/scrub-fields/specialist per kind — vcrpy is HTTP-only), two scrubs (safety + determinism), 12-factor creds, capture-is-truth. *(research-provider, write-probe, record-cassette)*. AUTHORED.
 
 **Plan (author contracts):**
 - [ ] `software-craft/test-stubs.md` — Test `.pyi` conventions: declare every module-level name (constants/fixtures/class+methods), no third-party imports, kept in sync with `.py`; test-pair stubtest drift rules. *(author-test-stubs, simulate-contracts)*
