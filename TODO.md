@@ -246,9 +246,9 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 - [ ] `requirements/spec-simulation.md` — Mental-simulation technique: "if an impl passes these tests, is the result complete + correct?" *(simulate-contracts)*
 
 **Build (implement):**
-- [ ] `software-craft/tdd.md` — Red-green-refactor cycle; right-reason-for-failure rule; pending-mark/backlog discipline; scoped-vs-whole stubtest. *(select-build-target, confirm-red-failure, implement-from-stub)*
-- [ ] `software-craft/design-patterns.md` — Design patterns (adapter, facade, …) for composing source from a stub. *(implement-from-stub)*
-- [ ] `software-craft/refactoring-techniques.md` — Refactoring moves (extract method, etc.) applied under green tests with `.pyi` fixed. *(refactor-green)*
+- [x] `software-craft/tdd.md` — The red/green/refactor cycle adapted: tests pre-exist so red un-marks + confirms the right failure (ImportError = new, assertion = rework); minimum code YAGNI/KISS; refactor under green with `.pyi` frozen; per-contract in dependency order. *(select-build-target, confirm-red-failure, implement-from-stub)*. AUTHORED.
+- [x] `software-craft/design-patterns.md` — GoF patterns applied only when a smell triggers (Gamma 1994; Shvets 2014); foregrounds the small set this flow's architecture hosts (Adapter, Repository, Facade, Strategy/State, Factory, value object); smell→pattern lookup. *(implement-from-stub)*. AUTHORED.
+- [x] `software-craft/refactoring-techniques.md` — Fowler's (1999) refactor moves organised by problem (composing methods, moving features, organising data, simplifying conditionals/calls, generalisation); reference index pointing at the right move, mechanics deferred to the skill/book; `.pyi` fixed under green. *(refactor-green)*. AUTHORED.
 
 **Deliver (ship):**
 - [ ] `software-craft/git-conventions.md` — Commit + branch conventions (imperative messages, one logical change, feature/dev/release branches). *(ship-unit, merge-to-dev, publish-release)*
