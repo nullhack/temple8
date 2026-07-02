@@ -256,14 +256,14 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 
 
 ## pyproject + tooling
-- [ ] `[project].readme = "README.md"` and `[project.urls]` reference files deleted in the clean-slate commit (README.md, `docs/api/`) — pyproject points at ghosts. Author a fresh README + drop stale URLs, or remove the fields.
-- [ ] Reset `version` and `description` (still "9.4.0" / "Spec-driven ... BDD traceability" — pre-clean-slate).
-- [ ] Two dev-dependency sections overlap and diverge: `[project.optional-dependencies].dev` vs `[dependency-groups].dev` (the latter carries `flowr[viz]` + `pytest-beehave[html]`). Consolidate to one; decide `uv run --extra dev` vs `uv sync --group dev`.
-- [ ] `conventions` task selects `ANN` (flake8-annotations) which flags the un-annotated `conftest.py` hook and diverges from `ruff check .` (main select has no ANN). Reconcile — drop `ANN` from `conventions`, or drop the `conventions` task in favour of `ruff check .`.
-- [ ] Wire `stubtest` / `static-check` / coverage (`--cov`) / `doc-serve` / `doc-build` / `run` tasks to the real package once named (all target the stale `app` placeholder, matching `[tool.setuptools] packages = ["app"]`).
-- [ ] Drop `beehave` / `pytest-beehave` deps + `[tool.beehave]` (feature-file stubbing is gone); keep `flowr`, `pytest`.
-- [ ] Decide `requires-python` (currently `>=3.14`).
-- [ ] Decide task runner: `taskipy` vs plain `uv run`.
+- [x] `[project].readme` and `[project.urls]` — kept as-is (identity not reset per decision); README authoring tracked under Docs.
+- [x] `version` and `description` — kept as-is per identity decision.
+- [x] Consolidated to one `[project.optional-dependencies].dev`; deleted `[dependency-groups].dev`. `flowr` moved from runtime to dev; `flowr[viz]` dropped.
+- [x] Dropped the `conventions` task (the style backdoor selecting `I`/`ANN`/`N`/`E`/`W`/…); `release-check` now uses `ruff check .` via `lint`.
+- [ ] Wire `stubtest` / `static-check` / coverage (`--cov`) / `run` tasks to the real package once created (all target the `app` placeholder; `doc-serve`/`doc-build`/`doc-publish` dropped until the package exists).
+- [x] Dropped `beehave` / `pytest-beehave` deps + `[tool.beehave]`.
+- [x] `requires-python` set to `>=3.13` (flowr>=1.2.1 requires >=3.13; 3.12 was the intent but deps constrain it).
+- [x] Task runner: `taskipy`, invoked via `uv run task <name>`.
 
 ## Package + tests skeleton
 - [ ] Decide package name (old default `app`) and create the minimal package.

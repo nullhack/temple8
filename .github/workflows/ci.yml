@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv python install 3.14
+      - run: uv python install 3.13
       - run: uv sync --extra dev
       - run: uv run ruff check .
       - run: uv run ruff format . --check
@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv python install 3.14
+      - run: uv python install 3.13
       - run: uv sync --extra dev
       - run: bash -c 'for f in .flowr/flows/*.yaml; do uv run python -m flowr validate "$f"; done'
 
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - run: uv python install 3.14
+      - run: uv python install 3.13
       - run: uv sync --extra dev
       - name: Resolve package
         id: pkg

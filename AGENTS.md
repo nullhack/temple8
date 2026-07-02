@@ -120,8 +120,8 @@ conventions live in the `methodology/` knowledge domain.
 ## Project commands
 
 Tasks are defined in `pyproject.toml` under `[tool.taskipy.tasks]`. The `app/`
-package was removed during the reset, so package-dependent commands (`task run`,
-`task test`, `task doc-serve`, ...) will not work until the package is rebuilt.
+package is the placeholder, so package-dependent commands (`task run`,
+`task test`, `task stubtest`, ...) resolve only once the package is created.
 
 | Command | Purpose |
 |---------|---------|
