@@ -1,12 +1,11 @@
 from typing import Any
 
-import pytest
-
 CASSETTE = "tests/cassettes/open-meteo/open-meteo.yaml"
 
 
-@pytest.mark.pending
-def test_cli_prints_current_conditions_for_a_city(capsys: Any, monkeypatch: Any) -> None:
+def test_cli_prints_current_conditions_for_a_city(
+    capsys: Any, monkeypatch: Any
+) -> None:
     import vcr
 
     from app.cli import main
