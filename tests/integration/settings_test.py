@@ -1,9 +1,6 @@
 from typing import Any
 
-import pytest
 
-
-@pytest.mark.pending
 def test_from_env_reads_api_bases_and_database_url(monkeypatch: Any) -> None:
     from app.settings import Settings
 
@@ -18,7 +15,6 @@ def test_from_env_reads_api_bases_and_database_url(monkeypatch: Any) -> None:
     assert settings.database_url == "sqlite:///tmp/test.db"
 
 
-@pytest.mark.pending
 def test_from_env_applies_defaults_when_env_unset(monkeypatch: Any) -> None:
     from app.settings import Settings
 
