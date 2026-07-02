@@ -1,0 +1,60 @@
+# <imperative decision statement>
+
+> A record of a load-bearing architectural decision — the *why* behind a choice
+> that multiple viable alternatives competed for. Authored only by the
+> system-architect, only when a decision has genuine trade-offs **and**
+> cross-cutting impact (reversing it would ripple across contracts); BAU
+> decisions are not recorded. Supersession is edit-in-place: amend the body to
+> the current decision and append a Change log row — do **not** create a new
+> file. Tests are the source of truth for behaviour; the Traceability section
+> points at affected artefacts and never restates them.
+
+## Status
+
+Proposed | Accepted | Deprecated
+
+## Decider + Date
+
+- **Decider:** <system-architect, the sole author>
+- **Date:** <YYYY-MM-DD>
+
+## Context
+
+<The forces that demanded a decision — constraints from the interview, the
+glossary, existing ADRs, cassettes, and the contract set. State the problem, not
+the solution. Link, do not restate.>
+
+## Decision
+
+<One imperative sentence: the choice that was made — the current decision,
+amended in place if it has been superseded.>
+
+## Alternatives considered
+
+- **<alternative A>:** <why it was rejected>
+- **<alternative B>:** <why it was rejected>
+
+## Consequences
+
+- **(+)** <positive outcome>
+- **(−)** <negative outcome — include the mitigation where applicable>
+- **(neutral)** <a side-effect that is neither gain nor loss>
+
+## Traceability
+
+Points at the artefacts this decision touches; never restates their content.
+
+- **Tests:** `<test files or contract names that exercise this decision>`
+- **Source `.pyi`:** `<modules whose surface this decision shapes>`
+- **Migrations:** `<migrations/... if the decision affects persistence>`
+- **Cassettes:** `<tests/cassettes/... if the decision affects an external boundary>`
+- **Glossary:** `<docs/glossary.md terms this decision names>`
+- **Related ADRs:** `<YYYY-MM-DD-slug.md if this decision interacts with another>`
+
+## Change log
+
+Appended on any amendment; the body above always reflects the current decision.
+
+| Date | Change | Reason |
+|---|---|---|
+| <YYYY-MM-DD> | Created | <initial decision> |

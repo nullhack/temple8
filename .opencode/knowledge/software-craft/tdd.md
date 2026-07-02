@@ -46,6 +46,8 @@ The discipline test-first is preserved — the tests still precede the implement
 | assertion failure against changed tests | rework (source stale) | right reason — re-implement |
 | `NameError`, fixture resolution, test contradicts its `.pyi` | test or stub defect | reject — escalate, do not patch |
 
+Removing the `@pytest.mark.pending` decorator can orphan its `import pytest` when the test used pytest for nothing else (no `raises`, no `approx`, no parametrize); dropping that now-unused import is part of red — a lint side-effect of un-marking, not a behaviour edit, so it stays within the no-test-editing discipline.
+
 ### Minimum code, YAGNI first
 
 - if the test needs only `42`, return `42` — do not invent a configurable constant;

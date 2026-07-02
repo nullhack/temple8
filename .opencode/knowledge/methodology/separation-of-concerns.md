@@ -13,6 +13,7 @@ last-updated: 2026-07-01
 - The flow YAML is the spine — it binds a state to its owner, procedure, artifacts, branch, gate, and exits; the other three files carry none of those.
 - The orchestrator routes; agents, skills, and knowledge are loaded on demand, never the whole layer at once.
 - A state's `description` orients — one or two lines on what the state is for; the step-by-step procedure, criteria lists, and technique live in the skill. When a `description` and a skill disagree on procedure, the skill wins.
+- An escalation handoff rides a per-session journal: the discovering state appends its finding, the receiver reads it on re-entry, and the re-dispatch prompt carries it live. The tests and cassettes stay the spec; the journal is only the safety net against lost context mid-escalation.
 
 ## Concepts
 
@@ -59,6 +60,10 @@ Do not duplicate any of these outside the flow YAML.
 ### Evidence vs enforcement
 
 A gate `conditions` key (e.g. `stubtest-clean=true`) is EVIDENCE the dispatched agent asserts; flowr does not execute the check. The enforcement backstop is CI, which runs `ruff` (with `PYI`), `pyright`, `mypy.stubtest`, and `pytest` on every push and fails the build on any drift or violation — verifying what the agent asserted. The flow's job is to name the gate and collect honest evidence; CI's job is to prove it.
+
+### Escalation handoffs
+
+When a state exits on `reveals-gap` / `needs-capture` / `needs-elicitation`, its finding must reach the phase it re-enters. The finding rides two carriers: the discovering state **appends** it to `.cache/<session_id>/journal.md` (its `output artifacts`), and the re-dispatch prompt carries it verbatim. The receiving state **reads** `journal.md` on entry (its `input artifacts`) and re-derives the detail from the artifacts — the tests, source stubs, and cassettes that *are* the spec. The journal is a transient per-session safety net against context lost mid-escalation (e.g. a compress between the discovering state and re-entry); it is not a second spec and never duplicates what the tests express. One stable file absorbs every escalation — present and future — so new edges never spawn new artifact types.
 
 ### Loading model
 

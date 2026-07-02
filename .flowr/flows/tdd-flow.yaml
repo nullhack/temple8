@@ -35,7 +35,8 @@ states:
         - "<package>/**/*.pyi"
         - "tests/integration/**/*_test.pyi"
         - "tests/e2e/**/*_test.pyi"
-      output artifacts: []
+      output artifacts:
+        - ".cache/<session_id>/journal.md"
     conditions:
       really_red:
         test-status: red
@@ -63,7 +64,6 @@ states:
       output artifacts:
         - "<package>/**/*.py"
         - "migrations/**"
-        - "tests/cassettes/**"
         - "tests/fixtures/**"
     conditions:
       green:
@@ -105,7 +105,8 @@ states:
         - "<package>/**/*.py"
         - "tests/integration/**/*_test.pyi"
         - "tests/e2e/**/*_test.pyi"
-      output artifacts: []
+      output artifacts:
+        - ".cache/<session_id>/journal.md"
     conditions:
       approved:
         impl-matches-contract: "==true"

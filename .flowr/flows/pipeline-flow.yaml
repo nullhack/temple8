@@ -37,6 +37,7 @@ states:
     flow-version: "^1"
     next:
       contracts-ready: build
+      needs-capture: explore
       needs-elicitation: discover
 
   - id: build

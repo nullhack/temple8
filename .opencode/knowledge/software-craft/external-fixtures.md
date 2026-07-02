@@ -13,6 +13,7 @@ last-updated: 2026-07-01
 - The recorder varies by service kind — vcrpy records HTTP only; databases, queues, and object stores each need their own capture strategy. The kind-dispatch table is the one knob set that changes.
 - Scrub every cassette twice — for SAFETY (strip credentials, keys, PII) and for DETERMINISM (strip volatile values that churn run-to-run, so replay is stable). vcrpy will not scrub for you (Moskvin, 2025).
 - The capture is the truth: never hand-edit a cassette to make a test pass — fix the code, or re-record when reality has genuinely shifted.
+- The recorded request binds the implementation: vcrpy matches `method/scheme/host/port/path/query` by default, so every query parameter the probe sent becomes contract — capture the exact request shape in external-contracts.md and reproduce it.
 
 ## Concepts
 
@@ -34,7 +35,9 @@ The developer who writes a fixture from memory writes what they remember, and me
 
 ### Capture once, replay forever
 
-The model is record-once-replay-forever. vcrpy's default `record_mode="once"` records when the cassette is absent and replays when it is present; CI overrides to `record_mode="none"` so the build fails on a missing or unmatched cassette rather than silently re-recording (vcrpy, 8.0). The cassette is committed at `tests/cassettes/<service>/` and is the authoritative external contract: the adapter test in build replays it, and the adapter implementation is what makes a real call matching the recorded request. The recording is done by a throwaway probe script under `.cache/explore/<service>/` (gitignored, never imported by the package or the tests) that runs once with real 12-factor credentials (an environment variable, sourced locally from a gitignored `.env`), and the cassette it leaves behind is what everyone after consumes. Credentials live in the environment and the probe, never in the cassette — the scrub step exists to guarantee that.
+The model is record-once-replay-forever. vcrpy's default `record_mode="once"` records when the cassette is absent and replays when it is present; CI overrides to `record_mode="none"` so the build fails on a missing or unmatched cassette rather than silently re-recording (vcrpy, 8.0). The cassette is committed at `tests/cassettes/<service>/` and is the authoritative external contract: the adapter test in build replays it, and the adapter implementation is what makes a real call matching the recorded request. The recording is done by a throwaway probe script under `.cache/explore/<service>/` (gitignored, never imported by the package or the tests) that runs once with real credentials the user supplies in `~/.secrets/<project>.env` per [[software-craft/secrets-and-config]] (loaded with `dotenv_values()`, never into `os.environ`), and the cassette it leaves behind is what everyone after consumes. Credentials live in the environment and the probe, never in the cassette — the scrub step exists to guarantee that.
+
+vcrpy matches a recorded request field-for-field on `method/scheme/host/port/path/query` by default (vcrpy, 8.0), and `query` is in that set — so an incidental parameter the probe sent (an API default like `format=json`, a locale like `language=en`) becomes contract the implementation must reproduce, or replay fails on a no-match. This is why the exact request shape is captured into `external-contracts.md` at record time, and why the build-time adapter conforms to the cassette rather than the reverse: the cassette is the authority both the adapter test and the e2e replay, so a request the implementation invents that the probe never sent will not match. A service with several endpoints records ONE cassette holding every interaction, not one cassette per endpoint, so an e2e that chains several calls (geocode then forecast; lookup then detail) replays from a single `vcr.use_cassette`.
 
 ### The recorder varies by kind
 
@@ -64,3 +67,4 @@ A cassette records what the service actually did. If the adapter test fails agai
 
 - [[software-craft/test-design]] — the adapter test that replays a cassette and asserts against the captured shapes
 - [[software-craft/source-stubs]] — the adapter implementation, authored from its stub to match the recorded request and honour the captured response
+- [[software-craft/secrets-and-config]] — the credentials the probe runs with live out-of-workspace; the scrub here is the commit guard, the lifecycle guard lives there

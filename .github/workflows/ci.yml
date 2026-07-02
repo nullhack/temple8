@@ -23,6 +23,16 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format . --check
 
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   validate-flows:
     runs-on: ubuntu-latest
     steps:

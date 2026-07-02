@@ -90,7 +90,8 @@ Gitignored (local working state, regenerated on demand):
 | `.cache/explore/` | throwaway probe scripts (run once to record cassettes; never imported) |
 | `.cache/sessions/` | flowr session state |
 | `.backup/` | previous system (recoverable from `origin/main`) |
-| `.env` | local config (12-factor) |
+| `.env` | non-secret local config (12-factor) |
+| `~/.secrets/<project>.env` | secrets (out-of-workspace; `dotenv_values()` into a frozen Settings, gated by opencode `external_directory`) |
 
 ## Agents, skills & knowledge
 

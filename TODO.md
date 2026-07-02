@@ -98,9 +98,11 @@ Sequence (the authoritative development order):
    `@pytest.mark.pending` so it skips until build re-selects it.
 9. **derive-source-stubs** *(plan)* — derive `<package>/**/*.pyi` from the
    reviewed test `.py`: every type a test references gets a definition. No
-   hardcoded layout (no `models/`, no `config.pyi`); config follows 12-factor
-   (env vars; python-dotenv + gitignored `.env` for local secrets; a typed
-   Settings model is optional, a normal source `.pyi` if warranted).
+   hardcoded layout (no `models/`, no `config.pyi`); config follows the
+   secrets/config split per the `secrets-and-config` knowledge (non-secret config
+   in workspace `.env`; secrets in `~/.secrets/<project>.env` via
+   `dotenv_values()`, never `os.environ`; a typed Settings model is optional, a
+   normal source `.pyi` if warranted).
 10. **simulate-contracts** *(plan)* — gate: would passing these tests yield a
     complete, working system? pyright (combined set consistent; every import
     resolves), no-orphans, traceability (every external service has a captured
@@ -143,8 +145,10 @@ Design decisions:
   (`tests/cassettes/**` — the authoritative external contract, replayed by
   tests/CI offline) and gitignored throwaway probe scripts (`.cache/explore/` —
   reference for the green implementer, never imported by `<package>` or tests).
-  Capture needs real 12-factor credentials; CI never runs explore, it replays
-  the cassettes.
+  Capture needs real credentials the user supplies in
+  `~/.secrets/<project>.env` (see the `secrets-and-config` knowledge — agent
+  instructs, never creates or debugs a secret); CI never runs explore, it
+  replays the cassettes.
 - Every state has its OWN skill — no skill is reused across states (the four
   interview states each have a distinct skill that loads the shared technique
   from knowledge).
@@ -230,10 +234,11 @@ Markers: `[x]` done · `[ ]` pending · `[~]` in progress.
 - [x] `requirements/interview-techniques.md` — Elicitation methods (CIT, Laddering/Means-End, CI Perspective Change, Funnel, Active Listening L1-L3) applied at each funnel depth. *(interview-general, interview-cross-cutting)*. AUTHORED.
 - [x] `requirements/domain-decomposition.md` — Decomposing each bounded context into DDD building blocks (aggregate-first); gap analysis as a coverage matrix (every context → ≥1 block; every quality attribute → ≥1 block). *(interview-building-blocks, review-test-stubs)*. AUTHORED.
 - [x] `requirements/aggregate-boundaries.md` — Sizing and splitting aggregates: single-entity default, reference-by-identity, split on invariant seams (Evans ch 4; Vernon ch 10). *(interview-building-blocks)*. AUTHORED.
-- [ ] `requirements/ubiquitous-language.md` — Curating the glossary: term extraction, genus-differentia definitions, bounded-context grouping (Evans DDD). *(consolidate-interview)*
+- [x] `requirements/ubiquitous-language.md` — Curating the glossary: term extraction, genus-differentia definitions, bounded-context grouping (Evans DDD). *(consolidate-interview)*. AUTHORED.
 
 **Explore (ground externals):**
 - [x] `software-craft/external-fixtures.md` — Capturing external reality: record-once-replay-forever (vcrpy HTTP cassettes; CI under `VCR_RECORD_MODE=none`), the kind-dispatch table (recorder/docs-focus/scrub-fields/specialist per kind — vcrpy is HTTP-only), two scrubs (safety + determinism), 12-factor creds, capture-is-truth. *(research-provider, write-probe, record-cassette)*. AUTHORED.
+- [x] `software-craft/secrets-and-config.md` — The secrets/config split: non-secret config in workspace `.env`; secrets in `~/.secrets/<project>.env` (out-of-workspace) read with `dotenv_values()` into a frozen typed Settings, never `os.environ`; the LLM-agent threat model (5 vectors) + layered defense; agent never creates/reads/debugs a secret (instructs the user; asks with suggestions on auth failure); `.env.example` as the committed env contract. *(write-probe, research-provider, derive-source-stubs, implement-from-stub)*. AUTHORED.
 
 **Plan (author contracts):**
 - [x] `software-craft/test-stubs.md` — PEP 484 `.pyi` signature files for tests (disambiguated from the Meszaros test double); `.pyi`-preferred hides drift from pyright, stubtest is the sole detector; mirror the complete module surface; stdlib-typing-only with types under `TYPE_CHECKING`. *(author-test-stubs, simulate-contracts)*. AUTHORED.

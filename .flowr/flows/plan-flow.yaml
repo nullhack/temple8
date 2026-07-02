@@ -2,6 +2,7 @@ flow: plan-flow
 version: 1.5.0
 exits:
   - contracts-ready
+  - needs-capture
   - needs-elicitation
 states:
   - id: author-test-stubs
@@ -18,6 +19,7 @@ states:
         - "docs/glossary.md"
         - "tests/cassettes/**"
         - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/journal.md"
       output artifacts:
         - "tests/integration/**/*_test.pyi"
         - "tests/e2e/**/*_test.pyi"
@@ -66,6 +68,7 @@ states:
         - "tests/e2e/**/*_test.pyi"
         - "tests/cassettes/**"
         - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/journal.md"
       output artifacts:
         - "tests/integration/**/*_test.py"
         - "tests/e2e/**/*_test.py"
@@ -84,6 +87,7 @@ states:
       input artifacts:
         - "tests/integration/**/*_test.py"
         - "tests/e2e/**/*_test.py"
+        - ".cache/<session_id>/journal.md"
       output artifacts:
         - "<package>/**/*.pyi"
     next:
@@ -105,7 +109,9 @@ states:
         - "tests/integration/**/*_test.pyi"
         - "tests/e2e/**/*_test.pyi"
         - "<package>/**/*.pyi"
-      output artifacts: []
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - ".cache/<session_id>/journal.md"
     conditions:
       accepted:
         pyright-consistent: "==true"
@@ -113,6 +119,7 @@ states:
         traceability-complete: "==true"
         layer-order-respected: "==true"
         test-stubs-consistent: "==true"
+        lint-clean: "==true"
         simulation-passed: "==true"
     next:
       accepted:
@@ -120,4 +127,5 @@ states:
         when: accepted
       needs-source-stubs: derive-source-stubs
       needs-test-bodies: write-test-py
+      needs-capture: needs-capture
       needs-elicitation: needs-elicitation

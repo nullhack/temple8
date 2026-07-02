@@ -11,7 +11,7 @@ last-updated: 2026-07-01
 - A source stub is a PEP 484 `.pyi` **derived from the test bodies** — the inverse of conventional stub authoring. Every type the tests construct, every method they call, every relationship they assert is the specification of the source surface; the stub records exactly that and nothing speculative.
 - `...` bodies only (PEP 484); never `raise NotImplementedError`. The stub is signature-only and compiles for the type checker with no runtime behaviour — behaviour lands in build's green.
 - The source `.pyi` is a **fixed contract during build**: green implements the `.py` to satisfy it; refactor cannot edit it; if the body cannot satisfy the `.pyi` without changing it, that is a contract gap escalated at review — never an in-place stub edit.
-- **No prescribed layout**, and config is twelve-factor: environment variables plus a gitignored `.env`; a typed Settings model is optional and, if warranted, a normal source stub. External adapters and connectors sit under the package alongside everything else, not as a separate category.
+- **No prescribed layout**, and config is twelve-factor with the secrets/config split of [[software-craft/secrets-and-config]] (non-secret workspace `.env`; secrets out-of-workspace via `dotenv_values()`); a typed Settings model is optional and, if warranted, a normal source stub. External adapters and connectors sit under the package alongside everything else, not as a separate category.
 - Structural artifacts are **keyed on what a module is**: an ORM model carries an Alembic migration (the migration IS the schema spec); an external adapter replays the cassettes captured in explore.
 - stubtest gates the source pair at green/review/merge — it imports the runtime module (transitive deps must be installed), runs scoped per cycle (the whole-suite run waits until every `.py` exists), and type-only imports go under `TYPE_CHECKING`. The drift mechanics are those of the test pair ([[software-craft/test-stubs]]).
 
@@ -23,7 +23,7 @@ last-updated: 2026-07-01
 
 **Fixed during build.** Once derived, the source `.pyi` is frozen for the whole build cycle: green writes the `.py` to satisfy it, refactor restructures the `.py` while the `.pyi` stays put, and the tests (already written) stay put too. If implementation discovers the `.pyi` is wrong — a missing parameter, a wrong return type, an impossible signature — the response is never to edit the stub in place; it is to escalate a contract gap at review, which routes back to plan for a proper re-derivation. The frozen stub is what keeps the contract the single source of truth.
 
-**No layout, no config artifact.** The tests say where the source lives and what it is called; the stub does not prescribe a package structure on top. Adapters, connectors, and domain types live under the package alongside one another. Configuration is twelve-factor: environment variables are the default, loaded locally from a gitignored `.env`, and a typed Settings model is optional — if it earns its place, it is a normal source stub alongside the rest.
+**No layout, no config artifact.** The tests say where the source lives and what it is called; the stub does not prescribe a package structure on top. Adapters, connectors, and domain types live under the package alongside one another. Configuration follows the secrets/config split of [[software-craft/secrets-and-config]] — non-secret config in a workspace `.env`, secrets loaded from out-of-workspace with `dotenv_values()` into a frozen Settings; a Settings model is optional and, if it earns its place, a normal source stub alongside the rest.
 
 **Structural artifacts keyed to the module.** Some modules carry an artifact beyond the `.py` pair. An ORM model owns an Alembic migration — the migration is the schema spec, born in green, committed in ship, never edited only appended. An external adapter replays the cassettes captured during explore (`VCR_RECORD_MODE=none`). The stub itself does not generate these; it declares the module's surface, and green emits whatever that surface implies.
 
@@ -65,7 +65,7 @@ The asymmetry is deliberate: the `.pyi` and the tests are the contract, and cont
 
 ### No layout, no config artifact
 
-The package takes whatever shape the tests import from. Configuration is twelve-factor — environment variables are the source, a gitignored `.env` carries local secrets, `python-dotenv` loads it. A `Settings` model is optional; if it is worth the code, it is one normal source stub among the rest, reading `os.environ` in its `from_env()`.
+The package takes whatever shape the tests import from. Configuration is twelve-factor with the secrets/config split of [[software-craft/secrets-and-config]]: non-secret config in the workspace `.env` loaded with `load_dotenv()`; secrets in `~/.secrets/<project>.env` loaded with `dotenv_values()` — never into `os.environ`. A `Settings` model is optional; if it is worth the code, it is one normal source stub among the rest.
 
 ### Structural artifacts keyed to the module
 
@@ -78,7 +78,7 @@ The stub declares the module's surface; green emits whatever that surface implie
 
 ### stubtest, scoped
 
-stubtest gates the source pair the same way it gates the test pair; the mechanics — `.pyi`-preferred hides drift from pyright, stubtest imports at runtime via `inspect`, it checks structure not return-type accuracy — are in [[software-craft/test-stubs]]. The source-specific discipline is scoping: `stubtest <package>.<mod> tests.<test_mod>` at green/review covers only the modules touched this cycle, because sibling source `.pyi` whose `.py` are not yet built would all false-fail a whole-suite run. The whole-suite `stubtest <package> tests` runs once, at merge, when every `.py` exists.
+stubtest gates the source pair the same way it gates the test pair; the mechanics — `.pyi`-preferred hides drift from pyright, stubtest imports at runtime via `inspect`, it checks structure not return-type accuracy — are in [[software-craft/test-stubs]]. The source-specific discipline is scoping: `stubtest <package>.<mod> tests.<test_mod>` at green/review covers only the modules touched this cycle, because sibling source `.pyi` whose `.py` are not yet built would all false-fail a whole-suite run. The whole-suite `stubtest <package> tests` runs once, at merge, when every `.py` exists. stubtest checks the public surface declared in the `.pyi`; runtime imports the `.py` uses internally (`os`, `httpx`, sibling modules) need not be mirrored in the stub (validated empirically — a source module importing `httpx` internally, with no `httpx` in its `.pyi`, passed stubtest) — do not over-mirror implementation imports.
 
 ## Related
 

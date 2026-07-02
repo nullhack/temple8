@@ -12,7 +12,7 @@ last-updated: 2026-07-01
 - **Object-Oriented Abusers** (Switch Statements, Temporary Field, Refused Bequest, Alternative Classes with Different Interfaces) misapply OOP; reach for polymorphism, Extract Class, or delegation (Fowler, 1999).
 - **Change Preventers** (Divergent Change, Shotgun Surgery, Parallel Inheritance Hierarchies) make change ripple; restructure along the axis of change or move the data (Fowler, 1999; Shvets, 2014).
 - **Dispensables** (Duplicate Code, Lazy Class, Data Class, Dead Code, Speculative Generality) are dead weight to delete, inline, or merge — and a Comment is the symptom of code that should have been extracted or renamed instead.
-- **Couplers** (Feature Envy, Inappropriate Intimacy, Message Chains, Middle Man) over-couple objects; move the method, hide the delegate, or collapse the middle man (Fowler, 1999; Shvets, 2014).
+- **Couplers** (Feature Envy, Inappropriate Intimacy, Message Chains, Middle Man, Incomplete Library Class) over-couple objects; move the method, hide the delegate, collapse the middle man, or extend a class you cannot modify via a foreign method (Fowler, 1999; Shvets, 2014).
 
 ## Concepts
 
@@ -73,6 +73,7 @@ last-updated: 2026-07-01
 | Inappropriate Intimacy | reaching into another's privates | Move Method/Field; Extract Class; delegation |
 | Message Chains | `a.b().c().d()` | Hide Delegate; Extract Method |
 | Middle Man | most methods are one-line forwards | Inline Class; Remove Middle Man |
+| Incomplete Library Class | a library class you need to extend but cannot modify | Introduce Foreign Method; Introduce Local Extension |
 
 ## Related
 
