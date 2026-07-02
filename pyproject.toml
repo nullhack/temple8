@@ -11,7 +11,7 @@ authors = [
 maintainers = [
     { name = "eol", email = "nullhack@users.noreply.github.com" }
 ]
-dependencies = []
+dependencies = ["httpx>=0.27.0"]
 
 [project.urls]
 Homepage = "https://nullhack.github.io/temple8/"

@@ -5,7 +5,6 @@ FORECAST_BASE = "https://api.open-meteo.com"
 CASSETTE = "tests/cassettes/open-meteo/open-meteo.yaml"
 
 
-@pytest.mark.pending
 def test_geocode_returns_coordinates_for_a_known_city() -> None:
     import vcr
 
@@ -19,19 +18,16 @@ def test_geocode_returns_coordinates_for_a_known_city() -> None:
     assert coordinates.longitude == pytest.approx(13.41053)
 
 
-@pytest.mark.pending
 def test_geocode_raises_for_an_unknown_city() -> None:
     import vcr
 
     from app.weather import WeatherAdapter
 
     adapter = WeatherAdapter(GEOCODING_BASE, FORECAST_BASE)
-    with vcr.use_cassette(CASSETTE):
-        with pytest.raises(LookupError):
-            adapter.geocode("Xyzqwerty")
+    with vcr.use_cassette(CASSETTE), pytest.raises(LookupError):
+        adapter.geocode("Xyzqwerty")
 
 
-@pytest.mark.pending
 def test_forecast_returns_conditions_for_coordinates() -> None:
     import vcr
 
