@@ -9,7 +9,7 @@ last-updated: 2026-07-02
 ## Key Takeaways
 
 - flowr is a non-deterministic state machine **specification** — a YAML file declares structure (states, transitions, guards), not behaviour; flowr never runs the work, it routes (nullhack/flowr, 2026).
-- Drive one state at a time: `check` reads the current state's attrs; the orchestrator dispatches the owner named in `dispatch_to`; the owner asserts evidence; `transition` advances. This is the whole loop.
+- Drive one state at a time: `check` reads the current state's attrs; the orchestrator dispatches the agent named in `dispatch_to`; that agent asserts evidence; `transition` advances. This is the whole loop.
 - A state with `flow:`/`flow-version:` is a **subflow pointer**: entry pushes a stack frame, exit pops it; the parent's `next` key must match the child's exit name; `session init` auto-enters the first subflow.
 - Escalations re-enter the target subflow at its **first state** — flowr keeps no position memory — so `build → plan` on a contract gap re-runs plan from `author-test-stubs`, and `plan/explore → discover` re-runs the interview funnel from the top.
 - A guarded transition fires only when its condition group is satisfied; the orchestrator asserts evidence with `--evidence key=value` (one per condition key). flowr **collects asserted evidence, it does not run checks** — CI is the enforcement backstop per [[methodology/separation-of-concerns#evidence-vs-enforcement]].
@@ -19,7 +19,7 @@ last-updated: 2026-07-02
 
 **Specification, not engine.** A flow file declares the graph: states with attributes, transitions with optional guards, exits. flowr validates the graph (seven MUST checks at load — every `next` resolves, no ambiguous targets, parent `next` keys match child `exits`, no cross-flow cycles, exits referenced, named conditions resolve, defaulted params supplied), queries it (`check`, `next`), and advances it (`transition`). It has no opinions about retries, timeouts, or error handling, and it never executes the dispatched work — that is the external agent's job (nullhack/flowr, 2026).
 
-**The state-reading loop.** The orchestrator never improvises routing. At each step it runs `check` to read the current state's attrs — `dispatch_to` (the one owner), `skills` (the procedures), `input artifacts` (what must be on disk), `output artifacts` (what may be written), `git branch`, and `conditions` (any guarded transitions). It verifies the inputs exist, dispatches the owner with the skill paths and inputs, then asserts the owner's evidence to fire the next `transition`. One state, one dispatch.
+**The state-reading loop.** The orchestrator never improvises routing. At each step it runs `check` to read the current state's attrs — `dispatch_to` (the one dispatched agent), `skills` (the procedures), `input artifacts` (what must be on disk), `output artifacts` (what may be written), `git branch`, and `conditions` (any guarded transitions). It verifies the inputs exist, dispatches that agent with the skill paths and inputs, then asserts that agent's evidence to fire the next `transition`. One state, one dispatch.
 
 **Subflows and the call stack.** A state carrying `flow:` is a pointer into a child flow; entering it pushes a frame `({parent_flow, parent_state})` onto a stack and sets the session to the child's first state. When a transition's target is one of the child's exit names AND the stack is non-empty, flowr pops the frame, restores the parent, and follows the parent state's transition for that exit name — which may itself enter the next subflow. This is how `pipeline-flow` chains discover → explore → plan → build → deliver → shipped through five subflows.
 
@@ -27,7 +27,7 @@ last-updated: 2026-07-02
 
 **Conditions and evidence.** A `next` entry shaped `{to: <state>, when: <name>}` is guarded; the named group lives under the state's `conditions:` block, a map of `{key: expression}` (operators `== != >= <= > <`, plain value = `==`). The orchestrator fires the transition by passing `--evidence key=value` for each key. flowr evaluates the assertion; it does not verify the claim is true — that is CI's job. The evidence keys the temple8 flows use are listed in `AGENTS.md`.
 
-**attrs is free-form.** flowr treats `state.attrs` as an opaque dict; the keys `dispatch_to` / `skills` / `input artifacts` / `output artifacts` / `git branch` / `specialists` / `conditions` are this project's convention for binding a state to an owner, a procedure, artifacts, and a branch. None are enforced by the engine — they are read by the orchestrator and the agents. Renaming a key changes the convention, not the spec.
+**attrs is free-form.** flowr treats `state.attrs` as an opaque dict; the keys `dispatch_to` / `skills` / `input artifacts` / `output artifacts` / `git branch` / `specialists` / `conditions` are this project's convention for binding a state to a dispatched agent, a procedure, artifacts, and a branch. None are enforced by the engine — they are read by the orchestrator and the agents. Renaming a key changes the convention, not the spec.
 
 ## Content
 
@@ -54,8 +54,8 @@ Sessions live at `.cache/sessions/<id>.yaml` (gitignored). `--flows-dir` overrid
 
 1. `check --session <id>` → parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
 2. Verify every `input artifacts` path exists on disk — missing = stop, do not assume (Golden Rule).
-3. Dispatch the `dispatch_to` owner as a subagent, with the `skills` paths (`.opencode/skills/<name>/SKILL.md`, listed order = execution order) and the input artifacts. The owner writes only to `output artifacts`.
-4. The owner returns asserted evidence (e.g. `stubtest-clean=true`).
+3. Dispatch the agent named in `dispatch_to` as a subagent, with the `skills` paths (`.opencode/skills/<name>/SKILL.md`, listed order = execution order) and the input artifacts. The dispatched agent writes only to `output artifacts`.
+4. The dispatched agent returns asserted evidence (e.g. `stubtest-clean=true`).
 5. `transition <trigger> --session <id> --evidence k=v …` fires the guarded advance; `next --session <id>` previews open/blocked if unsure.
 6. Repeat from 1 at the new state. One state = one dispatch.
 
@@ -119,6 +119,6 @@ for f in .flowr/flows/*.yaml; do uv run python -m flowr validate "$f"; done
 ## Related
 
 - [[methodology/separation-of-concerns#evidence-vs-enforcement]] — why flowr collects asserted evidence and CI enforces
-- [[methodology/agent-files]] — what `dispatch_to` resolves to (the owner identity)
+- [[methodology/agent-files]] — what `dispatch_to` resolves to (the dispatched agent's identity)
 - [[methodology/skill-files]] — what `skills` resolves to (the per-state procedure)
-- [[methodology/knowledge-files]] — how the owner's loaded knowledge is cited
+- [[methodology/knowledge-files]] — how the dispatched agent's loaded knowledge is cited

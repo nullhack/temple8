@@ -10,7 +10,7 @@ last-updated: 2026-07-01
 
 - Four artifact kinds, one question each: the flow answers **where** (routing), an agent answers **who** (identity), a skill answers **how** (procedure), knowledge answers **what and why** (reference).
 - Each fact lives in exactly one canonical location; any copy becomes a second source that drifts, and the stale copy usually wins attention at runtime.
-- The flow YAML is the spine — it binds a state to its owner, procedure, artifacts, branch, gate, and exits; the other three files carry none of those.
+- The flow YAML is the spine — it binds a state to its dispatched agent, procedure, artifacts, branch, gate, and exits; the other three files carry none of those.
 - The orchestrator routes; agents, skills, and knowledge are loaded on demand, never the whole layer at once.
 - A state's `description` orients — one or two lines on what the state is for; the step-by-step procedure, criteria lists, and technique live in the skill. When a `description` and a skill disagree on procedure, the skill wins.
 - An escalation handoff rides a per-session journal: the discovering state appends its finding, the receiver reads it on re-entry, and the re-dispatch prompt carries it live. The tests and cassettes stay the spec; the journal is only the safety net against lost context mid-escalation.
