@@ -1,22 +1,21 @@
 [project]
-name = "temple8"
-version = "9.4.0"
-description = "Spec-driven agent orchestration template with YAML flow definitions, multi-agent dispatch, and BDD traceability"
+name = "{{ project_name }}"
+version = "{{ version }}"
+description = "{{ description }}"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { file = "LICENSE" }
 authors = [
-    { name = "eol", email = "nullhack@users.noreply.github.com" }
+    { name = "{{ author_name }}", email = "{{ author_email }}" }
 ]
 maintainers = [
-    { name = "eol", email = "nullhack@users.noreply.github.com" }
+    { name = "{{ author_name }}", email = "{{ author_email }}" }
 ]
 dependencies = []
 
 [project.urls]
-Homepage = "https://nullhack.github.io/temple8/"
-Repository = "https://github.com/nullhack/temple8"
-Documentation = "https://github.com/nullhack/temple8/tree/main/docs/api/"
+Homepage = "{{ repo_url }}"
+Repository = "{{ repo_url }}"
 
 [project.optional-dependencies]
 dev = [
@@ -42,7 +41,7 @@ default_flow = "pipeline-flow"
 default_session = "default"
 
 [tool.setuptools]
-packages = ["app"]
+packages = ["{{ package_name }}"]
 
 [tool.ruff.lint]
 ignore = []
@@ -94,14 +93,14 @@ exclude_lines = [
 ]
 
 [tool.taskipy.tasks]
-run = "python -m app"
+run = "python -m {{ package_name }}"
 test-build = """\
 pytest \
   --doctest-modules \
   --cov-config=pyproject.toml \
   --cov-report html:docs/coverage \
   --cov-report term:skip-covered \
-  --cov=app \
+  --cov={{ package_name }} \
   --hypothesis-show-statistics \
   --html=docs/tests/report.html \
   --self-contained-html \
@@ -110,7 +109,7 @@ test = """\
 pytest \
   --cov-config=pyproject.toml \
   --cov-report= \
-  --cov=app
+  --cov={{ package_name }}
 """
 test-fast = "pytest -m \"not slow\" -q --no-header --tb=no"
 test-slow = "pytest -m slow"
@@ -120,13 +119,8 @@ ruff-format-check = "ruff format . --check"
 lint = "task ruff-check"
 lint-merge = "ruff check --extend-select SIM,RUF . && ruff format ."
 strip-docstrings = "python scripts/strip_docstrings.py"
-static-check = "pyright app tests"
-stubtest = "python -m mypy.stubtest app tests"
+static-check = "pyright {{ package_name }} tests"
+stubtest = "python -m mypy.stubtest {{ package_name }} tests"
 validate-flows = "bash -c 'for f in .flowr/flows/*.yaml; do python -m flowr validate \"$f\"; done'"
 
 release-check = "task lint && task static-check && task stubtest && task test"
-
-[dependency-groups]
-dev = [
-    "flowr[viz]>=1.2.1",
-]

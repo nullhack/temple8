@@ -1,0 +1,100 @@
+_min_copier_version: "8.0.0"
+
+project_name:
+  type: str
+  help: Human-readable project name (e.g. "weather-lookup").
+  validator: >-
+    {% if not (project_name | regex_search('^[a-z][a-z0-9-]*$')) %}
+    lowercase letters, digits, dashes; start with a letter.
+    {% endif %}
+
+package_name:
+  type: str
+  help: Python import package name (e.g. "weather_lookup"). Must be a valid identifier.
+  default: "{{ project_name | replace('-', '_') }}"
+  validator: >-
+    {% if not (package_name | regex_search('^[a-z][a-z0-9_]*$')) %}
+    lowercase letters, digits, underscores; start with a letter (valid Python identifier).
+    {% endif %}
+
+description:
+  type: str
+  help: One-line project description.
+
+repo_url:
+  type: str
+  help: Repository URL (e.g. https://github.com/owner/repo). Leave blank if none yet.
+  default: ""
+
+version:
+  type: str
+  default: "0.1.0"
+
+author_name:
+  type: str
+  help: Your name (for pyproject authors).
+
+author_email:
+  type: str
+  help: Your email (for pyproject authors).
+
+keep_design:
+  type: bool
+  default: true
+  help: Keep the design knowledge domain (interaction/visual/asset/cli/api/accessibility) + design skills + asset templates? Drop for pure-backend projects with no UI surface.
+
+keep_research:
+  type: bool
+  default: true
+  help: Keep the docs/research/ reference library + research-files knowledge + research card template?
+
+reset_git:
+  type: bool
+  default: true
+  help: Initialize a fresh git repository in the new project?
+
+_exclude:
+  # copier defaults (re-listed: defining _exclude replaces the default)
+  - copier.yml
+  - copier.yaml
+  - "~*"
+  - "*.py[co]"
+  - __pycache__
+  - .git
+  - .DS_Store
+  - .svn
+  # temple8 working files (the .jinja versions render the instance's)
+  - pyproject.toml
+  - README.md
+  # template-only artifacts (never in instances)
+  - .backup
+  - .opencode/agents/project-instantiator.md
+  - .opencode/skills/instantiate-project
+  - docs/decisions/2026-07-02-use-pyi-first-contracts.md
+  # conditional design removal
+  - "{% if not keep_design %}.opencode/knowledge/design{% endif %}"
+  - "{% if not keep_design %}.opencode/skills/design-interaction{% endif %}"
+  - "{% if not keep_design %}.opencode/skills/design-visual-asset{% endif %}"
+  - "{% if not keep_design %}.templates/docs/assets{% endif %}"
+  - "{% if not keep_design %}docs/research/software-engineering/design{% endif %}"
+  # conditional research removal
+  - "{% if not keep_research %}docs/research{% endif %}"
+  - "{% if not keep_research %}.opencode/knowledge/methodology/research-files.md{% endif %}"
+  - "{% if not keep_research %}.templates/docs/research{% endif %}"
+
+_tasks:
+  - "mkdir -p {{ package_name }}"
+  - "touch {{ package_name }}/__init__.py"
+  - "mkdir -p tests/integration tests/e2e tests/cassettes tests/fixtures"
+  - "touch tests/cassettes/.gitkeep tests/fixtures/.gitkeep"
+  - "{% if reset_git %}git init{% endif %}"
+
+_message_after_copy: |
+  Project "{{ project_name }}" created at {{ _copier_conf.dst_path }}.
+
+  Next:
+    1. cd {{ _copier_conf.dst_path }}
+    2. uv sync --extra dev
+    3. uv run python -m flowr session init pipeline-flow --name default
+
+  Drive the pipeline one state at a time. See AGENTS.md for the operating discipline.

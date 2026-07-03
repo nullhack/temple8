@@ -49,7 +49,7 @@ When a source is cited in knowledge but its exact provenance cannot be confirmed
 
 ### Capture the mechanism
 
-The `Mechanism` field is where the card earns its depth. A paraphrase of the title — "this book is about refactoring" — leaves a reader unable to tell whether the citation supports a specific claim about extract method versus one about code smells. The field carries the source's actual machinery: for Moskvin 2025, that vcrpy records verbatim and does not scrub, that the generic Presidio-based scrubber is over-engineered at 670 MB, and that the author lands on JSON-Pointer field redaction via `before_record_response`; for Turmyshev 2026, that external is defined as "any dependency that introduces network latency, rate limits, or data you don't control" and that internal services and repositories are never stubbed. A reader of the card can then decide whether the citation supports the claim the knowledge makes.
+The `Mechanism` field is where the card earns its depth. A paraphrase of the title — "this book is about refactoring" — leaves a reader unable to tell whether the citation supports a specific claim about extract method versus one about code smells. The field carries the source's actual machinery: for Moskvin 2025, that vcrpy records verbatim and does not scrub, that the generic Presidio-based scrubber is over-engineered at 670 MB, and that the author lands on JSON-Pointer field redaction via `before_record_response`; for Turmyshev 2026, that external is defined as "any dependency that introduces network latency, rate limits, or data you don't control" and that internal services and repositories are never stubbed. A reader of the card can then decide whether the citation supports the claim the knowledge makes. Apply the prose bar per [[writing/ai-language-markers]] — scrub AI markers (`delve`, `tapestry`, `plays a crucial role`, `rather than`) from the card's prose; the Mechanism field earns its depth through the source's machinery, not formal-sounding padding.
 
 ### Auditable inline citations
 
@@ -62,8 +62,8 @@ Cards live under `docs/research/` in a taxonomy that mirrors source disciplines,
 ```
 docs/research/
   psychology/{social,cognitive}/
-  software-engineering/{quality,process,requirements}/
-  information-science/{domain-modeling,documentation}/
+  software-engineering/{architecture,quality,process,requirements}/
+  information-science/{domain-modeling,documentation,writing}/
   README.md
 ```
 
@@ -73,3 +73,4 @@ A new card is copied from `.templates/docs/research/card.md.template` (the `.tem
 
 - [[methodology/knowledge-files]]
 - [[methodology/separation-of-concerns]]
+- [[writing/ai-language-markers]]

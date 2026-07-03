@@ -12,5 +12,5 @@ description: "Transform the reviewed test stubs into executable test bodies, wit
 5. Mark each test with the pending marker; the conftest hook skips pending tests so the suite stays green-with-skips until source is built.
 6. Defer the system-under-test import into each test body so an unbuilt module collects cleanly and its pending tests skip rather than error at collection. Keep third-party and test-only imports at module top.
 7. Keep the .py's module-level names and method signatures in exact agreement with its .pyi — stubtest checks the pair strictly.
-8. Run ruff on the authored test files (`ruff check` and `ruff format`); fix every violation so build receives lint-clean tests.
+8. Run the dev ruff check (`ruff check .`) on the authored test files; fix every violation so build receives bug-clean tests. Restructure lint (`SIM`, `RUF`) and `ruff format` are merge-time per [[software-craft/docstring-lifecycle]] — do not format here.
 9. IF reworking an existing contract THEN edit the body to match the changed .pyi and re-apply the pending marker to the affected tests so they skip until build re-selects them.

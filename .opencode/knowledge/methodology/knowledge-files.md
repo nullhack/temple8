@@ -22,7 +22,7 @@ last-updated: 2026-07-01
 
 **Correspondence.** The four sections are ordered by depth, and the depth is also structure: bullet N in Key Takeaways expands to paragraph N in Concepts and to subsection N in Content. A reader who jumps from a takeaway to its detail must land on the matching concept. Breaking correspondence strands the reader at the wrong depth.
 
-**Depth deepens progressively.** Each tier does a different job. Key Takeaways is austere reference — the firm principle, scannable, consulted rather than read (Diátaxis, Procida). Concepts is explanation — the reasoning that turns a rule into understanding. Content is the learning tier — it teaches the topic, expanding each concept with the source's actual mechanism and using tables, criteria, and examples so a reader can recognise an instance and tell it from its neighbours. Content that merely restates Concepts in more words has failed: it must be deeper, never thinner.
+**Depth deepens progressively.** Each tier does a different job. Key Takeaways is austere reference — the firm principle, scannable, consulted rather than read (Diátaxis, Procida). Concepts is explanation — the reasoning that turns a rule into understanding. Content is the learning tier — it teaches the topic, expanding each concept with the source's actual mechanism and using tables, criteria, and examples so a reader can recognise an instance and tell it from its neighbours. Content that merely restates Concepts in more words has failed: it must be deeper, never thinner. Across all tiers, scrub AI language markers — the prose form of the same parsimony — per [[writing/ai-language-markers]].
 
 **Wikilink routing.** Skills are the authority on when to load knowledge; the wikilink is the address. A fragment selects the cut: `#key-takeaways` loads frontmatter and Key Takeaways; `#concepts` loads through Concepts; no fragment loads the whole file. Extraction is cumulative and cuts from the top.
 
@@ -124,3 +124,4 @@ Each file's Related section lists its neighbours. The graph is the union of thos
 - [[methodology/separation-of-concerns]]
 - [[methodology/agent-files]]
 - [[methodology/skill-files]]
+- [[writing/ai-language-markers]]

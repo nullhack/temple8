@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="lg-title lg-desc">
+  <title id="lg-title">&lt;project-name&gt; mark</title>
+  <desc id="lg-desc">The &lt;project-name&gt; mark — a single geometric form, usable as logo, avatar, and favicon.</desc>
+
+  <!-- mark placeholder: one bold geometric form, legible at 16px (verify at the shown size).
+       monochrome-on-transparent holds on both light + dark surfaces.
+       replace with the project mark; strokes converted to filled paths in production. -->
+  <path d="M128 128 L384 128 L384 384 L128 384 Z" fill="#0d1117" />
+  <circle cx="256" cy="256" r="80" fill="#ffffff" />
+</svg>
