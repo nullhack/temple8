@@ -9,7 +9,7 @@ through flowr.
 1. **flowr is the single router.** Every state change runs through flowr — no improvised routing, no skipping states.
 2. **The dispatched agent does the work.** Each state names one agent in `dispatch_to`; the orchestrator dispatches it, and that agent produces the artifacts and asserts the evidence. The orchestrator never authors the work.
 3. **The state's contract is binding.** Read every `input artifact` before starting — missing means stop, not assume. Write only to `output artifacts`.
-4. **Assert only verified evidence; CI is the backstop.** A gate fires on the dispatched agent's asserted evidence; assert nothing you did not check — CI catches the lie (`ruff` / `pyright` / `mypy.stubtest` / `pytest`).
+4. **Assert only verified evidence; CI is the backstop.** On a **guarded** transition flowr fires only on the dispatched agent's asserted evidence (`--evidence k=v`); assert nothing you did not check — CI catches the lie (`ruff` / `pyright` / `mypy.stubtest` / `pytest`). **Unguarded** transitions (discovery, explore) carry no flowr gate — the orchestrator verifies the output artifacts and the stakeholder's approval IS the gate.
 5. **Branch discipline.** Match the state's `git branch`; merge `feature` → `dev` only under the whole-suite gates. No dangling branches.
 6. **Every requirement traced.** Each interview finding maps to a test or an explicit deferral; an untraced requirement is a gap the simulate gate rejects.
 
@@ -23,7 +23,7 @@ transition.
 1. **Read** — `flowr check --session <id>`; parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
 2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (discipline 3).
 3. **Dispatch** — call the agent named in `dispatch_to` with the `skills` paths (`.opencode/skills/<name>/SKILL.md`) and the input artifacts. The dispatched agent writes only to `output artifacts` and returns asserted evidence.
-4. **Verify outputs + evidence** — the `output artifacts` were produced and the transition's `conditions` evidence is real (discipline 4).
+4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (discipline 4).
 5. **Transition** — `flowr transition <trigger> --session <id> --evidence k=v …`, then regenerate the todo from the next state's `check`.
 
 Routing is one flow with five subflows: `pipeline-flow` → discovery → explore →
