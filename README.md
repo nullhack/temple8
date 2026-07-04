@@ -74,5 +74,5 @@ knowledge + asset templates (for projects with a UI surface) and `docs/research/
 ## Workflow
 
 The staged-contract pipeline runs discover → explore → plan → build → deliver →
-shipped, driven one state at a time through flowr. See `AGENTS.md` for the full
-operating discipline, the driving loop, and the flowr commands.
+shipped, driven one state at a time through flowr. See `AGENTS.md` for the
+binding constraints, the driving loop, and the flowr commands.

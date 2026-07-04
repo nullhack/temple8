@@ -53,7 +53,7 @@ Sessions live at `.cache/sessions/<id>.yaml` (gitignored). `--flows-dir` overrid
 ### The state-driving protocol
 
 1. `check --session <id>` → parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
-2. Verify every `input artifacts` path exists on disk — missing = stop, do not assume (Golden Rule).
+2. Verify every `input artifacts` path exists on disk — missing = stop, do not assume (binding constraint 3).
 3. Dispatch the agent named in `dispatch_to` as a subagent, with the `skills` paths (`.opencode/skills/<name>/SKILL.md`, listed order = execution order) and the input artifacts. The dispatched agent writes only to `output artifacts`.
 4. The dispatched agent returns asserted evidence (e.g. `stubtest-clean=true`).
 5. `transition <trigger> --session <id> --evidence k=v …` fires the guarded advance; `next --session <id>` previews open/blocked if unsure.

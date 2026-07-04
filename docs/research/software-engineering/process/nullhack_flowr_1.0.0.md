@@ -30,7 +30,7 @@ flowr 1.0.0 is the first stable release of a non-deterministic state machine spe
 flowr defines what a workflow IS, not what it DOES. A YAML file declares structure; a validator checks integrity; tools query, track, and visualise. Because the format is precisely defined, validators/editors/visualisers/session-trackers interoperate across any conforming project. The non-determinism is in the routing: a state may declare several `next` transitions, and the orchestrator (an external agent) decides which to fire by asserting evidence against the guarded conditions — flowr never executes the work itself.
 
 ## Relevance
-flowr is the workflow engine that powers temple8's staged-contract pipeline. This card grounds the `workflow/flowr-operations` knowledge: the session model, the subflow call-stack, the conditions/evidence model, the validation rules, and the CLI surface that the orchestrator drives one state at a time. The "golden rules" of the operating discipline (no skip state, no bypass dispatch, evidence-based transitions) are direct consequences of this specification.
+flowr is the workflow engine that powers temple8's staged-contract pipeline. This card grounds the `workflow/flowr-operations` knowledge: the session model, the subflow call-stack, the conditions/evidence model, the validation rules, and the CLI surface that the orchestrator drives one state at a time. The "binding constraints" (no skip state, no bypass dispatch, evidence-based transitions) are direct consequences of this specification.
 
 ## Related Research
 Connects to finite state machine theory (Harel, 1987) and workflow management patterns (Russell et al., 2006).

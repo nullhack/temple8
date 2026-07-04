@@ -4,7 +4,7 @@ A Python project with the staged-contract workflow wired in (flow set,
 agents/skills/knowledge, CI, tooling). Drive the pipeline one state at a time
 through flowr.
 
-## Operating discipline
+## Binding constraints
 
 1. **flowr is the single router.** Every state change runs through flowr — no improvised routing, no skipping states.
 2. **The dispatched agent does the work.** Each state names one agent in `dispatch_to`; the orchestrator dispatches it, and that agent produces the artifacts and asserts the evidence. The orchestrator never authors the work.
@@ -21,9 +21,9 @@ outside the loop is untracked. One state per todo; regenerate on every
 transition.
 
 1. **Read** — `flowr check --session <id>`; parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
-2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (discipline 3).
+2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (binding constraint 3).
 3. **Dispatch** — call the agent named in `dispatch_to` with the `skills` paths (`.opencode/skills/<name>/SKILL.md`) and the input artifacts. The dispatched agent writes only to `output artifacts` and returns asserted evidence.
-4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (discipline 4).
+4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (binding constraint 4).
 5. **Transition** — `flowr transition <trigger> --session <id> --evidence k=v …`, then regenerate the todo from the next state's `check`.
 
 Routing is one flow with five subflows: `pipeline-flow` → discovery → explore →

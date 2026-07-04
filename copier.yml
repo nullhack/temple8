@@ -97,4 +97,4 @@ _message_after_copy: |
     2. uv sync --extra dev
     3. uv run python -m flowr session init pipeline-flow --name default
 
-  Drive the pipeline one state at a time. See AGENTS.md for the operating discipline.
+  Drive the pipeline one state at a time. See AGENTS.md for the binding constraints.
