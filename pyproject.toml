@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "temple8"
 version = "10.0.0"
-description = "Spec-driven agent orchestration template with YAML flow definitions, multi-agent dispatch, and BDD traceability"
+description = "Test-driven agent orchestration template with YAML flow definitions, staged test contracts, and BDD traceability"
 readme = "README.md"
 requires-python = ">=3.13"
 license = { file = "LICENSE" }
@@ -42,7 +46,7 @@ default_flow = "pipeline-flow"
 default_session = "default"
 
 [tool.setuptools]
-packages = ["app"]
+packages = []
 
 [tool.ruff.lint]
 ignore = []

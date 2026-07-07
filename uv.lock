@@ -1104,7 +1104,7 @@ wheels = [
 [[package]]
 name = "temple8"
 version = "10.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 
 [package.optional-dependencies]
 dev = [
