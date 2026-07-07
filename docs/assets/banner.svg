@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="temple8 banner — TEMPLE·VIII, Greek temple façade with central lintel">
+  <!--
+    Colors:
+      parchment      #faf7f2   main background
+      parchment-mid  #ede8e0   mid-tone texture band
+      parchment-dark #c8c0b8   stone rule lines
+      brown          #3b2410   primary text, structure
+      brown-mid      #5c3d1e   temple mark fill
+      gold           #c9a84c   middle-dot, accent rules, ∞ glyph
+      stone-shadow   #a09890   column shadows
+  -->
+
+  <!-- ── Background: warm parchment ── -->
+  <rect width="1200" height="300" fill="#faf7f2"/>
+
+  <!-- Subtle horizontal texture band across middle third -->
+  <rect x="250" y="100" width="950" height="100" fill="#ede8e0" opacity="0.45"/>
+
+  <!-- Top and bottom stone-course borders -->
+  <rect x="0" y="0"   width="1200" height="5" fill="#c9a84c" opacity="0.8"/>
+  <rect x="0" y="295" width="1200" height="5" fill="#c9a84c" opacity="0.8"/>
+
+  <!-- ── Left zone (0–260px): temple mark centred at (130,150) ── -->
+  <g transform="translate(130,150)">
+
+    <!-- Pediment -->
+    <polygon
+      points="0,-90 80,-54 -80,-54"
+      fill="#ede8e0"
+      stroke="#c8c0b8"
+      stroke-width="1.4"
+      stroke-linejoin="round"
+    />
+    <!-- Right-rake shadow -->
+    <line x1="0" y1="-90" x2="80" y2="-54"
+          stroke="#a09890" stroke-width="1" opacity="0.4"/>
+
+    <!-- Ceiling shadow: underside of entablature over the inner gap
+         darkens the top of the upper void -->
+    <rect x="-13" y="-42" width="26" height="2"
+          fill="#5c3d1e" opacity="0.45"/>
+    <!-- Floor shadow: top of stylobate under the inner gap
+          darkens the base of the lower void -->
+    <rect x="-13" y="26" width="26" height="2"
+          fill="#5c3d1e" opacity="0.45"/>
+    <!-- Horizontal crossbeam between the two central columns — a lintel
+         spanning x=-13 to x=13, centred at y=-7. Together with the
+         entablature above and stylobate below, it carves two rectangular
+         voids that read as a ghosted 8. -->
+    <rect x="-13" y="-9.5" width="26" height="5"
+           fill="#ede8e0"/>
+    <rect x="-13" y="-9.5" width="26" height="1.5"
+          fill="#a09890" opacity="0.2"/>
+    <line x1="-13" y1="-4.5" x2="13" y2="-4.5"
+          stroke="#5c3d1e" stroke-width="0.9"/>
+    <!-- Underside shadow to give it depth, like a real load-bearing element -->
+    <rect x="-13" y="-4.5" width="26" height="2"
+          fill="#5c3d1e" opacity="0.38"/>
+
+    <!-- Entablature -->
+    <rect x="-80" y="-54" width="160" height="12" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.9"/>
+    <rect x="-80" y="-43" width="160" height="2"  fill="#a09890" opacity="0.3"/>
+
+    <!-- Column 1 -->
+    <rect x="-68" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+    <rect x="-55" y="-42" width="3"  height="70" fill="#a09890" opacity="0.2"/>
+    <!-- Column 2 -->
+    <rect x="-28" y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+    <rect x="-15" y="-42" width="3"  height="70" fill="#a09890" opacity="0.2"/>
+    <!-- Inner-wall shadow: right face of col 2, frames the 8 void -->
+    <rect x="-15" y="-42" width="2"  height="70" fill="#5c3d1e" opacity="0.50"/>
+    <!-- Column 3 -->
+    <rect x="13"  y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+    <rect x="26"  y="-42" width="3"  height="70" fill="#a09890" opacity="0.2"/>
+    <!-- Inner-wall shadow: left face of col 3, frames the 8 void -->
+    <rect x="13"  y="-42" width="2"  height="70" fill="#5c3d1e" opacity="0.50"/>
+    <!-- Column 4 -->
+    <rect x="53"  y="-42" width="15" height="70" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.4"/>
+    <rect x="66"  y="-42" width="3"  height="70" fill="#a09890" opacity="0.2"/>
+
+    <!-- Stylobate — three stepped courses -->
+    <rect x="-80" y="28"  width="160" height="9" fill="#ede8e0" stroke="#c8c0b8" stroke-width="0.7"/>
+    <rect x="-85" y="37"  width="170" height="8" fill="#d8d4cc"/>
+    <rect x="-90" y="45"  width="180" height="7" fill="#a09890" opacity="0.6"/>
+  </g>
+
+  <!-- ── Vertical gold divider at x=250 ── -->
+  <line x1="250" y1="50" x2="250" y2="250" stroke="#c9a84c" stroke-width="1" opacity="0.55"/>
+
+  <!-- ── Centre: gold rule above title ── -->
+  <line x1="280" y1="108" x2="1140" y2="108" stroke="#c9a84c" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- ── Title: TEMPLE·VIII — engraved two-layer effect ── -->
+  <!-- Layer 1: deep shadow — offset +3,+4, dark brown, high opacity -->
+  <text
+    x="713" y="182"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="72"
+    font-weight="300"
+    letter-spacing="18"
+    fill="#3b2410"
+    opacity="0.55"
+  ><tspan>TEMPLE</tspan><tspan letter-spacing="0">·</tspan><tspan letter-spacing="18">VIII</tspan></text>
+  <!-- Layer 2: carved face — true position, warm stone + gold dot -->
+  <text
+    x="710" y="178"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, sans-serif"
+    font-size="72"
+    font-weight="300"
+    letter-spacing="18"
+  ><tspan fill="#f0ece4">TEMPLE</tspan><tspan fill="#c9a84c" letter-spacing="0">·</tspan><tspan fill="#f0ece4" letter-spacing="18">VIII</tspan></text>
+
+  <!-- ── Gold rule below title ── -->
+  <line x1="280" y1="200" x2="1140" y2="200" stroke="#c9a84c" stroke-width="0.8" opacity="0.6"/>
+
+</svg>
