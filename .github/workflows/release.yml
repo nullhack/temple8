@@ -1,9 +1,15 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (e.g. v10.0.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -11,9 +17,12 @@ permissions:
 
 jobs:
   build:
+    name: Build distribution
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: astral-sh/setup-uv@v3
       - run: uv python install 3.13
       - run: uv sync --extra dev
@@ -25,8 +34,10 @@ jobs:
           if-no-files-found: error
 
   publish-pypi:
+    name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
+    environment: pypi
     permissions:
       id-token: write
     steps:
@@ -37,16 +48,26 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
 
   upload-release-assets:
+    name: Attach dist to GitHub release
     needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: github.event_name == 'release'
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - run: gh release upload "$GITHUB_REF_NAME" dist/*
-        env:
+      - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" --title "$TAG" --generate-notes dist/*
+          fi
