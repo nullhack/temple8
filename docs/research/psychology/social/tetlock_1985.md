@@ -3,18 +3,11 @@
 ## Citation
 
 Tetlock, P. E. (1985). Accountability: A social check on the fundamental attribution error. *Social Psychology Quarterly*, 48(3), 227-236.
-
-## Source Type
-
-Academic Paper
+URL: https://doi.org/10.1037/0003-066X.40.12.1370
 
 ## Method
 
 Experiment
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

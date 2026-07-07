@@ -1,95 +1,81 @@
 ---
 domain: software-craft
-tags: [tdd, yagni, kiss, red-green-refactor, test-first]
-last-updated: 2026-05-14
+tags: [tdd, red-green-refactor, yagni, kiss, contract-driven]
+last-updated: 2026-07-01
 ---
 
 # Test-Driven Development
 
 ## Key Takeaways
 
-- TDD follows three phases: RED (write a failing test), GREEN (write the minimum code to pass), REFACTOR (improve structure while keeping tests green) (Beck, 2002).
-- "Minimum code" means no speculative generalization, no premature abstraction, no future-proofing. Only what the test requires right now.
-- YAGNI (You Aren't Gonna Need It, Beck & Jeffries, 1999) is the highest-priority design principle: never add functionality until it is required by a failing test. See the full priority chain in [[#Content]].
-- KISS (Keep It Simple, Stupid) is the second priority: choose the simplest implementation that passes the test.
-- Tests specify observable behaviour, not implementation: a test that breaks during refactoring is coupled to the wrong thing (Meszaros, 2007).
+- The cycle is **red → green → refactor** (Beck, 2002). In this workflow the tests already exist — authored in plan with a `@pytest.mark.pending` mark — so red *removes the mark and confirms the right failure*, it does not write a test.
+- **The right-reason rule**: a new contract fails with `ImportError` (source `.py` absent, the deferred in-body import cannot resolve); a reworked contract fails with an assertion (source stale against the changed contract). A red for any other reason — a typo, a bad fixture, a test that violates its own contract — is rejected, not patched.
+- Green writes the **minimum code** to turn the tests green, implementing the `.py` from its fixed `.pyi`. YAGNI and KISS override every other principle; a hard-coded value is correct when the test needs only that value (Beck & Jeffries, 1999; North, 2006).
+- Refactor restructures the `.py` while the `.pyi` and the tests stay **frozen and green**; it is design-only, never convention compliance — conventions run in CI. A change that needs the `.pyi` is a contract gap escalated at review.
+- The cycle runs **per contract** — a source module and the tests that exercise it — in outside-in dependency order; stubtest is scoped to the modules built this cycle.
+- Source `.py` is kept **naked of docstrings** across the whole cycle — `select` strips any carried over from the last merge, and docstrings are regenerated at deliver/merge from the stable code per [[software-craft/docstring-lifecycle]]. Tests and stubs are naked permanently.
 
 ## Concepts
 
-**RED-GREEN-REFACTOR Cycle** (Beck, 2002; Freeman & Pryce, 2009). The TDD cycle has three phases: RED (write a test that specifies desired behavior and fails), GREEN (write the minimum production code to make the test pass), REFACTOR (improve the code's structure without changing behavior, keeping all tests green). Never skip RED. A test written after the code doesn't drive design.
+**The cycle, adapted.** Beck's (2002) red/green/refactor cycle is the spine, but the entry conditions differ from classical TDD. Here the plan phase has already written the tests as executable specifications (North, 2006), each marked pending so the suite stays green-with-skips. Red is therefore the act of un-marking the target contract's tests and confirming they fail for the right reason; green and refactor then proceed exactly as in classical TDD. The tests drive the implementation because they pre-exist it; what is removed is the test-authoring step, not the test-first discipline.
 
-**Minimum Code (GREEN phase)**. Write the simplest code that makes the failing test pass. This means: no speculative generalization (don't add parameters "for later"), no premature abstraction (don't extract a base class for one implementation), no future-proofing (don't handle cases the test doesn't require). If the test says "return 42", write `return 42`, not a configurable constant.
+**The right-reason rule.** A red that fails for the wrong reason is a broken contract, not a green target. The two right reasons track the two kinds of work: building a contract that has never been implemented yields an `ImportError`, because the deferred import inside each test body cannot resolve a module that does not exist; re-implementing a contract that has changed yields an assertion failure, because the stale source no longer satisfies the revised tests. A red caused by anything else — a name typo, a fixture that does not resolve, a test that contradicts its own `.pyi` — is a defect in the test or the stub, and the response is to reject and escalate, never to patch the test so it fails for an acceptable reason.
 
-**Design Principle Priority**. When writing code or refactoring, follow the priority order defined in the REFACTOR Phase Rules below. YAGNI overrides everything: if the test doesn't require it, don't write it. KISS overrides DRY: sometimes a small duplication is simpler than the wrong abstraction.
+**Minimum code, YAGNI first.** Green writes the simplest code that passes the tests, and "simplest" is enforced by a priority: YAGNI (Beck & Jeffries, 1999) trumps everything — if no test requires it, it is not written — and KISS trumps DRY, because a small duplication is often simpler than the wrong abstraction. Hard-coded values are not just permitted but correct when the test supplies only that value; a configurable constant invented for a future the tests do not describe is exactly the speculative generality YAGNI forbids.
 
-**Test as Specification** (North, 2006). In TDD, tests are specifications, not verification. Each test specifies one observable behavior. The test is written first because it drives the design of the production code, not because it verifies implementation after the fact.
+**Refactor under green, design only.** Refactor improves the `.py`'s structure while every test stays green, because the tests are the safety net that makes restructuring safe. Two boundaries are fixed: the `.pyi` does not move (a refactor that needs to change it has found a contract gap, escalated at review), and conventions do not run (no docstrings, no formatting pass — those are merge-time per [[software-craft/docstring-lifecycle]]). Refactor is where SOLID, Object Calisthenics, and the smell catalogue are applied, each when its symptom appears, never speculatively.
 
-**Specific Feedback Drives Improvement** (Hattie & Timperley, 2007). The most effective feedback is specific about what needs to change and how. Self-declaration checklists (AGREE/DISAGREE on specific criteria) are more effective than vague "looks good" reviews because they force the reviewer to articulate exactly what passes and what fails.
-
-**Test List Mechanics**. Build the test list from Example titles in the feature file (each Example maps to a `test_<slug>` function via pytest-beehave). Order tests by dependency: fewest dependencies first, most impactful within that set. Work on one Example at a time (WIP limit of 1). Each Example gets a full RED-GREEN-REFACTOR cycle before moving to the next.
-
-**Commit Discipline**. Refactor commits are separate from feature commits. Never mix a structural change with a behavior addition in one commit. This keeps history bisectable and every commit leaves tests green. See [[software-craft/git-conventions]] for granular and squashed commit formats.
-
-
+**Per contract, in dependency order.** The unit of work is one contract: a source module and the tests that exercise it, taken through the whole cycle. Contracts are picked in outside-in dependency order so that a module is built only after the modules it imports; a shared foundation module with no external boundary of its own is pulled in alongside the first contract that depends on it. stubtest runs scoped to the modules built this cycle, because the whole-suite run would false-fail on unbuilt sibling stubs.
 
 ## Content
 
-### RED Phase Rules
+### The cycle, adapted
 
-- Write exactly one test for the next unimplemented behavior
-- The test must fail for the right reason (not a syntax error)
-- The test must express the desired behavior from the user's perspective
+| Phase | Classical TDD | This workflow |
+|---|---|---|
+| red | write a failing test | un-mark an existing test; confirm it fails for the right reason |
+| green | minimum code to pass | implement `.py` from its fixed `.pyi` |
+| refactor | improve structure, stay green | improve `.py`; `.pyi` and tests frozen; design only |
 
-### GREEN Phase Rules
+The discipline test-first is preserved — the tests still precede the implementation — by the plan phase writing them ahead of time, not by the build phase writing them inline.
 
-- Write the minimum code to pass the test
-- Hard-coded values are acceptable if the test only requires that value
-- Do not add parameters, abstractions, or features the test doesn't require
-- If the test is trivially satisfied, write a more specific test
+### The right-reason rule
 
-### REFACTOR Phase Rules
+| Red reason | Kind of work | Verdict |
+|---|---|---|
+| `ImportError` on the deferred in-body import | new contract (source absent) | right reason — proceed to green |
+| assertion failure against changed tests | rework (source stale) | right reason — re-implement |
+| `NameError`, fixture resolution, test contradicts its `.pyi` | test or stub defect | reject — escalate, do not patch |
 
-- All tests must remain green throughout refactoring
-- Only refactor if there is a test that would break if the refactoring is wrong
-- Apply design principles in priority order: YAGNI > KISS > DRY > ObjCal > Smells > SOLID > patterns
-- If no improvement is needed, skip refactoring and proceed to the next test
-- Design-only refactoring: no convention compliance
+Removing the `@pytest.mark.pending` decorator can orphan its `import pytest` when the test used pytest for nothing else (no `raises`, no `approx`, no parametrize); dropping that now-unused import is part of red — a lint side-effect of un-marking, not a behaviour edit, so it stays within the no-test-editing discipline.
 
-### Test List
+### Minimum code, YAGNI first
 
-- List all Examples from the feature file before starting
-- Order by fewest dependencies first; most impactful within that set
-- Mark each Example as pending, in-progress, or done
-- WIP limit: exactly one Example in-progress at a time
+- if the test needs only `42`, return `42` — do not invent a configurable constant;
+- no parameter, abstraction, or branch the test does not exercise;
+- a small duplication beats a premature abstraction (KISS over DRY);
+- when the trivial implementation passes, the next test is the cure, not more code.
 
-### During TDD Cycles
+### Refactor under green, design only
 
-- Run `test-fast` only: no lint, no pyright, no docstring checks, no coverage unit tests
-- Write minimum code following design principle priority (see REFACTOR Phase Rules)
-- Refactor for design correctness only: no convention compliance
-- The goal is proving design correctness, not convention compliance
+| Allowed in refactor | Not allowed |
+|---|---|
+| restructure the `.py` | edit the `.pyi` (escalate a contract gap) |
+| apply SOLID / Object Calisthenics / smell fixes when triggered | edit the tests |
+| design improvement only | convention compliance (docstrings, formatting — merge-time per [[software-craft/docstring-lifecycle]]) |
 
-### After Design Approval
+### Per contract, in dependency order
 
-- The polish state (after feature acceptance) applies conventions: run `task conventions` for full lint, `ruff format .` for formatting, add docstrings to all public classes and methods, add type annotations to all public signatures, run `task static-check` for pyright
-- IF coverage drops below threshold after polish → run `task test-build` to see missing lines, then add coverage tests in `tests/unit/`
-- Conventions are only applied after feature acceptance, never before
-
-### Commit Strategy
-
-- Feature commits: one per Example achievement (RED→GREEN→REFACTOR)
-- Refactor commits: separate from feature commits, one per catalogue entry
-- See [[software-craft/git-conventions]] for commit message format
+- one contract per cycle: a source module and its tests, red through ship;
+- pick the lowest-layer contract first; a module is built after what it imports;
+- a shared foundation module rides alongside the first contract that needs it;
+- stubtest is scoped: `stubtest <package>.<mod> tests.<test_mod>` this cycle, whole-suite at merge.
 
 ## Related
 
-- [[requirements/gherkin]]
-- [[architecture/technical-design]]
-- [[software-craft/test-design]]
-- [[software-craft/git-conventions]]
-- [[software-craft/object-calisthenics]]
-- [[software-craft/smell-catalogue]]: smells are identified and resolved when improving code structure
-- [[software-craft/design-patterns]]: patterns are applied when smells trigger them
-- [[software-craft/refactoring-techniques]]: refactoring techniques for improving code structure
-- [[software-craft/solid]]: SOLID is part of the design principle priority
-- [[software-craft/refactoring]]: when and how to refactor, clean code, technical debt
+- [[software-craft/test-design]] — what a good test looks like (the specifications red un-marks)
+- [[software-craft/test-stubs]] — the `.pyi`/`.py` pair whose drift green keeps clean
+- [[software-craft/source-stubs]] — the fixed `.pyi` green implements to
+- [[software-craft/refactoring-techniques]] — the moves refactor applies
+- [[software-craft/code-review]] — the review that gates the cycle's output
+- [[software-craft/docstring-lifecycle]] — source `.py` stays naked through the cycle; docstrings regenerate at merge

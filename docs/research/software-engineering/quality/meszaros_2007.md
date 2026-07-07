@@ -3,18 +3,11 @@
 ## Citation
 
 Meszaros, G. (2007). *xUnit Test Patterns: Refactoring Test Code*. Addison-Wesley.
-
-## Source Type
-
-Practitioner Book
+URL: https://xunitpatterns.com/
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

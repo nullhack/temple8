@@ -1,77 +1,100 @@
 ---
 domain: software-craft
-tags: [test-design, observable-behavior, test-coupling, semantic-alignment, abstraction-level]
-last-updated: 2026-05-14
+tags: [test-design, observable-behaviour, sociable-tests, spec-value-fidelity, property-tests]
+last-updated: 2026-07-01
 ---
 
 # Test Design
 
 ## Key Takeaways
 
-- Tests should specify observable behaviour, not verify implementation: a test that breaks when refactoring preserves behaviour is coupled to the wrong thing (Meszaros, 2007).
-- The semantic alignment rule: tests must operate at the same abstraction level as the acceptance criterion they verify. If the AC says "the user presses W," the test sends W through the input mechanism, not through an internal method call.
-- Test coupling exists on a spectrum: feature tests (most resilient) > unit contract tests > property-based tests > white-box tests (most brittle, avoid).
-- One observable behaviour per test: each test should fail for exactly one reason and pass for exactly one reason.
-- Hard-coded values are acceptable when the test only requires that value; parameterising prematurely couples the test to assumptions about future needs.
-- Spec Value Fidelity: every value in the specification carries domain intent; the test must use it in a way that reflects that intent — no noise patterns to satisfy traceability.
-- Property tests: all invariant/structural rules, not just @bug Examples. Examples alone cannot prove an invariant (MacIver, 2016).
+- A test specifies **observable behaviour through the public interface**, not the implementation; a test that fails under a behaviour-preserving refactor is coupled to the wrong thing and erodes trust in the suite (Meszaros, 2007).
+- This project writes **sociable tests at two grains only** — integration (narrow: a boundary or adapter with its real internal wiring and a replayed cassette or fixture) and E2E (broad: the whole system through its entry point). Internal collaborators run real; there are no solitary unit tests that mock them away (Fowler, 2014; Vocke).
+- **One observable behaviour per test**: each test fails for exactly one reason and passes for exactly one reason, so a failure points unambiguously at the broken contract.
+- **Spec value fidelity**: every literal in a test carries domain intent — an identifier, a boundary, an expected outcome; noise patterns that satisfy structure without meaning (assigning to `_`, padding assert messages) are forbidden.
+- Invariants that must hold across *all* inputs are proven by **property tests** (Hypothesis), never by any finite set of examples; examples confirm a case, only a generated range can probe a rule (MacIver, 2016).
 
 ## Concepts
 
-**Observable Behaviour vs Implementation Coupling** (Meszaros, 2007; Google Testing Blog, 2013; Martin, 2017). A test coupled to implementation uses private methods, internal state, or implementation-specific assertions. When the implementation changes (even if behaviour is identical), coupled tests fail. This produces false negatives that erode trust in the suite. Decoupled tests use public interfaces and assert on observable outcomes, remaining green through refactoring because they verify what the system does, not how it does it.
+**Observable behaviour, not implementation.** Meszaros (2007) draws the line that organises everything else: a test ought to verify what the system *does* through its public interface, never *how* it does it through its privates. A test that reaches into internal state or private methods is coupled to the implementation, so it breaks when the implementation changes even though behaviour is preserved — a false negative that trains the team to ignore red tests. Testing through the public interface leaves the test agnostic to the internal structure: a different class layout or a rewritten algorithm keeps the suite green as long as the observable outcome holds.
 
-**Semantic Alignment Rule**. Tests must operate at the same abstraction level as their acceptance criteria. If the AC says "the user presses W," the test should send W through the actual input mechanism. If the AC says "`update_player` receives 'W'," the test calls `update_player("W")` directly. Mismatched abstraction levels create either brittle tests (too low-level) or vague tests (too high-level).
+**Sociable, at two grains — never solitary.** Fowler (2014) separates *solitary* unit tests (every collaborator replaced by a double) from *sociable* ones (real collaborators run), and Vocke notes the term "unit" is too contested to carry the meaning alone. This project takes the sociable, classicist side and fixes the grains: a *narrow* integration test exercises one external boundary or adapter with its real internal wiring, replacing only the external collaborator with a replayed cassette or fixture; a *broad* E2E test exercises the full system through its entry point. Internal collaborators are never mocked away — that is the solitary style explicitly rejected here, because mocking the insides reimplements the implementation in the test and couples the two.
 
-**Test Coupling Spectrum** (Meszaros, 2007; Feathers, 2004; MacIver, 2016; King, 1991). Feature tests exercise the system through its public interface and are most resilient to refactoring. Unit contract tests verify a module's protocol (its inputs, outputs, and invariants) without depending on internals. Property-based tests (e.g., Hypothesis) verify invariants across a range of inputs rather than specific cases. White-box tests inspect internal state or private methods and are the most brittle. Avoid them unless characterising legacy code (Feathers, 2004).
+**One behaviour per test.** A test that asserts several independent behaviours fails ambiguously: the red signal points at the test, not at the broken behaviour. The discipline is one observable behaviour per test — one reason to fail, one reason to pass — so the title of the failing test names the broken contract directly. Multiple assertions are permitted only when they verify the same behaviour from different angles.
 
-**Characterization Tests** (Feathers, 2004). When modifying code without existing tests, write characterization tests first: tests that document what the code currently does, not what it should do. This creates a regression net before any changes. Characterization tests are temporary. Once the code is under test, replace them with specification tests that assert desired behaviour.
+**Spec value fidelity.** Every value in a specification exists because it carries domain meaning — an entity identifier, a boundary value, a configuration, a concrete expected outcome. The test must use each value in a way that reflects that intent, not invent noise to satisfy a structural check. Assigning a literal to `_`, stuffing it into an assert message, or building a helper whose only purpose is to consume it, all satisfy traceability while signifying nothing; if a spec value does not fit naturally into the test, the mismatch signals a spec problem, not a test workaround.
 
-**Semantic Depth**. A test that exists for an Example but exercises domain logic directly instead of through the entry point described in the acceptance criterion has correct structural traceability but wrong semantic depth. Every feature test must exercise the entry point the AC describes: if the AC specifies a command-line invocation, the test must invoke the command handler; if the AC specifies an API call, the test must call the API endpoint. Structural traceability (every Example has a test function) without semantic depth (every test exercises the right entry point) creates a false sense of coverage.
-
-**Spec Value Fidelity**. Every literal, placeholder, and Examples table column in a specification exists because the PO judged it domain-meaningful — an entity identifier, a boundary value, a configuration, a concrete expected outcome. The test must use each value in a way that reflects that domain purpose. Noise patterns that satisfy structural traceability without domain meaning — assigning to `_`, stuffing strings into assert messages, helper functions whose sole purpose is consuming a literal, using values in comments or docstrings to satisfy traceability — violate this fidelity. If a spec value does not fit naturally in the test, the mismatch signals a spec clarity issue, not a test workaround opportunity.
-
-**Invariant Property Tests**. Structural (invariant) rules describe properties that must hold across all inputs, not specific behaviours. Examples alone cannot prove an invariant — they only confirm it holds for the selected cases (MacIver, 2016). When a Rule asserts an invariant (e.g., "total must equal sum of parts," "output must be sorted," "balance must never go negative"), the specification pre-mortem and behavior pre-mortem surface candidate counterexamples. These counterexamples become assertions in a Hypothesis property test (`tests/unit/`) that verifies the invariant across a generated range of inputs, catching failure modes that no finite set of hand-picked Examples could have found.
+**Property tests prove invariants; examples only confirm cases.** MacIver (2016) makes the limit plain: no finite set of hand-picked examples can prove an invariant — a general rule that must hold for all inputs can only be probed by generating inputs across the space. When a rule is structural ("the total always equals the sum of parts", "output is always sorted", "balance never goes negative"), a Hypothesis property test asserts the property over a generated range and finds failure modes no hand-picked set could reach. Examples remain the right tool for specific behaviours and exact outcomes; properties are for the rules that claim universality.
 
 ## Content
 
-### Test Coupling Spectrum
+### Observable behaviour, not implementation
 
-| Level | What it tests | Resilience | When to use |
-|---|---|---|---|
-| Feature test | Observable behaviour through public interface | Highest | Every Example acceptance criterion |
-| Unit contract test | Module protocol (inputs, outputs, invariants) | High | Complex domain logic with clear contracts |
-| Property test | Invariants across input ranges | Moderate | Bug requirements; all structural/invariant rules |
-| White-box test | Internal state or private methods | Lowest | Legacy characterization only |
+The coupling shows up the moment a behaviour-preserving refactor lands:
 
-### Semantic Alignment Examples
-
-| Acceptance Criterion | Correct Test | Wrong Test |
+| Test style | What it touches | Under a behaviour-preserving refactor |
 |---|---|---|
-| "The player moves north" | Send W through input handler, assert position changes | Call `_update_coordinates(0, 1)` directly |
-| "`update_player` receives 'W'" | Call `update_player("W")`, assert it returns the expected state | Simulate keyboard event at OS level |
-| "An invalid move is rejected" | Send invalid input, assert error response | Check `_valid_moves` list internally |
+| observable-behaviour | public interface, returned values, raised errors, observable state | stays green — the contract held |
+| implementation-coupled | private methods, internal state, call sequences | goes red — the insides moved |
 
-### One Behaviour Per Test
+The cost of coupling is trust: a suite that red-flags refactors gets ignored, and the real failures get lost in the noise. Testing through the public interface is what makes aggressive refactoring safe — the test guards the behaviour while the implementation underneath is restructured freely.
 
-- Each test should fail for exactly one reason
-- Each test should pass for exactly one reason
-- If a test has multiple assertions, they must all verify the same behaviour from different angles
-- Multiple behaviours → multiple tests, each traced via title-based mapping
+### Sociable, at two grains
 
-### Test Location Convention
+| Grain | Scope | Replaced with a double | Runs real |
+|---|---|---|---|
+| integration (narrow) | one external boundary or adapter + its internal wiring | the external collaborator (via cassette/fixture, per [[software-craft/external-fixtures]]) | all internal collaborators |
+| E2E (broad) | the whole system, entry point to edge | nothing inside the system (only the external world, via cassette) | everything |
 
-| Directory | Contents | Traceability |
-|-----------|----------|-------------|
-| `tests/features/<feature_slug>/` | BDD example tests: one test per Example in the feature file | Title-based mapping (pytest-beehave) |
-| `tests/unit/` | Unit contract tests: coverage-boosting tests for implementation branches not covered by BDD examples | No Example mapping |
-| `tests/unit/` | Property tests: invariant verification across input ranges | No Example mapping (except `@bug` examples); all structural/invariant rules must have one |
+The line that is *never* crossed is mocking an internal collaborator. Replacing the outside of the system at a boundary is principled — it isolates the system from a service it does not own; replacing the inside rewrites the implementation inside the test, so a change to the implementation has to be made twice and the two copies drift. This is the classicist position Fowler describes, taken at the narrow and broad grains only; the solitary middle is deliberately empty.
 
-**Rule:** `tests/features/` is exclusively for BDD example tests that trace back to Examples in the feature file via pytest-beehave's title-based mapping. Coverage-boosting tests that exercise implementation branches not covered by any Example are unit contract tests and belong in `tests/unit/`, not `tests/features/`. A test not mapped to an Example in `tests/features/` violates the traceability contract enforced by `beehave check`.
+### One behaviour per test
+
+- one reason to fail, one reason to pass;
+- multiple assertions allowed only when they verify the same behaviour from different angles;
+- two independent behaviours become two tests, each named for what it asserts;
+- the failing test's name is the diagnosis — if it reads "test_X" and points at nothing specific, it is testing too much.
+
+### Spec value fidelity
+
+| The spec supplies | Fidelity looks like | Noise looks like |
+|---|---|---|
+| `"USD"` as a base currency | pass it as the base; assert on the rate it yields | assign it to `_`; stuff it in an assert message |
+| `10` as an amount | convert it; assert the converted amount | bury it in a helper that consumes it |
+| `8.77` as the expected result | assert equality against it | derive it from the computation under test (tautology) |
+
+If a value the interview supplied does not fit the test naturally, that is a signal the spec is unclear about why the value matters — not licence to absorb it as noise.
+
+### Vacuous assertions
+
+A vacuous assertion is one a trivial implementation satisfies — a constant return, an empty collection, an identity function, a `return True`. A test that cannot fail under a trivial impl tests nothing, and the worst case is that it sails through every gate and ships as if it were a contract. The discipline: for every assertion in a test body, ask whether it would fail under a trivial implementation of the system under test; if it would not, the assertion is the smell, not the test surface.
+
+| Smell | Example | Why it's vacuous |
+|---|---|---|
+| `hasattr`-only | `assert hasattr(report, "generated_at")` | asserts the attribute exists, nothing about its value — a constant attribute passes |
+| no-op helper | `_to_jsonable(value: object) -> object: return value` | identity function passes as "JSON-serialisable"; `return True`, `assert True` are the same |
+| lower-bound-only | `assert x >= 0` against an empty fixture | trivially true when no value is negative |
+| constant-satisfiable | a renderer test that a constant-string renderer passes | any constant output satisfies — the assertion pins nothing about the renderer's behaviour |
+| tautology | `assert result == compute(...)` where `result` is `compute(...)` | the expected value is derived from the computation under test; the test cannot fail |
+
+The vacuous-assertion check is gated at `review-test-stubs` (the `vacuous-assertion-free` evidence key), not deferred to `simulate-contracts`. A vacuous test that reaches the simulation gate has already failed the review gate; the simulation catches what review missed, but review is where the smell belongs.
+
+### Property tests prove invariants
+
+An example can only confirm a rule holds for the chosen case; it cannot prove the rule holds generally. Hypothesis (MacIver, 2016) generates inputs across the declared strategy and shrinks any failing case to the smallest counterexample, so a property test is the right tool when the requirement is universal:
+
+| Requirement shape | Right tool |
+|---|---|
+| "converts 10 USD to 8.77 EUR" (specific case) | an example test with literal values |
+| "the converted amount rounds to cents" (universal rule) | a Hypothesis property over generated amounts |
+| "history is always latest-first" (universal ordering) | a Hypothesis property over generated histories |
+
+Property tests live alongside the example tests in the same suite; they are not a separate layer, just the tool that matches a universal claim.
 
 ## Related
 
-- [[software-craft/tdd]]: the RED-GREEN-REFACTOR cycle that produces these tests
-- [[software-craft/code-review]]: reviewing whether tests meet these quality criteria
-- [[requirements/gherkin]]: the specification format that drives test design
-- [[software-craft/source-stubs]]: creating typed stubs that maintain semantic alignment
-- [[requirements/pre-mortem]]: behavior pre-mortem surfaces counterexamples for property tests
+- [[software-craft/test-stubs]] — the `.pyi` signature file each test is authored against first
+- [[software-craft/external-fixtures]] — the cassettes and fixtures that replace the external collaborator at the boundary
+- [[software-craft/code-review]] — the review method that checks these criteria are met
+- [[software-craft/smell-catalogue]] — a vacuous test is dead weight in the Dispensables sense; the smell catalogue cross-links back
+- [[software-craft/solid]], [[software-craft/object-calisthenics]] — the design discipline the bodies are held to

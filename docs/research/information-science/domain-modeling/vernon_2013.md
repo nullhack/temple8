@@ -3,18 +3,11 @@
 ## Citation
 
 Vernon, V. (2013). *Implementing Domain-Driven Design*. Addison-Wesley.
-
-## Source Type
-
-Practitioner Book
+URL: https://www.informit.com/store/implementing-domain-driven-design-9780321834577
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

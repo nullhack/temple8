@@ -1,0 +1,29 @@
+---
+name: simulate-contracts
+description: "Compile the contract set in your head — simulate how the real application would run from the specs, and disprove (or confirm) it works before any source .py is written."
+---
+
+# Simulate Contracts
+
+1. Load [[requirements/spec-simulation]], [[software-craft/test-stubs]], [[methodology/simplicity-discipline]] — the simulation method, the test-pair drift rules, and the scope-minimal rule.
+2. **Frame the step.** This is NOT a ceremony that validates the model "works" — the model is already a binding input (`data-model.md`), not something this gate ratifies. This step is a **compiler**: it takes the contract set (test `.pyi`, test `.py`, source `.pyi`, the modeled schema, the captured cassettes, the interview) and simulates how the real application would run if a correct implementation made every test pass — the way a compiler walks an AST to prove the program type-checks and links, before any code executes. You are running the program mentally, against the specs, to **disprove or confirm** that it works. The output is a verdict (`accepted`) or a named gap (`needs-test-bodies`, `needs-source-stubs`, `needs-capture`, `needs-elicitation`) — never a clean stamp on a tool run alone.
+3. **Walk the e2e path hop by hop, capturing observations at each hop.** For each hop in the entry-point e2e (entry → adapter → domain → persistence → side effect):
+   - (a) **Walk the hop** — confirm the type handed across matches the type the receiver declares; the value carried matches the shape the producer emits; the side effect the hop performs is one a contract actually specifies.
+   - (b) **Append the observation to `.cache/<session_id>/journal.md` at this hop** — not only the verdict at the end. The journal is a per-hop record, not a summary; an observation recorded at the hop it was made is the evidence the verdict rests on. The content is mandated (per-hop observations exist, in any structure the reviewer chooses); the format is not.
+   - (c) **Cross-check the hop against the spec** (`interview-notes.md`, `glossary.md`, `data-model.md`) — does the spec require something this hop doesn't carry? does the hop carry something the spec doesn't name? A hop that fails this check is a spec gap.
+   - (d) **Name any gap precisely before continuing** — which hop, which value, which spec finding. IF a hop breaks or two tests disagree on a value's shape THEN stop and route back to plan; do not advance on a clean tool run alone.
+4. **Spec-diff.** For each consolidated interview finding, confirm the test set **enforces** it (not merely names it). A finding named in a test but not enforced — a vacuous assertion, a lower-bound-only check, an `assert True`, an effect asserted without pinning how — is a gap, not a pass. This is distinct from traceability (step 6), which counts whether a finding has any test; spec-diff asks whether the test would actually fail if the finding were violated. IF a finding is named but not enforced THEN route to `needs-test-bodies` with the finding and the offending test cited.
+5. **Build-implied gaps.** Name any ambiguity a correct implementation would surface:
+   - **two impls both pass but only one matches spec** — the contract under-determines the behaviour;
+   - **an effect asserted without pinning how** — the test asserts an outcome but not the mechanism, so any mechanism passes (a constant, a no-op, a real computation);
+   - **a side effect the test doesn't observe** — the contract claims a side effect (a write, a publish, a state change) but no test observes it, so the implementation could omit it and pass;
+   - **a persistence shape the test asserts but the model doesn't declare** (or vice versa) — disagreement with `data-model.md`.
+   Each is a build-implied gap. The gate question expands from "would passing = working?" to "would passing = working **and unambiguous**?". IF any build-implied gap is found THEN route to `needs-test-bodies` (or `needs-source-stubs` if the ambiguity is at the source-stub surface) with the gap cited.
+6. **Traceability.** Every consolidated interview finding maps to at least one test or an explicit deferral, and every external service has a captured cassette its tests replay. This is the structural count; it is necessary but not sufficient — step 4 (spec-diff) is what makes a finding "tested" mean "enforced".
+7. Run pyright on the combined set. The gate is zero errors; `reportMissingModuleSource` is expected (source .pyi exist but no .py yet) and is tolerated.
+8. Check no-orphans: every source .pyi symbol is exercised by at least one test, and every test reference is backed by a source .pyi.
+9. Check layer order: external-boundary stubs complete before adapter stubs, and so on.
+10. Run stubtest on the tests to confirm zero drift between every test .pyi and its sibling .py per [[software-craft/test-stubs]]. Source stubtest waits for build — no source .py exists yet.
+11. Run the dev ruff check (`ruff check .`) on the whole project; the gate is zero violations. Restructure lint (`SIM`, `RUF`) and `ruff format` are merge-time per [[software-craft/docstring-lifecycle]] — a readability restructure is not a plan defect. Plan-authored tests and stubs must pass the bug-catcher set before build.
+12. IF a test references an external exchange no captured cassette covers THEN append the finding to `.cache/<session_id>/journal.md` (service, the missing case) and fire `needs-capture`. This routes back to explore to record the missing reality, not forward to build.
+13. **Emit the verdict.** `accepted` only when the walkthrough reached no broken hop, the value traces found no disagreement, the spec-diff found no named-but-not-enforced finding, no build-implied gap was named, and the tool floor is clean. Any other outcome is a named gap routed to its target with the specifics (which hop, which value, which finding, which ambiguity) recorded in the journal.

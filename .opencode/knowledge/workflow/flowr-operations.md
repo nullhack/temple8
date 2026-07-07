@@ -1,119 +1,124 @@
 ---
 domain: workflow
-tags: [flowr, cli, commands, transitions, evidence, session, config]
-last-updated: 2026-05-06
+tags: [flowr, state-machine, session, subflow, evidence, cli, routing]
+last-updated: 2026-07-02
 ---
 
-# Flowr Operations
+# flowr Operations
 
 ## Key Takeaways
 
-- All commands output **JSON by default** (machine-parseable). Use `--text` for human-readable output.
-- Use `python -m flowr check --session` to inspect current state's attrs, owner, skills, and transitions.
-- Use `python -m flowr next --session` to see **all** transitions with status markers (`"open"` / `"blocked"`) and condition hints.
-- Use `python -m flowr transition <trigger> --session --evidence key=value` to advance to the next state.
-- Use `python -m flowr check --session <trigger>` to see the conditions guarding a specific transition.
-- Use `python -m flowr session init <flow> --name <name>` to create a session; `session init` auto-enters subflow when first state has a `flow:` field.
-- Set evidence based on work completed before advancing. Guarded transitions will not pass without it.
-- Always activate the virtual environment first: `source .venv/bin/activate`.
+- flowr is a non-deterministic state machine **specification** — a YAML file declares structure (states, transitions, guards), not behaviour; flowr never runs the work, it routes (nullhack/flowr, 2026).
+- Drive one state at a time: `check` reads the current state's attrs; the orchestrator dispatches the agent named in `dispatch_to`; that agent asserts evidence; `transition` advances. This is the whole loop.
+- A state with `flow:`/`flow-version:` is a **subflow pointer**: entry pushes a stack frame, exit pops it; the parent's `next` key must match the child's exit name; `session init` auto-enters the first subflow.
+- Escalations re-enter the target subflow at its **first state** — flowr keeps no position memory — so `build → plan` on a contract gap re-runs plan from `author-test-stubs`, and `plan/explore → discover` re-runs the interview funnel from the top.
+- A guarded transition fires only when its condition group is satisfied; the orchestrator asserts evidence with `--evidence key=value` (one per condition key). flowr **collects asserted evidence, it does not run checks** — CI is the enforcement backstop per [[methodology/separation-of-concerns#evidence-vs-enforcement]].
+- Sessions persist to `.cache/sessions/<name>.yaml` (filesystem is the source of truth); `state.attrs` is a free-form `dict`, so the key names (`dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`) are project convention, not enforced by flowr.
 
 ## Concepts
 
-**JSON-First Output**: All flowr commands output JSON by default. Parse the structured output to extract state metadata, transition status, and conditions programmatically. Use `--text` flag for human-readable plain text when needed.
+**Specification, not engine.** A flow file declares the graph: states with attributes, transitions with optional guards, exits. flowr validates the graph (seven MUST checks at load — every `next` resolves, no ambiguous targets, parent `next` keys match child `exits`, no cross-flow cycles, exits referenced, named conditions resolve, defaulted params supplied), queries it (`check`, `next`), and advances it (`transition`). It has no opinions about retries, timeouts, or error handling, and it never executes the dispatched work — that is the external agent's job (nullhack/flowr, 2026).
 
-**State Entry**: Before starting work, inspect the current state with `check --session` to confirm the owner, skills, input artifacts, output artifacts, and available transitions. The output is a JSON object with `id`, `attrs`, and `transitions` keys.
+**The state-reading loop.** The orchestrator never improvises routing. At each step it runs `check` to read the current state's attrs — `dispatch_to` (the one dispatched agent), `skills` (the procedures), `input artifacts` (what must be on disk), `output artifacts` (what may be written), `git branch`, and `conditions` (any guarded transitions). It verifies the inputs exist, dispatches that agent with the skill paths and inputs, then asserts that agent's evidence to fire the next `transition`. One state, one dispatch.
 
-**Enhanced `next` Output**: The `next` command shows **all** transitions (open and blocked) with status markers. Each transition has `trigger`, `target`, `status` (`"open"` or `"blocked"`), and `conditions` (null if unguarded, or a dict of condition expressions). This lets you identify what evidence is needed to unblock guarded transitions.
+**Subflows and the call stack.** A state carrying `flow:` is a pointer into a child flow; entering it pushes a frame `({parent_flow, parent_state})` onto a stack and sets the session to the child's first state. When a transition's target is one of the child's exit names AND the stack is non-empty, flowr pops the frame, restores the parent, and follows the parent state's transition for that exit name — which may itself enter the next subflow. This is how `pipeline-flow` chains discover → explore → plan → build → deliver → shipped through five subflows.
 
-**Evidence**: Some transitions are guarded by conditions (e.g., `feature-accepted: ==ACCEPTED`, `all-ids-have-stubs: ==true`). Set evidence with `--evidence key=value` or `--evidence-json '{"key":"value"}'` when advancing. If a transition is guarded and evidence is not set, the transition will fail.
+**No position memory on escalation.** When a subflow exits on an escalation trigger (e.g. `needs-contracts`, `needs-elicitation`), the parent routes back to the subflow's entry, and re-entry lands at the child's FIRST state — not at the state where it left off. A rework loop therefore re-runs the whole subflow pass; the gates re-verify everything. This is deliberate (a contract change can ripple) but means escalation is heavier than a resume.
 
-**Choosing a Path**: After completing work, use `next` with your evidence. Transitions with `"status": "open"` are available; `"status": "blocked"` transitions show which conditions need evidence. Choose the path that matches your work outcome.
+**Conditions and evidence.** A `next` entry shaped `{to: <state>, when: <name>}` is guarded; the named group lives under the state's `conditions:` block, a map of `{key: expression}` (operators `== != >= <= > <`, plain value = `==`). The orchestrator fires the transition by passing `--evidence key=value` for each key. flowr evaluates the assertion; it does not verify the claim is true — that is CI's job. The evidence keys the temple8 flows use are listed in `AGENTS.md`.
 
-**Flow Name Resolution**: Commands accept short flow names (e.g., `architecture-flow`) or full file paths. Short names are resolved by searching the configured flows directory.
-
-**Sessions**: Sessions persist workflow progress (current flow, state, call stack for subflows) as YAML files in `.cache/sessions/`. Use `--session <name>` on check/next/transition to resolve flow and state from the session. `transition --session` auto-updates the session after advancing. `session init` auto-enters subflow when the first state has a `flow:` field.
-
-**Subflow Exit Resolution**: In flowr v1.0.0, exit names resolve through the parent flow's transition map rather than being used directly as state IDs. This enables subflow chaining (e.g., discovery-flow → architecture-flow) and recursive subflow entry (3-level nesting) without manual state manipulation.
-
-**Configuration**: flowr reads `[tool.flowr]` from `pyproject.toml`. CLI flags override pyproject.toml which overrides defaults. Use `flowr config` to inspect resolved values as a JSON array of key/value/source objects.
+**attrs is free-form.** flowr treats `state.attrs` as an opaque dict; the keys `dispatch_to` / `skills` / `input artifacts` / `output artifacts` / `git branch` / `specialists` / `conditions` are this project's convention for binding a state to a dispatched agent, a procedure, artifacts, and a branch. None are enforced by the engine — they are read by the orchestrator and the agents. Renaming a key changes the convention, not the spec.
 
 ## Content
 
-### Command Reference
+### Command reference
 
-All commands require the virtual environment: `source .venv/bin/activate`
-
-All commands output JSON by default. Add `--text` for human-readable output.
+All commands: `uv run python -m flowr <command>`. Output is JSON by default. `--session <id>` makes any command session-aware.
 
 | Command | Purpose |
-|---------|---------|
-| `python -m flowr validate [<flow>]` | Validate flow definition(s). Returns `{"valid", "violations"}` |
-| `python -m flowr validate --session <name>` | Validate the current (sub)flow from session |
-| `python -m flowr states <flow>` | List all state ids in a flow as JSON array |
-| `python -m flowr states --session <name>` | List states in the current (sub)flow from session |
-| `python -m flowr check <flow> <state>` | Show state attrs, owner, skills, and transitions |
-| `python -m flowr check <flow> <state> <target>` | Show conditions for a specific transition |
-| `python -m flowr check --session <name>` | Show current session state (read-only) |
-| `python -m flowr check --session <name> <trigger>` | Show conditions for a specific transition via session |
-| `python -m flowr next <flow> <state> [--evidence key=value]` | Show all transitions with status markers |
-| `python -m flowr next --session <name> [--evidence key=value]` | Show transitions from session state |
-| `python -m flowr transition <flow> <state> <trigger> [--evidence key=value]` | Advance to the next state |
-| `python -m flowr transition <trigger> --session <name> [--evidence key=value]` | Advance using session (auto-updates) |
-| `python -m flowr mermaid <flow>` | Export flow as Mermaid diagram |
-| `python -m flowr config` | Show resolved configuration as JSON array |
+|---|---|
+| `session init <flow> --name <id>` | Create a session (auto-enters the first subflow) |
+| `check --session <id>` | Current state: attrs + available transitions |
+| `check --session <id> <trigger>` | A specific transition's conditions (open/blocked + the keys needed) |
+| `next --session <id> [--evidence k=v …]` | Valid transitions, marked open/blocked by the evidence given |
+| `transition <trigger> --session <id> [--evidence k=v …]` | Advance (fires only if guarded conditions are met) |
+| `session show --name <id>` | Session state + the subflow call stack |
+| `states <flow>` | List states in a flow |
+| `validate <flow.yaml>` | Run the seven MUST checks on one flow file |
+| `config` | Resolved config (flows_dir, sessions_dir, defaults from `pyproject.toml`) |
+| `export` / `serve` | Visualisation (mermaid / viz server) |
 
-### Session Commands
+Sessions live at `.cache/sessions/<id>.yaml` (gitignored). `--flows-dir` overrides the configured flows directory for one invocation.
 
-| Command | Purpose |
-|---------|---------|
-| `python -m flowr session init <flow> [--name <name>]` | Create session at initial state; auto-enters subflow if first state has `flow:` |
-| `python -m flowr session show [--name <name>] [--format yaml\|json]` | Display session state, call stack, params |
-| `python -m flowr session set-state <state> [--name <name>]` | Manually update session state (validates state exists in flow) |
-| `python -m flowr session list [--format yaml\|json]` | List all sessions |
+### The state-driving protocol
 
-### Output Formats
+1. `check --session <id>` → parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
+2. Verify every `input artifacts` path exists on disk — missing = stop, do not assume (binding constraint 3).
+3. Dispatch the agent named in `dispatch_to` as a subagent, with the `skills` paths (`.opencode/skills/<name>/SKILL.md`, listed order = execution order) and the input artifacts. The dispatched agent writes only to `output artifacts`.
+4. The dispatched agent returns asserted evidence (e.g. `stubtest-clean=true`).
+5. `transition <trigger> --session <id> --evidence k=v …` fires the guarded advance; `next --session <id>` previews open/blocked if unsure.
+6. Repeat from 1 at the new state. One state = one dispatch.
 
-JSON output format examples per [[workflow/flowr-spec#concepts]].
+### Subflow mechanics
 
-### Configuration
+| Event | What flowr does |
+|---|---|
+| Enter a state with `flow:` | push `({parent_flow, parent_state})`, set session to child's first state |
+| Transition target is a child exit name + stack non-empty | pop the frame, restore parent, follow the parent's transition for that exit |
+| Escalation exit (e.g. `needs-contracts`) | parent routes back to the subflow's entry → re-enters at FIRST state (no resume) |
+| Terminal exit (`shipped`) | stack empties; session is done |
 
-Configuration table per [[workflow/flowr-spec#content]].
+Parent `next` keys must match child `exits` exactly (a validation error otherwise). Within-flow cycles are allowed (the tdd red/green/refactor loop); cross-flow cycles are not.
 
-### Evidence Syntax
+### Conditions and evidence
 
-Evidence can be provided two ways:
+A guarded transition under a state:
+```yaml
+states:
+  - id: review-test-stubs
+    conditions:
+      accepted:
+        interview-consistent: true
+        scope-integration-e2e-only: true
+        happy-paths-complete: true
+    next:
+      accepted: { to: write-test-py, when: accepted }
+      needs-stubs-rework: author-test-stubs
+```
+Firing `accepted` requires all three keys; the orchestrator asserts them:
+```
+flowr transition accepted --session <id> \
+  --evidence interview-consistent=true \
+  --evidence scope-integration-e2e-only=true \
+  --evidence happy-paths-complete=true
+```
+`needs-stubs-rework` is bare (no guard) — it fires without evidence.
 
-- `--evidence key=value`: multiple flags for individual pairs
-- `--evidence-json '{"key":"value"}'`: single JSON object for all pairs
+### Gate evidence keys
 
-Condition operators: `==value`, `!=value`, `>=N`, `<=N`, `>N`, `<N`. Plain values without operator prefix are treated as `==` (implicit equality). Numeric portion is extracted from both condition and evidence before comparison.
+The temple8 flows' guarded transitions and the evidence the orchestrator asserts (`=true` unless noted):
 
-### Workflow Pattern
+| Flow / state | Trigger | Evidence keys |
+|---|---|---|
+| plan / review-test-stubs | `accepted` | `interview-consistent`, `scope-integration-e2e-only`, `happy-paths-complete` |
+| plan / simulate-contracts | `accepted` | `pyright-consistent`, `no-orphans`, `traceability-complete`, `layer-order-respected`, `test-stubs-consistent`, `lint-clean`, `simulation-passed` |
+| tdd / red | `contract-red` | `test-status=red`, `red-reason-is-ours=true` |
+| tdd / green | `test-green` | `test-status=green`, `stubtest-clean=true` |
+| tdd / review | `approved` | `impl-matches-contract`, `source-quality-clean`, `stubtest-clean`, `tests-green` |
+| deliver / merge | `merged` | `tests-green-on-dev`, `stubtest-clean-on-dev` |
 
-Every state follows the same pattern:
+Bare transitions (no `when:`) fire without evidence — e.g. the `select → red` advance, the escalate exits (`needs-contracts`, `needs-elicitation`, `needs-capture`), and `all-built → shipped`.
 
-1. **Enter**: `python -m flowr check --session`: confirm owner, skills, attrs, and transitions. Parse `attrs.owner` to determine dispatch target.
-2. **Work**: Execute the skill, reading `in` artifacts and writing `out` artifacts.
-3. **Evidence**: Set any evidence required by guarded transitions based on work completed.
-4. **Choose**: `python -m flowr next --session --evidence key=value`: see all transitions with status. `"status": "open"` transitions are available; `"status": "blocked"` shows which conditions need evidence.
-5. **Advance**: `python -m flowr transition <trigger> --session --evidence key=value`: move to the next state.
+### Validation
 
-### Session-Based Workflow
-
-For ongoing work, use sessions to track progress:
-
-1. **Init**: `python -m flowr session init <flow> --name <name>`: create session at initial state (auto-enters subflow if first state has `flow:`).
-2. **Check**: `python -m flowr check --session`: inspect current state (read-only).
-3. **Work**: Execute the skill for the current state.
-4. **Advance**: `python -m flowr transition <trigger> --session --evidence key=value`: transition and auto-update session.
-
-### Session Protocol Integration
-
-- Owner dispatch mapping per AGENTS.md Session Protocol.
-- The `skills` field lists which skills to load and execute.
-- The `in` and `out` fields define the artifact contract: what you may read and what you may write.
-- Do not skip the check step or guess transitions. Always verify the current state before starting work.
+`validate <flow.yaml>` returns `{valid: true, violations: []}` or a list of the seven MUST-check failures. Validate every flow after an edit:
+```
+for f in .flowr/flows/*.yaml; do uv run python -m flowr validate "$f"; done
+```
 
 ## Related
 
-- [[workflow/flowr-spec]]
+- [[methodology/separation-of-concerns#evidence-vs-enforcement]] — why flowr collects asserted evidence and CI enforces
+- [[methodology/agent-files]] — what `dispatch_to` resolves to (the dispatched agent's identity)
+- [[methodology/skill-files]] — what `skills` resolves to (the per-state procedure)
+- [[methodology/knowledge-files]] — how the dispatched agent's loaded knowledge is cited

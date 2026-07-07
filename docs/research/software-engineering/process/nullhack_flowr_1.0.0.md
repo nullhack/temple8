@@ -1,63 +1,36 @@
-# flowr 1.0.0: Non-Deterministic State Machine Specification for Workflow Kneading
+# flowr 1.0.0: Non-Deterministic State Machine Specification (nullhack, 2026)
 
 ## Citation
-
-nullhack/flowr. (2026). flowr v1.0.0. GitHub. https://github.com/nullhack/flowr
-
-## Source Type
-
-Software Release / Specification
+nullhack/flowr. (2026). flowr v1.0.0. GitHub.
+URL: https://github.com/nullhack/flowr · Docs: https://nullhack.github.io/flowr/
 
 ## Method
-
-Specification Review (official documentation at https://nullhack.github.io/flowr/)
-
-## Verification Status
-
-Verified
+Specification review (the official v1.0.0 specification document and reference CLI).
 
 ## Confidence
-
-High
+High — the specification is the contract; the CLI is a reference implementation.
 
 ## Key Insight
-
-flowr 1.0.0 is the first stable release of the non-deterministic state machine specification. It formalises the YAML format with a complete specification document, formal syntax grammar, conformance levels (MUST/SHOULD/MAY), extension field semantics, and reserved key registry. The specification defines what a workflow IS (structure, states, transitions, guards) not what it DOES (no execution engine, no side effects).
+flowr 1.0.0 is the first stable release of a non-deterministic state machine specification: it formalises a YAML format that declares what a workflow IS (structure — states, transitions, guards) and deliberately not what it DOES (no execution engine, no side effects, no opinions on retries/timeouts/error handling). The format is the foundation; shared tooling (validators, editors, visualisers, session trackers) works across any project that adopts it.
 
 ## Core Findings
-
-1. **Formal Specification**: v1.0.0 introduces a complete specification with RFC 2119 key words (MUST, SHOULD, MAY), formal syntax grammar, normative examples, and visual reference diagrams. The specification is the contract; the CLI is a reference implementation.
-
-2. **Condition Operators**: The `~=` (approximate match) operator is removed. Supported operators: `==`, `!=`, `>=`, `<=`, `>`, `<`. Plain values without operator prefix are implicit `==`. Numeric extraction applies to both sides (e.g., `>=80%` vs `75%` compares 80 vs 75).
-
-3. **`when` Forms**: The `when` field on transitions accepts three forms: a dict (inline condition-map), a string (reference to a named condition group), or a list (mix of named refs and inline dicts). All conditions are AND-combined.
-
-4. **Named Condition Groups**: States define `conditions:` blocks with reusable condition sets. Transitions reference them by name in `when:` clauses. Unknown references to groups defined on other states are validation errors.
-
-5. **Extension Fields and Reserved Keys**: Flow definitions MAY contain non-reserved fields that the validator ignores. Reserved keys: `flow`, `version`, `params`, `exits`, `attrs`, `states`, `id`, `next`, `to`, `when`, `conditions`, `flow-version`. The `attrs` field is the designated extension point for implementation-specific data.
-
-6. **Params with Defaults**: `params` supports both simple string lists (required) and objects with `name` and optional `default` fields. Params without defaults must be provided at invocation time.
-
-7. **Conformance Levels**: MUST (required for all conforming implementations), SHOULD (recommended, optional), MAY (optional extension). Conforming implementations must satisfy all MUST rules.
-
-8. **Validation Rules**: Seven MUST-level checks at load time: every `next` target resolves, no ambiguous targets, parent `next` keys match child `exits`, no cross-flow cycles, exit names referenced by at least one state, named condition references resolve, params without defaults provided.
-
-9. **Subflow Semantics**: `flow:` on a state makes it a subflow invocation. `flow-version` constrains compatible child versions via semver ranges. Parent `next` keys must match child `exits` exactly. Call-stack push on entry, pop on exit. Cross-flow cycles forbidden, within-flow cycles allowed.
-
-10. **Session Model**: Sessions track `flow`, `state`, `name`, `created_at`, `updated_at`, `stack`, `params`. Atomic writes (temp-file-then-rename). Filesystem is the source of truth.
-
-11. **Semver Conventions**: Adding a new exit is a minor bump. Adding states is a patch. Removing or renaming exits is a major (breaking) change.
-
-12. **CLI Reference**: Commands include `validate`, `states`, `check`, `next`, `transition`, `mermaid`, `config`, and session subcommands (`init`, `show`, `set-state`, `list`). All commands output JSON by default with `--text` for human-readable. `--session` flag makes any command session-aware.
+1. **Formal specification** with RFC 2119 key words (MUST/SHOULD/MAY), a formal syntax grammar, normative examples, and visual reference diagrams. The specification is the contract.
+2. **Condition operators**: `~=` removed; supported are `==`, `!=`, `>=`, `<=`, `>`, `<`, with plain values as implicit `==` and numeric extraction on both sides (e.g. `>=80%` vs `75%` compares 80 vs 75).
+3. **`when` forms**: a dict (inline condition-map), a string (named condition-group reference), or a list mixing both; all conditions AND-combine.
+4. **Named condition groups**: states define `conditions:` blocks; transitions reference them by name in `when:`. Unknown cross-state references are validation errors.
+5. **Extension + reserved keys**: `attrs` is the designated extension point for implementation-specific data. Reserved: `flow, version, params, exits, attrs, states, id, next, to, when, conditions, flow-version`.
+6. **Params with defaults**: simple string lists (required) or objects with `name` + optional `default`; params without defaults must be supplied at invocation.
+7. **Conformance levels**: MUST (required), SHOULD (recommended), MAY (optional).
+8. **Validation (seven MUST checks at load)**: every `next` target resolves; no ambiguous targets; parent `next` keys match child `exits`; no cross-flow cycles; exit names referenced by ≥1 state; named condition references resolve; params without defaults provided.
+9. **Subflow semantics**: `flow:` on a state invokes a subflow; `flow-version` constrains compatible child versions via semver ranges; parent `next` keys must match child `exits` exactly; call-stack push on entry, pop on exit; cross-flow cycles forbidden, within-flow cycles allowed.
+10. **Session model**: tracks `flow, state, name, created_at, updated_at, stack, params`; atomic writes (temp-file-then-rename); filesystem is the source of truth.
+11. **Semver conventions**: adding an exit = minor; adding states = patch; removing/renaming exits = major (breaking).
 
 ## Mechanism
-
-flowr defines what a workflow IS, not what it DOES. No execution engine, no side effects, no opinions about retries, timeouts, or error handling. A YAML file declares structure. A validator checks integrity. Tools query, track, and visualise. The format is the foundation. By giving a precise definition to the format, shared tooling (validators, editors, visualisers, session trackers) works across any project that adopts the specification.
+flowr defines what a workflow IS, not what it DOES. A YAML file declares structure; a validator checks integrity; tools query, track, and visualise. Because the format is precisely defined, validators/editors/visualisers/session-trackers interoperate across any conforming project. The non-determinism is in the routing: a state may declare several `next` transitions, and the orchestrator (an external agent) decides which to fire by asserting evidence against the guarded conditions — flowr never executes the work itself.
 
 ## Relevance
-
-flowr is the workflow engine that powers temple8's flow-based delivery system. The 1.0.0 release stabilises the specification that the golden rules depend on: session management replaces manual session editing (Rule 1), flow name resolution simplifies CLI usage, configuration from pyproject.toml removes hardcoded paths, and the formal validation rules enforce structural integrity at load time.
+flowr is the workflow engine that powers temple8's staged-contract pipeline. This card grounds the `workflow/flowr-operations` knowledge: the session model, the subflow call-stack, the conditions/evidence model, the validation rules, and the CLI surface that the orchestrator drives one state at a time. The "binding constraints" (no skip state, no bypass dispatch, evidence-based transitions) are direct consequences of this specification.
 
 ## Related Research
-
-Connects to finite state machine theory (Harel, 1987), workflow management patterns (Russell et al., 2006), and the temple8 knowledge files on flowr specification and operations.
+Connects to finite state machine theory (Harel, 1987) and workflow management patterns (Russell et al., 2006).

@@ -1,232 +1,129 @@
-## Main Directive
+# AGENTS.md
 
-After any compression or large task, re-read these four points:
+A Python project with the staged-contract workflow wired in (flow set,
+agents/skills/knowledge, CI, tooling). Drive the pipeline one state at a time
+through flowr.
 
-1. **Golden Rules** prevent 80% of failures — follow them
-2. **Dispatch to owner** — orchestrator ROUTES, never DOES
-3. **Todo is the contract** — no todo = no work
-4. **Follow the flow** — flowr is source of truth for routing
+## Binding constraints
 
-## Golden Rules
+1. **flowr is the single router.** Every state change runs through flowr — no improvised routing, no skipping states.
+2. **The dispatched agent does the work.** Each state names one agent in `dispatch_to`; the orchestrator dispatches it, and that agent produces the artifacts and asserts the evidence. The orchestrator never authors the work.
+3. **The state's contract is binding.** Read every `input artifact` before starting — missing means stop, not assume. Write only to `output artifacts`.
+4. **Assert only verified evidence; CI is the backstop.** On a **guarded** transition flowr fires only on the dispatched agent's asserted evidence (`--evidence k=v`); assert nothing you did not check — CI catches the lie (`ruff` / `pyright` / `mypy.stubtest` / `pytest`). **Unguarded** transitions (discovery, explore) carry no flowr gate — the orchestrator verifies the output artifacts and the stakeholder's approval IS the gate.
+5. **Branch discipline.** Match the state's `git branch`; merge `feature` → `dev` only under the whole-suite gates. No dangling branches.
+6. **Every requirement traced.** Each interview finding maps to a test or an explicit deferral; an untraced requirement is a gap the simulate gate rejects.
 
-1. **No skip state.** flowr check → dispatch → transition. No shortcut.
-2. **No bypass dispatch.** Orchestrator route. Agent do work. Never both.
-3. **No code before spec.** Features flow through define-flow → develop-flow. No tests, no stubs, no implementation until features complete and flow authorizes. `attrs.skills` and `attrs.out` define what you may write — write nothing else. Feature files have three phases — do not skip ahead:
-   - **define-flow** (simulate-spec → refine-features): Feature + Rule + description only. NO Examples. `beehave generate` produces nothing at this stage. Files are per-context then split per-feature.
-   - **develop-flow / feature-examples** (write-bdd-features): Examples/Scenario Outlines added to existing Rules. Now `beehave generate` can produce stubs.
-   - **develop-flow / development**: `beehave generate` runs, stubs exist, TDD begins.
-4. **No collapse gate.** Review design ≠ review structure. Each fail independent. Polish after accept.
-5. **No split feature without stakeholder say.** Propose split. They decide core vs deferred.
-6. **No enter state without `in` on disk.** Missing = stop. No assume.
-7. **No ship without trace.** Every interview Q → passing test or stakeholder deferral.
-8. **Match `attrs.git` before start.** Commit dev before exit project-phase flow.
-9. **Merge feature → dev.** `task test-fast` pass. No dangle branch.
+## Driving a state
 
-## Artifact Templates
+One state at a time. The orchestrator keeps **one todo per state, regenerated at
+state entry** — the todo *is* this five-phase loop. "No todo = no work": work
+outside the loop is untracked. One state per todo; regenerate on every
+transition.
 
-Strip `.templates/` prefix + `.template` suffix → destination path.
+1. **Read** — `flowr check --session <id>`; parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
+2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (binding constraint 3).
+3. **Dispatch** — call the agent named in `dispatch_to` with the `skills` paths (`.opencode/skills/<name>/SKILL.md`) and the input artifacts. The dispatched agent writes only to `output artifacts` and returns asserted evidence.
+4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (binding constraint 4).
+5. **Transition** — `flowr transition <trigger> --session <id> --evidence k=v …`, then regenerate the todo from the next state's `check`.
 
-- `.templates/docs/features/<feature_title>.feature.template` → `docs/features/my_feature.feature`
-- `.templates/.cache/interview-notes/IN_YYYYMMDD_<session_id>.md.template` → `.cache/interview-notes/IN_20260430_session_management.md`
-
-No template for non-Python file in `in`/`out` → raise error. No template for Python file → create without.
-
-## Knowledge Resolution
-
-`[[domain/concept]]` → `.opencode/knowledge/{domain}/{concept}.md`
-
-| Fragment | Loads | When |
-|----------|-------|------|
-| `#key-takeaways` | Frontmatter + Key Takeaways | Recall principle or definition |
-| `#concepts` | + Concepts | Understand without examples/procedures |
-| (none) | Full file | Find violations, detect patterns, apply criteria |
-
-## Discovery
-
-Discover at runtime. No enumerate — goes stale.
-
-```bash
-ls .opencode/agents/                    # agent identity
-ls .opencode/skills/                    # skill dirs (each has SKILL.md)
-find .opencode/knowledge -name '*.md'   # knowledge files
-find .templates -name '*.template'      # artifact templates
-find docs/research -name '*.md'         # research notes
-```
-
-## File Naming
-
-### Artifact Patterns in Flow Attrs
-
-| Pattern | Meaning | Example |
-|---------|---------|---------|
-| `filename.md` | Specific document | `domain_spec.md` |
-| `dir/<param>.ext` | Instance by parameter | `features/<feature_title>.feature` |
-| `dir/*.ext` | Multiple in `in` | `.cache/interview-notes/*.md` |
-| `conceptual_name` | Runtime between states | `typed-source-stubs` |
-
-All filenames = **snake_case**. Cache folders = kebab-case (`interview-notes/`). Python folders = snake_case.
-
-### Artifact Types
-
-| Type | Description | Examples |
-|------|-------------|----------|
-| Runtime | Between states, no files | `typed-source-stubs`, `test-implementations`, `source-implementations`, `refactored-source`, `feature-commits`, `polished-source`, `git_branch`, `test-skeletons` |
-| Cache | `.cache/` cross-session | `.cache/acceptance/<feature>.md`, `.cache/interview-notes/<id>.md`, `.cache/sim/results_<ts>.md` |
-| Environment | Tool output, not flow | `coverage-reports`, `test-output`, `linter-output` |
-
-**Runtime resolution**: Runtime artifacts are not file paths. Resolve via discovery. `typed-source-stubs` → `find` for source files created in previous state. `test-implementations` / `source-implementations` → `beehave status --json` shows which scenarios are implemented. `test-skeletons` → test stub files in `tests/features/`. `git_branch` → `git branch --show-current`. `feature-commits` / `polished-source` / `refactored-source` → files changed since last commit. Include resolution command in dispatch prompt when `in` contains Runtime artifacts.
-
-`*` in `in` = multiple docs. List dir first. Read selective.
-
-## Flowr Commands
-
-All: `uv run python -m flowr`. Session: always `--session default`. Output: JSON default. `--text` for human.
+Routing is one flow with five subflows: `pipeline-flow` → discovery → explore →
+plan → build → deliver → shipped. Escalations re-enter the target subflow at its
+first state (no position memory): build → plan on a contract gap; plan/explore →
+discover on insufficient elicitation. Gate evidence keys + the full
+session/subflow mechanics: [[workflow/flowr-operations]].
 
 | Command | Purpose |
 |---------|---------|
-| `uv run python -m flowr check --session default` | State attrs, owner, skills, transitions |
-| `uv run python -m flowr check --session default <trigger>` | Transition conditions |
-| `uv run python -m flowr next --session default [--evidence key=value]` | Transitions: open/blocked |
-| `uv run python -m flowr transition <trigger> --session default [--evidence key=value]` | Advance state |
-| `uv run python -m flowr session init <flow> --name default` | Create session |
-| `uv run python -m flowr session show --name default` | Session state + call stack |
-| `uv run python -m flowr session set-state <state> --name default` | Manual state update |
+| `uv run python -m flowr session init pipeline-flow --name <id>` | Start |
+| `uv run python -m flowr check --session <id>` | State attrs + transitions |
+| `uv run python -m flowr check --session <id> <trigger>` | A transition's conditions |
+| `uv run python -m flowr next --session <id>` | Open / blocked transitions |
+| `uv run python -m flowr transition <trigger> --session <id> --evidence k=v` | Advance |
 
-More: `validate`, `states`, `mermaid`, `config` → `uv run python -m flowr <command>`.
+## Parsimony
 
-Full ref: [[workflow/flowr-operations]].
+Fewest, quietest commands — suppress verbose flags, scope to the target (read
+the `.pyi` before the `.py`). No narration: command + output is the
+conversation, not a running commentary. Cite precisely (`file:line`), never
+vague. Do not repeat yourself — each fact stated once, in its canonical home
+(the flow, the knowledge, the test, the ADR), and cited elsewhere. Scrub AI
+markers (`delve`, `tapestry`, `rather than`, `plays a crucial role`) from
+authored prose per [[writing/ai-language-markers]]. Maximise signal; minimise
+tokens.
 
-## Project Commands
+## Workflow
 
-See `pyproject.toml` for all tasks + config.
+Tests are the source of truth. The pipeline authors a staged contract surface,
+then builds it: **discover** elicits requirements (interview funnel → glossary);
+**explore** grounds external reality (vcrpy cassettes — the authoritative
+external contract); **plan** writes tests up front (`*_test.pyi` → `*_test.py`
+`@pytest.mark.pending` → source `.pyi` → simulate); **build** implements each
+source `.py` from its fixed `.pyi` one contract per cycle (red → green →
+refactor → review → ship); **deliver** squash-merges to dev and publishes.
+`@pytest.mark.pending` is the backlog signal (new work + rework); an empty
+backlog is done. flowr's gates collect EVIDENCE the agent asserts; CI is the
+enforcement backstop (ruff / pyright / `mypy.stubtest` / pytest). When prose and
+a test disagree, the test wins.
+
+Authoring detail (staged contracts, evidence vs enforcement, the docstring/lint
+lifecycle, separation-of-concerns, secrets/config) lives in the knowledge layer
+— discover it, do not restate it here.
+
+## Project layout
+
+Committed (the source of truth):
+
+| Path | Holds |
+|------|-------|
+| `<package>/` | source — `.pyi` stubs + `.py` bodies |
+| `tests/integration/`, `tests/e2e/` | integration + E2E tests only (no unit) |
+| `tests/cassettes/`, `tests/fixtures/` | recorded vcrpy cassettes; fixtures |
+| `migrations/` | Alembic migrations — the schema spec |
+| `docs/glossary.md` | ubiquitous language |
+| `.flowr/flows/` | flow definitions |
+| `.opencode/`, `.templates/`, `.github/` | methodology, templates, CI |
+
+Gitignored (local working state, regenerated on demand):
+
+| Path | Holds |
+|------|-------|
+| `.cache/<session_id>/` | interview notes, external contracts, probe research, build target |
+| `.cache/explore/` | throwaway probe scripts (run once; never imported) |
+| `.cache/sessions/` | flowr session state |
+| `.env` | non-secret local config (12-factor) |
+| `~/.secrets/<project>.env` | secrets (out-of-workspace; `dotenv_values()` into a frozen Settings; opencode `external_directory`-gated) |
+
+## Agents, skills & knowledge
+
+Under `.opencode/` (loaded on demand, not every session):
+
+| Path | Holds |
+|------|-------|
+| `.opencode/agents/{role}.md` | role identity (who I am, what I decide) |
+| `.opencode/skills/{skill}/SKILL.md` | per-state procedure (how to do the work) |
+| `.opencode/knowledge/{domain}/{concept}.md` | reference & explanation (what and why) — domains: `methodology/`, `requirements/`, `software-craft/`, `workflow/`, `architecture/`, `writing/`, `design/` |
+
+Discover rather than enumerate:
+
+    ls .opencode/agents/
+    ls .opencode/skills/
+    find .opencode/knowledge -name '*.md'
+
+The flow binds each state to its dispatched agent (`dispatch_to`), procedure (`skills`),
+and artifacts (`input artifacts` / `output artifacts`); agents, skills, and
+knowledge stay single-concern and free of routing. Wikilinks cite knowledge on
+demand: `[[domain/concept]]` resolves to `.opencode/knowledge/{domain}/{concept}.md`,
+and a `#section` fragment selects depth. Authoring conventions live in the
+`methodology/` domain.
+
+## Project commands
+
+Tasks are defined in `pyproject.toml` under `[tool.taskipy.tasks]`. Package-dependent commands (`task run`, `task test`, `task stubtest`, …) target the package named in `[tool.setuptools] packages`.
 
 | Command | Purpose |
 |---------|---------|
-| `task test` | Tests, short tracebacks |
-| `task test-fast` | Fast tests only (no slow marker) |
-| `task test-build` | Full suite + coverage + hypothesis |
-| `task run` | Run application |
-
-| Command | Purpose |
-|---------|---------|
-| `ruff check .` | Functional lint (bugs, security, complexity) |
-| `task conventions` | Full lint (naming, docstrings, formatting) |
-| `ruff format .` | Auto-format |
-
-## Session Protocol
-
-Orchestrator ROUTES. Never DOES. Every transition through flowr.
-
-### State Entry
-
-`uv run python -m flowr check --session default` → parse `attrs.owner`, `attrs.skills`, `attrs.in`, `attrs.out`, `attrs.git`. Verify `in` on disk. Missing = stop. Announce one line: `→ state-name`.
-
-### Dispatch
-
-`attrs.owner` → agent. Call as subagent. Include in dispatch prompt:
-
-1. **State attrs** — owner, skills, in, out, git
-2. **Skill paths** — `.opencode/skills/<name>/SKILL.md` per skill in `attrs.skills` (listed order = execution order)
-3. **In artifact paths** — all `attrs.in` files (resolve Runtime artifacts per Artifact Types table)
-4. **Convention boundary** — if design-phase state
-5. **Mandatory instruction:**
-   > You MUST read every skill file listed in your dispatch context from `.opencode/skills/<name>/SKILL.md` and FOLLOW their procedures step by step. Skills are mandatory — do not skip, summarize, or improvise around them. Read all `in` artifacts before starting work. Write only to `out` artifacts. Commit to the branch specified in `git`.
-
-Owner mapping: `PO` → product-owner, `DE` → domain-expert, `SE` → software-engineer, `SA` → system-architect, `R` → reviewer, `Design Agent` → design-agent, `Setup Agent` → setup-agent.
-
-### Beehave
-
-Always active in development. Runs on every `pytest` invocation: parses features, generates stubs, checks violations. Violations = **test failures** (injected as synthetic failing test items). `[beehave]` in test output = hard stop.
-
-- `beehave generate` — stubs from `.feature` files (also runs automatically during pytest)
-- `beehave check` — verify stubs align
-- `beehave status --json` — coverage
-- `beehave clean <feature> --force` — remove unmapped test functions (run when titles change)
-
-Title change leaves stale stubs. Run `beehave clean <feature> --force` to remove orphans.
-
-No skip. No `no:beehave`. No noise (`_ = value`). Every test assert observable behavior. Violations block progress.
-
-### Convention Boundary
-
-Design-phase states (create-py-stubs, write-test, implement-minimum, refactor, review-gate): `task conventions`/`ruff format`/pyright/docstrings/type annotations **prohibited**. Only `task test-fast`. Design changes invalidate convention work.
-
-Dispatch during design phase:
-- No convention commands in prompt
-- Only verification steps skill defines
-- Skill verification = ceiling, not floor
-
-Exception: polish-code runs conventions after feature acceptance.
-
-### Procedural Contract
-
-One state = one dispatch. One dispatch = exactly skills in `attrs.skills`. No combine states.
-
-### Review Loops
-
-When review fails and transitions back (e.g., `fail → tdd-cycle`), the reviewer's findings must reach the next dispatch. Include reviewer findings verbatim in the re-dispatch prompt as a **Prior Review Findings** section. Findings include file:line citations and the specific failure reason. The receiving agent addresses each finding — do not repeat the review from scratch.
-
-### Todo-Driven Execution
-
-Generate todo at state entry via todowrite. Status: `pending` → `in_progress` → `completed`.
-
-```
-1. Preparation: verify branch == attrs.git, list in artifacts
-2. Dispatch: call owner agent with skill paths + attrs + in artifacts
-3. Skill-derived: one item per skill step, verbatim
-4. Output: one per out artifact
-5. Verification: constraints, tests/lint per skill
-6. Anchor: next state conditions, verify evidence, transition
-```
-
-- Update todowrite after ANY step: mark `completed`, next `in_progress`
-- Todo empty/missing = regenerate immediately. No todo = no work.
-- One state per todo. No span states. No collapse loops.
-- Self-generated items only for infrastructure (read, commit). Never core procedure.
-- Orchestrator track. Subagent do.
-
-### Anchor (State Exit)
-
-1. `uv run python -m flowr next --session default --evidence key=value`
-2. Parse: `open` vs `blocked`
-3. For chosen transition: `uv run python -m flowr check --session default <trigger>` → conditions
-4. Conditions met? No → stop. Gather evidence or flag user.
-5. **Loop states** (tdd-cycle refactor): IF multiple `open` transitions exist (e.g., `next-example` and `all-examples-pass`), use subagent output to pick. Subagent reports `"next-example"` or `"all-examples-pass"` based on `beehave status --json`. IF ambiguous → run `beehave status --json` directly and decide.
-6. Show evidence to user for confirmation.
-7. `uv run python -m flowr transition <trigger> --session default --evidence key=value`
-8. Generate NEW todo from next state's `flowr check --session default`
-
-### Session Init
-
-```bash
-uv run python -m flowr session init <flow> --name default
-```
-
-Session tracks flow, state, call stack (subflows), params. First state has `flow:` → auto-enters subflow.
-
-Three primary flows:
-- `define-flow` — spec, validation, features, architecture
-- `develop-flow` — select, examples, TDD, acceptance
-- `deliver-flow` — squash-merge, publish, PR
-
-### Cross-Flow Routing
-
-develop-flow `needs-architecture` → re-enter define-flow at `architecture`. New session. `flowr session set-state architecture`.
-
-post-mortem-flow `needs-architecture` → same procedure.
-
-### Branch Discipline
-
-`attrs.git` = `dev` or `feature`. Match before start. Project-phase exit requires `committed-to-dev-locally: ==verified`.
-
-### Within a State
-
-Announce once. Then quiet.
-
-- **Artifact contract:** `in` = must read all before work. `out` = may create/edit. Outside `out` = no write. Flag issues in notes.
-- **Cumulative edit:** Loop back to state → edit existing `out`, no recreate.
-- **Out artifact protocol:** Exists → read, edit declared sections. Not exists → resolve `.templates/` path + `.template` suffix. Copy. Edit. No template for non-Python → raise error.
-- **Spec docs read-only in TDD/review.** Flag inconsistencies. No fix.
-- **Cite precisely:** file:line. No vague findings.
-- **Fewest, quietest commands.** Suppress verbose. Scope when possible.
-- **No narration.** Command + output = conversation.
+| `task test` | Run tests |
+| `task test-fast` | Fast tests only |
+| `task lint` | ruff check (dev: bug-catchers only) |
+| `task lint-merge` | merge: + SIM/RUF + ruff format |
+| `task strip-docstrings` | strip docstrings from a source .py (tdd select) |

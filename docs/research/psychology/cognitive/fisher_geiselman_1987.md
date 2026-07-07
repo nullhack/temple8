@@ -3,18 +3,11 @@
 ## Citation
 
 Fisher, R. P., & Geiselman, R. E. (1987). "Enhancing enhanced eyewitness memory: Refining the cognitive interview." *Journal of Police Science and Administration*, 15, 291-297. (Enhanced version of original 1984 cognitive interview)
-
-## Source Type
-
-Academic Paper
+URL: https://en.wikipedia.org/wiki/Cognitive_interview
 
 ## Method
 
 Experiment
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

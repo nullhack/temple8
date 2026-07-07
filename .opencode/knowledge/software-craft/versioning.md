@@ -1,44 +1,59 @@
 ---
 domain: software-craft
-tags: [semver, calver, versioning, release, pypi]
-last-updated: 2026-04-30
+tags: [versioning, semver, pep-440, calver, release]
+last-updated: 2026-07-01
 ---
 
-# Versioning Scheme
+# Versioning
 
 ## Key Takeaways
 
-- Version scheme: `major.minor.patch` (semver) in `pyproject.toml`; git tags append build date: `v{major}.{minor}.{patch}+{YYYYMMDD}`
-- PyPI strips `+build_metadata`. `pyproject.toml` must contain only `major.minor.patch`
-- Breaking changes bump major; new features bump minor; fixes bump patch
-- Changelog format: `## [v{version}+{date}] - {codename} - {date}`
-- Release codenames come from `docs/branding.md`
-- New projects start at `0.1.0` (pure semver, no date suffix)
-- Git tags are created manually via `gh workflow run tag-release.yml -f version=X.Y.Z`, no auto-trigger on push
+- **SemVer 2.0.0** is `major.minor.patch`: a breaking change bumps `major`, a backward-compatible feature bumps `minor`, a fix bumps `patch`. A `0.major.minor` line carries no stability promise — any release may break (semver.org).
+- For a Python project the version in `pyproject.toml` must satisfy **PEP 440**; SemVer's `X.Y.Z` is a subset PEP 440 accepts. A `+local` build segment is stripped by package indexes, so `pyproject.toml` carries the core `X.Y.Z` only (PEP 440; SemVer §10).
+- **CalVer** (`YYYY.MM.DD`, `YYYY.MINOR.MICRO`) fits time-released projects with no compatibility promise — it records *when*, not *whether compatible* (calver.org).
+- The `version` field in `pyproject.toml` is the **single source of truth**; tags and release notes derive from it, never the reverse.
+- `publish-release` chooses among **release notes, a PR to `main`, or a tagged release** (`v{version}`), per the project's release policy.
 
 ## Concepts
 
-**Why semver+calver hybrid**: Semver communicates breaking changes for dependency resolution. `pip install my-project>=8.0.0,<9.0.0` works correctly because the major version signals compatibility. Pure calver (e.g. `2026.4.30`) communicates timing but not compatibility. The `+YYYYMMDD` build metadata suffix (semver §10) provides release-date traceability without affecting version ordering or dependency resolution. See [[software-craft/versioning#key-takeaways]].
+**SemVer, the default.** Semantic Versioning gives a dependency resolver something to reason about: `pkg>=1.2.0,<2.0.0` works because the major version signals a compatibility break. The bump rules are precise — a backward-incompatible change is a major bump however small the code, a backward-compatible addition is a minor bump, a fix is a patch. The special case is `0.x`: below 1.0.0 the spec declares the public API unstable, so a `0.2.0 → 0.3.0` step is allowed to break a consumer, and the major-version compatibility signal is understood to be absent.
 
-**pyproject.toml as single source of truth**: The `version` field in `pyproject.toml` contains only `major.minor.patch` (e.g. `8.0.0`). The `tag-release` workflow reads this field and appends `+YYYYMMDD` when creating the git tag. PyPI reads the version directly from the built wheel/sdist, which contains only the semver core.
+**PEP 440 for Python.** A Python project's version is read by tooling that obeys PEP 440, not raw SemVer; SemVer's `X.Y.Z` form is a subset PEP 440 accepts, so a plain `1.2.3` is valid in both. Where they diverge is build metadata: SemVer §10 allows a `+build` suffix, but PEP 440 treats `+local` as a *local* version segment that package indexes strip — a version like `1.2.3+20260701` publishes to the index as `1.2.3`. The consequence for a Python project is that the `pyproject.toml` `version` field carries the publishable core (`1.2.3`), and any date or build suffix is a tag-only concern, not a field that goes to the index.
 
-**Git tags with build metadata**: Tags follow `v{version}+{YYYYMMDD}` format (e.g. `v8.0.0+20260430`). The `tag-release` CI workflow creates these on manual trigger via `gh workflow run tag-release.yml -f version=X.Y.Z`. The date is the tag creation date, not the commit date.
+**CalVer, when timing matters more than compatibility.** Calendar Versioning leads with the date — `2026.4`, `26.7.1` — and suits projects that release on a cadence and make no consumer compatibility promise (operating systems, terminal apps, services with no external API). It carries timing clearly and fails to carry compatibility at all, so a consumer cannot bound an acceptable range the way SemVer's major version allows. Choose CalVer when the audience reads the date; choose SemVer when the audience bounds a range.
 
-**Release process**: Merge PRs to main freely (no auto-tags or auto-releases. When ready to release, ensure `pyproject.toml` has the correct version, then trigger: `gh workflow run tag-release.yml -f version=X.Y.Z`. The workflow validates the version matches `pyproject.toml`, runs `release-check`, creates tag `vX.Y.Z+YYYYMMDD`, and pushes it. Publishing (PyPI, GitHub Releases, etc.) is project-specific) not part of this convention.
+**Single source of truth.** The version lives in `pyproject.toml` and nowhere else; a tag, a release note, and a changelog entry are all derived from it. Maintaining a version in two places (a field and a tag that drifts) is the same defect as any duplicated truth — they diverge, and the divergence is discovered at release time under pressure.
 
-**Changelog entries**: Each release section uses `## [v{version}+{date}] - {codename} - {date}`. The codename follows the convention in `docs/branding.md` (default: adjective-greek-figure).
+**Publish is a policy choice.** `publish-release` does not assume one form of release; it picks among release notes, a PR to `main`, and a tagged release, according to what the project has decided its release policy is. A library tags and publishes; an internal service may merge a PR to `main` and stop; an early-stage project may ship only notes. The versioning knowledge fixes what a version *is*; the release policy fixes *how* a version ships.
 
-**Historical note**: Pre-v8 releases used tags like `v7.2.20260423` where `20260423` occupied the semver patch field. This is neither valid semver (patch should be a small integer) nor proper calver. Starting with v8.0.0, the date is correctly placed in build metadata after `+`.
+## Content
 
-## Release Process
+### SemVer bump rules
 
-1. Merge PRs to main freely, no auto-tags, no auto-releases.
-2. When ready to release, ensure `pyproject.toml` has the correct version.
-3. Trigger the release workflow: `gh workflow run tag-release.yml -f version=X.Y.Z`
-4. The workflow validates version matches `pyproject.toml`, runs `release-check`, creates tag `vX.Y.Z+YYYYMMDD`, and pushes it.
-5. Publishing (PyPI, GitHub Releases, etc.) is project-specific, not part of this convention.
+| Change | Bump | Example |
+|---|---|---|
+| breaking (API contract change) | major | `1.2.3` → `2.0.0` |
+| backward-compatible feature | minor | `1.2.3` → `1.3.0` |
+| bug fix | patch | `1.2.3` → `1.2.4` |
+| anything, while below 1.0.0 | minor may break | `0.2.0` → `0.3.0` (breaking allowed) |
 
-## References
+### Scheme comparison
 
-- SemVer 2.0.0 specification (semver.org)
-- Calendar Versioning convention (calver.org)
+| Scheme | Form | Carries | Fits |
+|---|---|---|---|
+| SemVer | `MAJOR.MINOR.PATCH` | compatibility | libraries, packages with consumers |
+| CalVer | `YYYY.MINOR.MICRO` | timing | cadence-released apps, services, OS-like tools |
+| SemVer + local tag | `X.Y.Z` (field), `vX.Y.Z+date` (tag) | both, split across field and tag | projects that want both but must keep the index field clean |
+
+### Tag and release forms
+
+| Output | Form |
+|---|---|
+| git tag | `v{version}` (e.g. `v1.2.3`) |
+| pyproject field | `1.2.3` (PEP 440 core; no `+local`) |
+| release notes / changelog | `## [v1.2.3] - {date}` |
+
+## Related
+
+- [[software-craft/git-conventions]] — the commit and branch discipline a release rides on
+- [[software-craft/code-review]] — the review that gates what gets released

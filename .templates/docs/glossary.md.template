@@ -1,0 +1,14 @@
+# Glossary: <project-name>
+
+> The ubiquitous language for this project — terms shared across conversation,
+> code, and documentation (Evans, 2003). Curated from the interview for the
+> IMPORTANT domain concepts, not every code symbol. Grouped by bounded context,
+> where each term has one meaning. The tests are the source of truth for
+> behaviour; this glossary is the source of truth for names. Extend or revise
+> entries as understanding shifts.
+
+## Context: <bounded-context>
+
+### <Term>
+A <category> that <distinguishing characteristic>.
+*Aliases: <synonyms, or none> · Source: <feature stem or interview date>*

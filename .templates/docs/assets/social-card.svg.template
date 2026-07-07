@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" role="img" aria-labelledby="sc-title sc-desc">
+  <title id="sc-title">&lt;project-name&gt; — social card</title>
+  <desc id="sc-desc">Open-graph preview for &lt;project-name&gt;: &lt;one-line intent&gt;.</desc>
+
+  <!-- background (light + dark variants via prefers-color-scheme where rendered inline) -->
+  <rect width="1280" height="640" fill="#0d1117" />
+
+  <!-- mark placeholder: a single geometric form, centred-left of the text block -->
+  <!-- replace with the project mark; keep within ~200px, accessible contrast on the bg -->
+  <rect x="120" y="220" width="200" height="200" rx="40" fill="#ffffff" />
+
+  <!-- name + intent, inside the central 60-70% of the frame -->
+  <text x="380" y="320" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        font-size="84" font-weight="700" fill="#ffffff">&lt;project-name&gt;</text>
+  <text x="380" y="390" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+        font-size="40" font-weight="400" fill="#9da7b3">&lt;one-line intent&gt;</text>
+</svg>

@@ -1,0 +1,63 @@
+flow: pipeline-flow
+version: 2.1.0
+exits:
+  - shipped
+states:
+  - id: discover
+    attrs:
+      description: >
+        Run the interview funnel (general -> cross-cutting -> building-blocks ->
+        consolidate) to elicit requirements and author the glossary. Emits
+        interview notes and glossary only - no tests, source, or external
+        contracts.
+    flow: discovery-flow
+    flow-version: "^2"
+    next:
+      interview-ready: explore
+
+  - id: explore
+    attrs:
+      description: >
+        Ground every external service named in the interview in reality: read
+        docs, run minimal probes, record real exchanges as committed cassettes.
+        Passes through when there are no external services.
+    flow: explore-flow
+    flow-version: "^1"
+    next:
+      explored-ready: plan
+      needs-elicitation: discover
+
+  - id: plan
+    attrs:
+      description: >
+        Turn the interview and captured reality into the gated contract
+        surface: test .pyi -> test .py (@pending) -> source .pyi -> simulate.
+        No source .py written here.
+    flow: plan-flow
+    flow-version: "^1"
+    next:
+      contracts-ready: build
+      needs-capture: explore
+      needs-elicitation: discover
+
+  - id: build
+    attrs:
+      description: >
+        Turn the pending-test backlog into shipped code, one source contract per
+        cycle (select -> red -> green -> refactor -> review -> ship). Tests are
+        already written by plan.
+    flow: tdd-flow
+    flow-version: "^2"
+    next:
+      all-built: deliver
+      needs-contracts: plan
+
+  - id: deliver
+    attrs:
+      description: >
+        Squash-merge the feature commits into dev with the full suite green,
+        then publish (notes / PR / tag).
+    flow: deliver-flow
+    flow-version: "^1"
+    next:
+      delivered: shipped

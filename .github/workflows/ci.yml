@@ -2,223 +2,77 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main ]
 
-# SECURITY: Restrict workflow permissions (GitHub Advanced Security recommendation)
 permissions:
   contents: read
-  actions: read
-  pages: write
-  id-token: write
 
-env:
-  # Improve pip performance
-  PIP_NO_CACHE_DIR: false
-  # SECURITY: Removed PIP_USER=1 (potential privilege escalation risk)
-  # uv settings
-  UV_SYSTEM_PYTHON: 1
-  UV_CACHE_DIR: /tmp/.uv-cache
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Code Quality & Security
+  lint:
     runs-on: ubuntu-latest
-    # SECURITY: Job-level permissions for security scanning
-    permissions:
-      contents: read
-      actions: read
-      security-events: read  # For security scanning tools
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.1.1
-        
-      - name: Install uv
-        uses: astral-sh/setup-uv@ba17a16c0afc72ea47311891c76009518d0cf1aa # v4.0.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-          
-      - name: Set up Python 3.14
-        run: uv python install 3.14
-        
-      - name: Install dependencies
-        run: uv sync --locked --all-extras --dev
-        
-      - name: Run ruff linting (includes security checks)
-        run: uv run task ruff-check
-        
-      - name: Check ruff formatting
-        run: uv run task ruff-format-check
-          
-      - name: Run type checking
-        run: uv run task static-check
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.13
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
 
-  test:
-    name: Tests
+  secrets:
     runs-on: ubuntu-latest
-    # SECURITY: Minimal permissions for test execution
-    permissions:
-      contents: read
-      actions: read
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.14"]
-    env:
-      UV_SYSTEM_PYTHON: "false"
-        
     steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.1.1
-        
-      - name: Install uv
-        uses: astral-sh/setup-uv@ba17a16c0afc72ea47311891c76009518d0cf1aa # v4.0.0
+      - uses: actions/checkout@v4
         with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-          python-version: ${{ matrix.python-version }}
-          
-      - name: Install dependencies
-        run: uv sync --locked --all-extras --dev && uv pip install -e .
-
-      - name: Run fast tests
-        run: uv run task test-fast
-        
-      - name: Run full test suite (main branch and PRs only)
-        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        run: uv run task test
-        
-      - name: Upload coverage reports
-        if: matrix.python-version == '3.14' && (github.ref == 'refs/heads/main' || github.event_name == 'pull_request')
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: coverage-reports
-          path: |
-            docs/coverage/
-            docs/tests/
-          retention-days: 30
-          
-      - name: Upload coverage to Codecov (optional)
-        if: matrix.python-version == '3.14' && (github.ref == 'refs/heads/main' || github.event_name == 'pull_request')
-        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v5.0.2
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
-          verbose: true
-
-  build:
-    name: Build & Documentation
-    runs-on: ubuntu-latest
-    needs: [quality, test]
-    # SECURITY: Minimal permissions for build and artifact upload
-    permissions:
-      contents: read
-      actions: read
-    env:
-      UV_SYSTEM_PYTHON: "false"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.1.1
-        
-      - name: Install uv
-        uses: astral-sh/setup-uv@ba17a16c0afc72ea47311891c76009518d0cf1aa # v4.0.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-          
-      - name: Set up Python 3.14
-        run: uv python install 3.14
-        
-      - name: Install dependencies
-        run: uv sync --locked --all-extras --dev && uv pip install -e .
-        
-      - name: Build documentation
-        run: uv run task doc-build
-        
-      - name: Build package
-        run: uv build
-        
-      - name: Verify package installation (wheel)
-        run: |
-          uv run --isolated --no-project --with dist/*.whl python -c "import app; print('✓ Wheel install successful')"
-          
-      - name: Verify package installation (sdist)
-        run: |
-          uv run --isolated --no-project --with dist/*.tar.gz python -c "import app; print('✓ Source dist install successful')"
-          
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: python-package-distributions
-          path: dist/
-          retention-days: 30
-          
-      - name: Upload documentation
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: documentation
-          path: docs/api/
-          retention-days: 30
-
-  publish-docs:
-    name: Publish Documentation
-    runs-on: ubuntu-latest
-    needs: [quality, test]
-    # Only run when a PR is merged to main (push event), not on PRs
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-    env:
-      UV_SYSTEM_PYTHON: "false"
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v4.1.1
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@ba17a16c0afc72ea47311891c76009518d0cf1aa # v4.0.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: "uv.lock"
-
-      - name: Set up Python 3.14
-        run: uv python install 3.14
-
-      - name: Install dependencies
-        run: uv sync --locked --all-extras --dev && uv pip install -e .
-
-      - name: Build and publish documentation
-        run: uv run task doc-publish
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
         env:
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Security summary job
-  security-summary:
-    name: Security Summary
+  validate-flows:
     runs-on: ubuntu-latest
-    needs: [quality]
-    if: always()
-    # SECURITY: Minimal permissions for summary generation
-    permissions:
-      contents: read
-      actions: read
-    
-    steps:        
-      - name: Security Summary
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.13
+      - run: uv sync --extra dev
+      - run: bash -c 'for f in .flowr/flows/*.yaml; do uv run python -m flowr validate "$f"; done'
+
+  enforce:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.13
+      - run: uv sync --extra dev
+      - name: Resolve package
+        id: pkg
         run: |
-          echo "## 🔒 Security Scan Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Ruff Security Analysis" >> $GITHUB_STEP_SUMMARY
-          echo "Security rules (S001-S701) checked during linting phase." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Additional Security Features" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Dependency vulnerability scanning (safety + dependabot)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ CodeQL security analysis (weekly + on pushes)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Comprehensive security rules via Ruff (flake8-bandit S001-S701)" >> $GITHUB_STEP_SUMMARY
+          pkg=""
+          for d in */ ; do
+            d="${d%/}"
+            case "$d" in
+              tests|docs|explore) continue ;;
+            esac
+            [ -f "$d/__init__.py" ] && pkg="$d" && break
+          done
+          if [ -n "$pkg" ] && [ -d tests ]; then
+            echo "have_pkg=true" >> "$GITHUB_OUTPUT"
+            echo "name=$pkg" >> "$GITHUB_OUTPUT"
+          else
+            echo "have_pkg=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: pyright
+        if: steps.pkg.outputs.have_pkg == 'true'
+        run: uv run pyright ${{ steps.pkg.outputs.name }} tests
+      - name: stubtest (drift detection for source and test .pyi)
+        if: steps.pkg.outputs.have_pkg == 'true'
+        run: uv run python -m mypy.stubtest ${{ steps.pkg.outputs.name }} tests
+      - name: pytest (replay cassettes, offline)
+        if: steps.pkg.outputs.have_pkg == 'true'
+        env:
+          VCR_RECORD_MODE: none
+        run: uv run pytest

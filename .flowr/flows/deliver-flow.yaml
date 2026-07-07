@@ -1,61 +1,39 @@
 flow: deliver-flow
-version: 1.0.0
-params: [feature_title]
+version: 1.3.0
 exits:
-  - published
-  - accumulate
-  - cancelled
-  - needs-development
-
+  - delivered
 states:
-  - id: local-merge
+  - id: merge
     attrs:
-      description: "SE squash-merges feature commits into local dev branch and resolves any conflicts"
-      owner: SE
-      git: dev
-      skills:
-        - merge-local
-      in:
-        - ".cache/acceptance/<feature_title>.md"
-        - features/<feature_title>.feature
-      out:
-        - merged-commits
-    next:
-      merged: publish-decision
-      conflict: needs-development
-
-  - id: publish-decision
-    attrs:
-      description: "PO decides whether to publish the accumulated batch as a PR or continue accumulating features on local dev"
-      owner: PO
-      git: dev
-      skills:
-        - decide-batch-action
-      in:
-        - merged-commits
-      out: []
-    next:
-      accumulate: accumulate
-      publish: pr-creation
-
-  - id: pr-creation
-    attrs:
-      description: "SE creates an administrative PR for changes already on local dev"
-      owner: SE
-      git: dev
-      skills:
-        - create-pr
-      in:
-        - merged-commits
-        - features/<feature_title>.feature
-      out: []
+      description: >
+        Squash-merge the feature commits into dev with the full suite and
+        whole-suite stubtest green on dev.
+      dispatch_to: release-engineer
+      git branch: dev
+      skills: [merge-to-dev]
+      input artifacts:
+        - "feature-commits"
+      output artifacts:
+        - "dev"
     conditions:
       merged:
-        ci-passes: ==verified
-        no-changes-requested: ==verified
+        tests-green-on-dev: "==true"
+        stubtest-clean-on-dev: "==true"
     next:
-      approved:
-        to: published
+      merged:
+        to: publish
         when: merged
-      changes-requested: needs-development
-      cancelled: cancelled
+
+  - id: publish
+    attrs:
+      description: >
+        Publish the batch as release notes, a PR to main, or a tagged release.
+      dispatch_to: release-engineer
+      git branch: dev
+      skills: [publish-release]
+      input artifacts:
+        - "dev"
+      output artifacts:
+        - "release"
+    next:
+      published: delivered

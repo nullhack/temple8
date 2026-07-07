@@ -3,18 +3,12 @@
 ## Citation
 
 North, D. (2006). "Introducing BDD." *Better Software Magazine*, March 2006. Originally published at dannorth.net.
+URL: https://dannorth.net/introducing-bdd/
 
-## Source Type
-
-Blog/Article
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

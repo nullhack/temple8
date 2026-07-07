@@ -3,18 +3,11 @@
 ## Citation
 
 Hattie, J., & Timperley, H. (2007). "The power of feedback." *Review of Educational Research*, 77(1), 81–112. https://doi.org/10.3102/003465430298487
-
-## Source Type
-
-Academic Paper
+URL: https://doi.org/10.3102/003465430298487
 
 ## Method
 
 Meta-analysis
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

@@ -3,18 +3,11 @@
 ## Citation
 
 Fowler, M. (1999). *Refactoring: Improving the Design of Existing Code*. Addison-Wesley. Second edition 2018 with K. Beck, J. Brant, W. Opdyke, D. Roberts.
-
-## Source Type
-
-Practitioner Book
+URL: https://martinfowler.com/books/refactoring.html
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

@@ -1,9 +1,13 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "temple8"
-version = "9.4.0"
-description = "Spec-driven agent orchestration template with YAML flow definitions, multi-agent dispatch, and BDD traceability"
+version = "10.0.0"
+description = "Test-driven agent orchestration template with YAML flow definitions, staged test contracts, and BDD traceability"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.13"
 license = { file = "LICENSE" }
 authors = [
     { name = "eol", email = "nullhack@users.noreply.github.com" }
@@ -11,8 +15,7 @@ authors = [
 maintainers = [
     { name = "eol", email = "nullhack@users.noreply.github.com" }
 ]
-dependencies = [
-]
+dependencies = []
 
 [project.urls]
 Homepage = "https://nullhack.github.io/temple8/"
@@ -21,40 +24,29 @@ Documentation = "https://github.com/nullhack/temple8/tree/main/docs/api/"
 
 [project.optional-dependencies]
 dev = [
-    "pdoc>=14.0",
+    "flowr>=1.2.1",
     "pytest>=9.0.3",
     "pytest-cov>=6.1.1",
     "pytest-html>=4.0.0",
     "pytest-mock>=3.14.0",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=6.0.1",
     "ruff>=0.11.5",
     "taskipy>=1.14.1",
     "hypothesis>=6.148.4",
     "pyright>=1.1.407",
-    "ghp-import>=2.1.0",
-    "flowr>=1.2.0",
-    "beehave>=1.0.0",
-    "pytest-beehave>=1.0.0",
+    "mypy>=1.13.0",
     "safety>=3.7.0",
 ]
 
 [tool.flowr]
 flows_dir = ".flowr/flows"
 sessions_dir = ".cache/sessions"
-default_flow = "define-flow"
+default_flow = "pipeline-flow"
 default_session = "default"
 
-[tool.beehave]
-features_dir = "docs/features"
-tests_dir = "tests/features"
-
 [tool.setuptools]
-packages = ["app"]
-
-[dependency-groups]
-dev = [
-    "flowr[viz]>=1.2.0",
-    "pytest-beehave[html]>=1.0.0",
-]
+packages = []
 
 [tool.ruff.lint]
 ignore = []
@@ -66,29 +58,22 @@ select = [
   "DTZ",
   "ERA",
   "F",
-  "FURB",
   "G",
   "LOG",
-  "PT",
-  "RUF",
+  "PYI",
   "S",
-  "SIM",
-  "T20",
 ]
-preview = true
 mccabe.max-complexity = 10
-pydocstyle.convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "S404", "ANN", "D"]
-"scripts/*.py" = ["T20"]
+"tests/**" = ["S101", "S404"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "deprecated: marks tests for deprecated AC; automatically skipped by pytest-beehave (deselect with '-m \"not deprecated\"')",
     "bug: marks tests that reproduce a reported defect (deselect with '-m \"not bug\"')",
+    "pending: contract test defined in discovery but not yet implemented; auto-skipped (the backlog). Remove the marker to activate (red). Query with: -m pending",
 ]
 addopts = """
 --maxfail=10 \
@@ -134,25 +119,18 @@ pytest \
 test-fast = "pytest -m \"not slow\" -q --no-header --tb=no"
 test-slow = "pytest -m slow"
 ruff-check = "ruff check ."
-conventions = "ruff check . --select A,ANN,ASYNC,B,C4,C9,D,DTZ,E,ERA,F,FURB,G,I,ICN,LOG,N,NPY,PD,PT,PTH,RUF,S,SIM,T20,TD,W"
 ruff-format = "ruff format ."
 ruff-format-check = "ruff format . --check"
-lint = "task ruff-check && task ruff-format-check"
-doc-serve = "pdoc ./app --host localhost --port 8080"
-doc-build = """\
-pdoc ./app -o docs/api --search && \
-pytest \
-  --cov-config=pyproject.toml \
-  --cov-report html:docs/coverage \
-  --cov=app \
-  --html=docs/tests/report.html \
-  --self-contained-html \
-  -q -q \
-"""
-doc-publish = "task doc-build && ghp-import -n -p -f docs"
+lint = "task ruff-check"
+lint-merge = "ruff check --extend-select SIM,RUF . && ruff format ."
+strip-docstrings = "python scripts/strip_docstrings.py"
 static-check = "pyright app tests"
+stubtest = "python -m mypy.stubtest app tests"
 validate-flows = "bash -c 'for f in .flowr/flows/*.yaml; do python -m flowr validate \"$f\"; done'"
 
-release-check = "task conventions && task static-check && task test && task doc-build"
+release-check = "task lint && task static-check && task stubtest && task test"
 
-
+[dependency-groups]
+dev = [
+    "flowr[viz]>=1.2.1",
+]

@@ -3,18 +3,11 @@
 ## Citation
 
 Gamma, E., Helm, R., Johnson, R., & Vlissides, J. (1994). *Design Patterns: Elements of Reusable Object-Oriented Software*. Addison-Wesley.
-
-## Source Type
-
-Practitioner Book
+URL: https://en.wikipedia.org/wiki/Design_Patterns
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

@@ -3,18 +3,11 @@
 ## Citation
 
 Fagan, M. E. (1976). "Design and Code Inspections to Reduce Errors in Program Development." *IBM Systems Journal*, 15(3), 182–211.
-
-## Source Type
-
-Academic Paper
+URL: https://en.wikipedia.org/wiki/Fagan_inspection
 
 ## Method
 
 Experiment
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

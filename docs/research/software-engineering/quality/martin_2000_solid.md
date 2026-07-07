@@ -3,18 +3,11 @@
 ## Citation
 
 Martin, R. C. (2000). Design Principles and Design Patterns. Object Mentor. [PDF archived at Internet Archive]
-
-## Source Type
-
-Practitioner Book
+URL: https://en.wikipedia.org/wiki/SOLID
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

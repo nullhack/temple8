@@ -1,0 +1,164 @@
+flow: plan-flow
+version: 1.6.0
+exits:
+  - contracts-ready
+  - needs-capture
+  - needs-elicitation
+states:
+  - id: model-data-schema
+    attrs:
+      description: >
+        Author the persistence schema as a binding contract before any test
+        stub is written. The data-architect reads the captured external shapes
+        and the interview, classifies the workload (OLTP/OLAP/hybrid), and
+        models tables, indexes, constraints, and expected query patterns
+        optimised for the common operations. The model is the contract the
+        build-phase developer implements against - not a deferral.
+      dispatch_to: data-architect
+      specialists: [integration-engineer, domain-expert, security-engineer]
+      git branch: dev
+      skills: [model-data-schema]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - ".cache/<session_id>/data-model.md"
+    next:
+      data-modeled: author-test-stubs
+
+  - id: author-test-stubs
+    attrs:
+      description: >
+        Author the test .pyi (integration + E2E only) from the interview,
+        captured reality, and the modeled schema - the first contract surface.
+      dispatch_to: test-architect
+      specialists: [integration-engineer, data-architect, ux-engineer, domain-expert, security-engineer]
+      git branch: dev
+      skills: [author-test-stubs]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "docs/glossary.md"
+    next:
+      test-stubs-authored: review-test-stubs
+
+  - id: review-test-stubs
+    attrs:
+      description: >
+        Gate. Review the test stubs for consistency, scope (integration/E2E
+        only), happy-path completeness, vacuous-assertion freedom, and
+        finding-grounded scope against the interview and the modeled schema.
+      dispatch_to: reviewer
+      git branch: dev
+      skills: [review-test-stubs]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+      output artifacts: []
+    conditions:
+      accepted:
+        interview-consistent: "==true"
+        scope-integration-e2e-only: "==true"
+        happy-paths-complete: "==true"
+        vacuous-assertion-free: "==true"
+        scope-minimal: "==true"
+    next:
+      accepted:
+        to: write-test-py
+        when: accepted
+      needs-stubs-rework: author-test-stubs
+
+  - id: write-test-py
+    attrs:
+      description: >
+        Write the test .py bodies under the code-quality gate; mark each
+        @pytest.mark.pending so the suite stays green-with-skips.
+      dispatch_to: test-architect
+      specialists: [integration-engineer, data-architect, ux-engineer]
+      git branch: dev
+      skills: [write-test-py]
+      input artifacts:
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.py"
+    next:
+      test-py-written: derive-source-stubs
+
+  - id: derive-source-stubs
+    attrs:
+      description: >
+        Derive <package>/**/*.pyi from the reviewed test .py - every type the
+        tests reference gets a definition.
+      dispatch_to: system-architect
+      specialists: [data-architect, integration-engineer, ux-engineer, domain-expert, security-engineer]
+      git branch: dev
+      skills: [derive-source-stubs]
+      input artifacts:
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.py"
+        - ".cache/<session_id>/data-model.md"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - "<package>/**/*.pyi"
+    next:
+      source-stubs-derived: simulate-contracts
+
+  - id: simulate-contracts
+    attrs:
+      description: >
+        Gate. Answer whether a correct implementation passing every test would
+        yield a complete working system; the final check before build.
+      dispatch_to: reviewer
+      git branch: dev
+      skills: [simulate-contracts]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/e2e/**/*_test.pyi"
+        - "<package>/**/*.pyi"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - ".cache/<session_id>/journal.md"
+    conditions:
+      accepted:
+        pyright-consistent: "==true"
+        no-orphans: "==true"
+        traceability-complete: "==true"
+        layer-order-respected: "==true"
+        test-stubs-consistent: "==true"
+        lint-clean: "==true"
+        simulation-passed: "==true"
+        spec-diff-clean: "==true"
+    next:
+      accepted:
+        to: contracts-ready
+        when: accepted
+      needs-source-stubs: derive-source-stubs
+      needs-test-bodies: write-test-py
+      needs-capture: needs-capture
+      needs-elicitation: needs-elicitation

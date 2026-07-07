@@ -3,18 +3,11 @@
 ## Citation
 
 Evans, E. (2003). *Domain-Driven Design: Tackling Complexity in the Heart of Software*. Addison-Wesley.
-
-## Source Type
-
-Practitioner Book
+URL: https://www.domainlanguage.com/ddd/
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

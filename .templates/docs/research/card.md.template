@@ -1,0 +1,41 @@
+# <Title> (<Author>, <Year>)
+
+> A research card — the full citation and the source's load-bearing idea, kept
+> so a knowledge author can confirm what an `(Author, Year)` citation refers to.
+> Verify every field against the source before committing; never author a card
+> from memory, and never fabricate one (see [[methodology/research-files]]).
+> One card per source, filed under `docs/research/<discipline>/`.
+
+## Citation
+
+<Author(s)>. (<Year>). *<Title>.* <Publisher / Journal / Venue>, <edition or date>. <ISBN / DOI>
+URL: <canonical URL — verified>
+
+## Method
+
+<source type and research method: Practitioner book / Academic paper / Web article / Edited reference; plus the method where it bears on the claim>
+
+## Confidence
+
+<High | Medium | Low — one line on why; lower when the URL or authorship is unverified>
+
+## Key Insight
+
+<one sentence: the single load-bearing idea the source contributes>
+
+## Core Findings
+
+1. <finding>
+2. <finding>
+
+## Mechanism
+
+<paragraph: how the idea actually works — the machinery, not a paraphrase of it>
+
+## Relevance
+
+<paragraph: which knowledge file(s) cite this source, and what claim the citation grounds>
+
+## Related Research
+
+- <Author Year> — <shared topic or relationship>

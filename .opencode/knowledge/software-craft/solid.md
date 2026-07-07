@@ -1,57 +1,55 @@
 ---
 domain: software-craft
 tags: [solid, design-principles, oop, code-quality]
-last-updated: 2026-04-30
+last-updated: 2026-07-01
 ---
 
-# SOLID Principles
+# SOLID
 
 ## Key Takeaways
 
-- SRP: A class should have only one reason to change: multiple responsibilities mean multiple change axes that conflict (Martin, 2000).
-- OCP: Software entities should be open for extension but closed for modification: add new behaviour by adding new code, not by changing existing code.
-- LSP: Subtypes must be substitutable for their base types: a subclass that breaks the contract of its superclass violates Liskov Substitution.
-- ISP: Clients should not be forced to depend on interfaces they do not use: split fat interfaces into smaller, cohesive ones.
-- DIP: Depend on abstractions, not concretions: high-level modules should not depend on low-level modules; both should depend on abstractions.
+- **SRP** — a class has one reason to change; multiple responsibilities mean multiple change axes that conflict (Martin, 2000).
+- **OCP** — entities are open for extension, closed for modification: add behaviour by adding code, not by editing existing code.
+- **LSP** — subtypes are substitutable for their base types; a subclass that breaks the parent's contract violates Liskov substitution.
+- **ISP** — clients depend only on the interface they use; split fat interfaces into small, cohesive ones.
+- **DIP** — depend on abstractions, not concretions; high-level policy and low-level detail both depend on abstractions.
+- SOLID is applied **when a smell triggers it**, never speculatively — it is part of the quality bar a review enforces, not a checklist to satisfy in advance of a problem.
 
 ## Concepts
 
-**Single Responsibility Principle (SRP)**. A class with more than one reason to change has more than one responsibility. When requirements change, a class that handles multiple responsibilities must change in multiple unrelated ways, creating coupling between unrelated concerns. The fix: extract each responsibility into its own class. A class with >2 instance variables often has >1 responsibility (OC-7 overlap).
+**Single Responsibility (SRP).** Martin (2000) frames responsibility as an axis of change: a class with more than one reason to change has more than one responsibility, and when requirements shift it changes in unrelated ways that couple concerns which never belonged together. The test is not "does it do one thing?" but "does it change for one reason?" — a class that edits both currency rates and audit logs will be touched by both a rate-change and an audit-change request, and those are two responsibilities however neatly the methods are named.
 
-**Open-Closed Principle (OCP)**. When new variants are added to a system, existing code should not be modified. Instead, new behaviour is added by creating new types that implement existing interfaces. Type-switching (`if/elif` on a kind field) is an OCP violation. Each new variant requires modifying every switch statement. The fix: Replace Conditional with Polymorphism, Strategy, or State.
+**Open-Closed (OCP).** Adding a variant should add code, not edit it. When behaviour is selected by `if/elif` on a kind field, every new variant forces a change to every switch — the type is open for modification and closed for extension, the inverse of the principle. The fix is polymorphism (or Strategy/State): a new variant is a new type that fits an existing interface, and the dispatch sites are unchanged.
 
-**Liskov Substitution Principle (LSP)**. If a function expects a base type, it must work correctly with any subtype. A subclass that overrides methods to do nothing, throws `NotImplementedError`, or narrows pre-conditions violates LSP. Refused Bequest is the corresponding smell. The fix: Replace Inheritance with Delegation, or Push Down Method to isolate the problematic inheritance.
+**Liskov Substitution (LSP).** Liskov's (1987) subtyping rule, named as a principle by Martin: anywhere a base type is expected, any subtype must work without surprise. A subclass that overrides a method to do nothing, to raise, or to narrow a precondition breaks the parent's contract and will trip a caller that relied on it. The smell is *Refused Bequest*; the fix is usually delegation or pushing the method down, not a fragile inheritance.
 
-**Interface Segregation Principle (ISP)**. A fat interface forces all clients to depend on methods they do not use. When a client depends on an interface with 10 methods but only calls 2, any change to the other 8 methods triggers a recompile or retest. The fix: Extract Interface into smaller, cohesive interfaces, each serving one client role.
+**Interface Segregation (ISP).** A client forced to depend on methods it never uses is coupled to changes that do not concern it. A fat interface split into one role-interface per client keeps each dependent small and each change local. The signal is a client importing an interface for two of its ten methods — the other eight are load it does not need.
 
-**Dependency Inversion Principle (DIP)**. High-level policy should not depend on low-level detail; both should depend on abstractions. A module that imports a concrete database adapter is tightly coupled to that adapter's implementation. The fix: define a Protocol (abstract interface) and inject the adapter via dependency injection. External dependencies should always be behind a Protocol.
+**Dependency Inversion (DIP).** High-level policy should not reach into low-level detail; both should sit behind abstractions. A module that imports a concrete database adapter is welded to that adapter's implementation; define a Protocol and inject the adapter, and the policy becomes independent of the mechanism. In this workflow the boundary is also where the cassettes and fixtures attach — the abstraction is what lets the real adapter and its replay double satisfy the same contract.
 
 ## Content
 
-### SOLID Violation Smell Mapping
+### Violation → smell → fix
 
 | Principle | Smell | Signal | Fix |
 |---|---|---|---|
-| SRP | Divergent Change | One class changes for multiple unrelated reasons | Extract Class by axis of change |
-| SRP | Large Class | Class has too many instance variables or methods | Extract Class, Extract Subclass |
-| OCP | Switch Statements | `if/elif` on type/kind/status that must change for each new variant | Replace Conditional with Polymorphism, Strategy, State |
-| OCP | Shotgun Surgery | Adding one variant requires modifying many call sites | Move dispatch to type hierarchy |
-| LSP | Refused Bequest | Subclass overrides methods to do nothing or raises NotImplementedError | Push Down Method, Replace Inheritance with Delegation |
-| LSP | Alternative Classes with Different Interfaces | Two classes doing the same thing with different signatures | Extract Superclass, unify via Protocol |
-| ISP | Fat Interface | Client depends on methods it does not use | Extract Interface per client role |
-| ISP | Temporary Field | Interface forces fields that are only set in some code paths | Extract Class, Introduce Null Object |
-| DIP | Direct Dependency on Concrete | Module imports a concrete class instead of an abstraction | Define Protocol, inject via constructor |
-| DIP | Hard-coded Construction | `__init__` creates concrete dependencies | Replace Constructor with Factory Method, inject dependencies |
+| SRP | Divergent Change | one class changes for multiple unrelated reasons | Extract Class by axis of change |
+| SRP | Large Class | too many fields or methods | Extract Class, Extract Subclass |
+| OCP | Switch Statements | `if/elif` on a kind/type/status, edited per variant | Replace Conditional with Polymorphism; Strategy; State |
+| OCP | Shotgun Surgery | one variant forces edits across many call sites | move dispatch into the type hierarchy |
+| LSP | Refused Bequest | subclass overrides to do nothing or to raise | Push Down Method; Replace Inheritance with Delegation |
+| LSP | Alternative Classes w/ Different Interfaces | two classes, same job, different signatures | Extract Superclass; unify behind a Protocol |
+| ISP | Fat Interface | client depends on methods it does not call | Extract Interface per client role |
+| DIP | Direct Dependency on Concrete | module imports a concrete class | define a Protocol; inject it |
+| DIP | Hard-coded Construction | `__init__` builds its own dependencies | inject dependencies; Factory if construction varies |
 
-### SOLID in the Design Principle Priority
+### Applied when triggered, not speculatively
 
-SOLID principles are checked only when a smell triggers them, per the design principle priority in [[software-craft/tdd#concepts]]. They are never applied speculatively.
+SOLID is part of the quality bar `review-implementation` and `refactor-green` enforce, alongside Object Calisthenics and the smell catalogue. It is applied *when a smell points at it* — a Divergent Change points at SRP, a Switch Statement at OCP — not run at a class on the chance it might be violating something. Speculative SOLID produces abstraction for its own sake (the Speculative Generality smell), which is itself a defect the review then rejects.
 
 ## Related
 
-- [[software-craft/smell-catalogue]]: each SOLID violation maps to specific smells
-- [[software-craft/design-patterns]]: patterns resolve SOLID violations (e.g., Strategy resolves OCP violations)
-- [[software-craft/refactoring-techniques]]: refactoring techniques fix SOLID violations
-- [[software-craft/refactoring]]: when and how to refactor, clean code, technical debt
-- [[software-craft/object-calisthenics]]: Object Calisthenics rules overlap with SOLID (ObjCal-7 enforces SRP, ObjCal-4 enforces DIP)
-- [[software-craft/tdd]]: SOLID is part of the design principle priority
+- [[software-craft/smell-catalogue]] — each SOLID violation manifests as a named smell
+- [[software-craft/object-calisthenics]] — the rules that prevent the violations at write time (OC-7 enforces SRP; OC-4 enforces DIP)
+- [[software-craft/design-patterns]] — patterns that resolve violations (Strategy resolves OCP)
+- [[software-craft/refactoring-techniques]] — the moves that fix a violation once found

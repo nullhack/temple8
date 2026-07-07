@@ -1,0 +1,76 @@
+flow: explore-flow
+version: 1.5.0
+exits:
+  - explored-ready
+  - needs-elicitation
+states:
+  - id: select-external-target
+    attrs:
+      description: >
+        Pick the next un-probed external service (one per pass) and record it as
+        the handoff; pass through when none remain.
+      dispatch_to: integration-engineer
+      git branch: dev
+      skills: [select-external-target]
+      input artifacts:
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+        - "tests/cassettes/**"
+      output artifacts:
+        - ".cache/<session_id>/probe-target.md"
+    next:
+      next-selected: research-provider
+      all-probed: explored-ready
+
+  - id: research-provider
+    attrs:
+      description: >
+        Ground the one selected service in its real behaviour by reading the
+        provider's docs and determining its access shape, before any probe code.
+      dispatch_to: integration-engineer
+      specialists: [data-architect, security-engineer, ux-engineer, domain-expert]
+      git branch: dev
+      skills: [research-provider]
+      input artifacts:
+        - ".cache/<session_id>/probe-target.md"
+        - ".cache/<session_id>/interview-notes.md"
+        - "docs/glossary.md"
+      output artifacts:
+        - ".cache/<session_id>/probe-research.md"
+    next:
+      researched: write-probe
+      mismatch: needs-elicitation
+
+  - id: write-probe
+    attrs:
+      description: >
+        Author the minimal throwaway probe script (one success + one error
+        path) from the researched access shape; do not execute it.
+      dispatch_to: integration-engineer
+      git branch: dev
+      skills: [write-probe]
+      input artifacts:
+        - ".cache/<session_id>/probe-research.md"
+      output artifacts:
+        - ".cache/explore/**"
+    next:
+      probe-written: record-cassette
+
+  - id: record-cassette
+    attrs:
+      description: >
+        Execute the probe, record the real exchange as a scrubbed committed
+        cassette, and append the external-contracts notes.
+      dispatch_to: integration-engineer
+      specialists: [security-engineer]
+      git branch: dev
+      skills: [record-cassette]
+      input artifacts:
+        - ".cache/<session_id>/probe-research.md"
+        - ".cache/explore/**"
+      output artifacts:
+        - "tests/cassettes/**"
+        - ".cache/<session_id>/external-contracts.md"
+    next:
+      captured: select-external-target
+      mismatch: needs-elicitation

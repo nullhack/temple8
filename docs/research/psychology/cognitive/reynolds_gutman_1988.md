@@ -3,18 +3,12 @@
 ## Citation
 
 Reynolds, T. J., & Gutman, J. (1988). "Laddering theory, method, analysis, and interpretation." *Journal of Advertising Research*, 28(1), 11–31. DOI: 10.1080/00218499.1988.12467766. [Highly cited: 3,779+ citations]
+URL: https://doi.org/10.4324/9781410600844-9
 
-## Source Type
-
-Academic Paper
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

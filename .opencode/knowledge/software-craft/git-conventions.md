@@ -1,93 +1,75 @@
 ---
 domain: software-craft
-tags: [git, branching, commits, squash, pull-requests, conflict-resolution]
-last-updated: 2026-05-28
+tags: [git, commits, conventional-commits, branching, squash-merge]
+last-updated: 2026-07-01
 ---
 
 # Git Conventions
 
 ## Key Takeaways
 
-- Feature branches use granular commits per achievement; local dev receives single squashed commits per feature.
-- Before merging to local dev: sync main with remote, reset dev to origin/main, then squash-merge. Delete feature branch after merge.
-- After PR merge to main: reset local dev to origin/main to prevent history divergence on next PR.
-- Granular commit format: `<type>(<scope>): <specific achievement>` (e.g., `feat(auth): add JWT signing method`).
-- Squashed commit format includes Example title traceability, feature metadata, and approval trail.
-- Multiple features can accumulate on local dev before creating a PR: the stakeholder decides when to publish.
-- PR is an administrative step (dev → main) required by the git hosting platform; changes are already on dev.
+- Commits follow **Conventional Commits**: `<type>(<scope>): <imperative description>` — types `feat`, `fix`, `test`, `refactor`, `chore`, `docs`, `ci`; no `wip`, `temp`, or untyped commit (Conventional Commits 1.0.0).
+- **One logical change per commit** — `ship-unit` commits the built contract's `.py` plus the structural artifacts it required as one change, and the `.pyi` is unchanged (contracts are fixed during build).
+- **Refactor commits are separate from feature commits**; a structural change is never mixed with a behaviour addition, so history stays bisectable and every commit leaves the tests green.
+- The branch model is **`feature` → `dev` → `release`/`main`**: the build cycle runs on `feature`, squash-merges accumulate on `dev`, and publish targets `release` or `main`. Feature branches are short-lived and deleted after their squash-merge.
+- `merge-to-dev` squash-merges the feature commits into `dev` as one commit, then verifies the whole suite and the whole-suite stubtest are clean — no pending markers remain, and no drift was smuggled in by the batch.
 
 ## Concepts
 
-**Two-Tier Commit Strategy**. Development happens on feature branches (`feat/<stem>` or `fix/<stem>`) with granular commits per achievement. Each small milestone gets its own commit for development traceability and easy bisection. Before merging to local dev, all feature commits are squashed into a single meaningful commit with Example title traceability.
+**Conventional Commits.** A commit message is a typed, scoped, imperative sentence: `feat(rates): fetch live rate from provider`, `fix(history): correct latest-first ordering`. The type carries meaning — `feat` and `fix` map to minor and patch version bumps, `refactor` signals no behaviour change, `test`/`chore`/`docs`/`ci` are self-explanatory — and the imperative mood keeps the message readable as a command the change performs. The discipline forbids `wip`, `temp`, and any untyped commit, because a history that cannot be read cannot be bisected.
 
-**Local Dev as Staging Area**. Local dev accumulates squashed feature commits. Multiple features can be developed and squash-merged to local dev before publishing to remote. This allows integration testing of multiple features together and reduces PR noise. The stakeholder decides after each feature whether to continue developing more features or publish the batch. PRs go from dev to main on the remote.
+**One logical change per commit.** A commit answers one question; mixing concerns produces a history where each entry means several things at once. `ship-unit` commits exactly one contract — the implemented `.py` and the migrations, fixtures, or cassettes it required — and nothing else; the `.pyi` is the same at ship as it was at plan, because contracts do not move during build. The unit of a commit is the unit of a contract.
 
-**Conflict Prevention**. Before squash-merging, sync local main with remote (`git merge --ff-only origin/main`), then reset local dev to origin/main to prevent history divergence from previous PR merges. Resolve conflicts feature by feature on the feature branch. If conflicts require design decisions, present options to the stakeholder with consequences.
+**Refactor separate from feature.** A behaviour addition and a structural cleanup are different changes even when they land together, so they are different commits. Mixing them forces a reader (or a `git bisect`) to attribute a test failure to two unrelated changes at once; keeping them apart lets each commit stand as one defensible step, and every commit along the way leaves the tests green.
 
-**Administrative PR**. The PR (dev → main) serves the git hosting platform's approval requirement, not merge mechanics. Changes are already on local dev. The PR documents what was built, provides traceability via Example titles, and enables the review/approval workflow. After the PR is squash-merged to main on the remote, sync local main and reset local dev to origin/main so the next feature cycle starts clean.
+**The three-branch model.** Work flows in one direction: a `feature` branch carries a build cycle (red through ship), `dev` accumulates squash-merged contracts and is where integration is verified, and `release` or `main` is the publish target. Feature branches are short-lived — created for a contract, deleted after the squash-merge — so only `dev` and the publish branch are long-lived.
 
-**Branch Lifecycle**. Feature branches are short-lived: create from main, develop, squash-merge to dev, delete. No feature branch persists after its squash-merge. This prevents stale branches from accumulating and ensures a clean `git branch` output. Only `main` and `dev` are long-lived branches.
-
-**Conventional Commits**. Every commit follows `<type>(<scope>): <description>`. Types: `feat` (feature), `fix` (bug fix), `test` (test addition/modification), `refactor` (structural change with no behavior change), `chore` (tooling, deps, CI), `docs` (documentation). Forbidden: `wip`, `temp`, any commit without a type prefix.
+**Squash-merge into dev.** The granular per-contract commits on `feature` collapse into one commit on `dev`, carrying the contract's summary in its message. The merge is the gate where the whole suite and the whole-suite stubtest run: by now every `.pyi` has its `.py`, every pending marker is gone, and any drift the per-cycle scope hid is exposed across the full set.
 
 ## Content
 
-### Branch Naming
+### Branch model
 
-| Branch Type | Format | Purpose |
+| Branch | Lives | Carries |
 |---|---|---|
-| Feature | `feat/<feature-stem>` | New feature development |
-| Fix | `fix/<feature-stem>` | Post-mortem fix for a rejected feature |
-| Docs | `docs/<scope>` | Documentation changes |
-| Chore | `chore/<scope>` | Tooling, deps, CI |
+| `feature` | short — one build cycle | the per-contract commits (red → green → refactor → ship) |
+| `dev` | long | squash-merged contracts; integration truth |
+| `release` / `main` | long | the publish target |
 
-### Granular Commit Format
-
-During development on a feature branch, each small achievement gets its own commit:
+### Commit format
 
 ```
-feat(auth): add JWT signing key configuration
-test(auth): add failing test for token expiry
-feat(auth): implement token expiry validation
-refactor(auth): extract token validation to separate method
-fix(auth): handle malformed token errors
+<type>(<scope>): <imperative description>
 ```
 
-Rules:
-- One logical change per commit
-- Refactor commits are separate from feature commits
-- Never mix a structural change with a behavior addition in one commit
-- Every commit leaves tests green
-
-### Squashed Commit Format
-
-Before merging to local dev, squash all feature commits into one:
-
-```
-feat(<scope>): <feature summary>
-
-- Implemented: <Example title 1>
-- Implemented: <Example title 2>
-- Implemented: <Example title 3>
-
-Feature: <feature-name>
-Branch: feat/<feature-stem> → dev
-Reviewed: SA approved (design + completion)
-Accepted: PO approved
-```
-
-### Feature-Type Verification
-
-Before any merge, verify the feature works in its delivery context:
-
-| Feature Type | Verification Command |
+| Type | Means |
 |---|---|
-| CLI | `timeout 10s uv run task run` |
-| Library | `uv run python -c "import <package>; <public_api_call>"` |
-| Mixed | Both commands above |
+| `feat` | a new behaviour (implies a minor bump) |
+| `fix` | a bug fix (implies a patch bump) |
+| `test` | test-only change |
+| `refactor` | structural change, no behaviour change |
+| `chore` | tooling, deps, CI |
+| `docs` | documentation |
+| `ci` | CI configuration |
+
+### One logical change — what ship-unit commits
+
+| In the commit | Not in the commit |
+|---|---|
+| the implemented source `.py` | the `.pyi` (unchanged from plan) |
+| the migration / fixture / cassette the module required | unrelated contracts |
+| nothing else | a refactor folded in (separate commit) |
+
+### Squash-merge into dev
+
+| Step | Check |
+|---|---|
+| squash `feature` → `dev` | one commit, contract summary in the message |
+| run the full suite | every test green; no pending markers remain |
+| run whole-suite `stubtest <package> tests` | every source and test pair agrees — no batch drift |
 
 ## Related
 
-- [[software-craft/tdd]]: commit discipline (separate refactor from feature)
-- [[software-craft/source-stubs]]: branch setup during project structuring
-- [[software-craft/code-review]]: two-tier review before merge
+- [[software-craft/tdd]] — the build cycle whose output ship-unit commits
+- [[software-craft/code-review]] — the review that gates a commit
+- [[software-craft/versioning]] — the version the publish step tags

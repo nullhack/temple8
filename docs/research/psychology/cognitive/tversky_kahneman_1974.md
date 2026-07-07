@@ -3,18 +3,11 @@
 ## Citation
 
 Tversky, A., & Kahneman, D. (1974). Judgment under uncertainty: Heuristics and biases. *Science*, 185(4157), 1124-1131. https://doi.org/10.1126/science.185.4157.1124
-
-## Source Type
-
-Academic Paper
+URL: https://doi.org/10.1126/science.185.4157.1124
 
 ## Method
 
 Experiment
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

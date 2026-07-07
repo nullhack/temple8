@@ -1,46 +1,38 @@
-# User Story Mapping (Patton, 2014)
+# User Story Mapping (Patton & Economy, 2014)
 
 ## Citation
 
-Patton, J. (2014). *User Story Mapping: Discover the Whole Story, Build the Right Product*. O'Reilly Media.
-
-## Source Type
-
-Book
+Patton, J. & Economy, P. (2014). *User Story Mapping: Discover the Whole Story, Build the Right Product.* O'Reilly Media, September 2014. ISBN 978-1-4919-0489-3 (print 1491904895; O'Reilly ebook ID 9781491904893). 324 pages.
+URL: https://www.oreilly.com/library/view/user-story-mapping/9781491904893/
 
 ## Method
 
-Industry practice synthesis
-
-## Verification Status
-
-Verified
+Practitioner book; process framework.
 
 ## Confidence
 
-High
+High — the canonical text on story mapping.
 
 ## Key Insight
 
-Story mapping is a collaborative discovery workshop that produces a two-dimensional map of user activities (backbone) and user tasks (stories). The map reveals the whole product at a glance, enabling prioritization and release slicing that flat backlogs cannot achieve.
+A two-dimensional map — user activities as the backbone, stories beneath each — reveals gaps and priorities that a flat one-dimensional backlog hides; stories are discovered as titles first and detailed only when needed.
 
 ## Core Findings
 
-1. **Backbone First**: Map user activities (high-level workflows) as the top row before adding any stories. Activities correspond to bounded contexts or major product areas.
-2. **Stories Are Discovered, Not Written**: Stories emerge from mapping user tasks beneath activities. The mapping workshop IS the discovery process. It replaces separate specification interviews for initial story creation.
-3. **Release Slicing**: Horizontal cuts across the map define releases. The minimum viable product is the thinnest horizontal slice that covers all activities.
-4. **Coarse Then Detailed**: Stories start as brief titles (one-line descriptions). Full "As a / I want / So that" format comes later during backlog refinement, not during mapping.
-5. **Whole Product View**: A flat backlog hides dependencies and gaps. The two-dimensional map makes missing functionality, duplicate stories, and ordering dependencies visible.
-6. **Collaborative Workshop**: Story mapping is a facilitated workshop with stakeholders, not a solo documentation exercise. The conversation IS the specification.
+1. Map the backbone first: the user's top-level activities, left to right, form the spine of the system.
+2. Beneath each activity, place stories (variants, alternatives, details) top to bottom by necessity.
+3. Release slicing is a horizontal cut across the map: the topmost slice of each activity forms a coherent first release.
+4. Detail a story only when it earns it; most are titles until they approach the build.
 
 ## Mechanism
 
-The two-dimensional structure (activities × tasks) activates spatial memory and pattern recognition. Participants see gaps and dependencies that flat lists conceal. The act of placing stories physically (or digitally) triggers discussion about what's missing or redundant. Prioritization emerges naturally from ordering stories top-to-bottom within each activity.
+A flat backlog hides that some activities have many stories and some have none; the map makes the skeleton and its gaps visible at a glance, so a team debates the whole before sequencing a part, and a release is cut as a thin coast-to-coast walking skeleton rather than a vertical column that leaves half the activities unbuilt.
 
 ## Relevance
 
-Story mapping bridges Event Storming (which surfaces bounded contexts and domain events) and BDD (which specifies concrete scenarios). After Event Storming identifies bounded contexts, story mapping decomposes each context into features and stories. The delivery order in the product definition maps to horizontal release slices across the story map.
+Grounds the coarse-then-detailed discipline at the building-blocks funnel level: capture the names and rough boundaries first (the backbone), defer the detail to the plan and build phases (the stories beneath). The map's "detail only when needed" is the workflow's no-spec-at-interview rule.
 
 ## Related Research
 
-Builds on agile user stories (Cohn, 2004), influenced by design thinking's emphasis on whole-product understanding. Complements Event Storming (Brandolini, 2012): storming produces events and contexts, mapping produces stories and releases. Patton explicitly credits Constantine's usage-centered design as a precursor.
+- Evans 2003 (bounded context as the backbone's organising unit)
+- Brandolini 2012 (Event Storming as an event-first alternative lens)

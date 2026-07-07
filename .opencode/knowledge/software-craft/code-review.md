@@ -1,78 +1,85 @@
 ---
 domain: software-craft
-tags: [code-review, adversarial-review, self-declaration, two-tier-review, inspection]
-last-updated: 2026-05-14
+tags: [code-review, adversarial-review, fail-fast, structured-report, inspection]
+last-updated: 2026-07-01
 ---
 
 # Code Review
 
 ## Key Takeaways
 
-- The reviewer's default hypothesis is "it might be broken despite green tests (prove otherwise") adversarial review catches more defects than cooperative review (Fagan, 1976; Tetlock, 1985).
-- Fail-fast: stop at the first failure, write a minimal REJECTED report. Do not continue reviewing after finding a defect: the defect may invalidate subsequent findings.
-- The reviewer MUST NOT modify any files. Produce APPROVED or REJECTED report only.
-- "Minor" is not a pass: code smells that are acknowledged must still be listed as findings.
-- Lint and type errors are convention concerns, verified in the polish state after feature acceptance.
-- Self-declaration checklists (AGREE/DISAGREE on specific criteria) force the reviewer to articulate exactly what passes and what fails, preventing vague "looks good" approval (Hattie & Timperley, 2007; Fagan, 1976).
-- Two-tier review separates concerns: design (does it do the right thing?), structure (are tests good enough, does it pass functional lint?). Conventions (naming, docstrings, formatting) are enforced in a separate polish state after feature acceptance.
+- The reviewer's default hypothesis is **"this is probably broken — prove otherwise."** Adversarial review, actively hunting for defects, catches more than cooperative "looks good" review, because accountability shifts the search from confirming that it works to finding where it breaks (Fagan, 1976; Tetlock, 1985).
+- **Fail fast**: stop at the first defect, write a minimal REJECTED report, and do not continue. The first defect may invalidate everything that follows, so accumulating findings on a doomed pass wastes effort (Fagan, 1976).
+- The reviewer **never modifies files**; the output is APPROVED or REJECTED, never an edit. "Minor" is not a pass — an acknowledged smell is still a finding that must be listed.
+- **Two review modes run in this workflow, each with its own criteria**: review-test-stubs checks coverage, scope, and happy-path completeness against the interview (NOT code quality — that is gated later on the bodies); review-implementation checks correctness, quality, drift, and green tests against the contract.
+- Each criterion is recorded as **Criterion / Verdict / Evidence / Action**. The structure forces a specific judgment per check and refuses the vague "looks good" approval that self-declaration exists to prevent (Hattie & Timperley, 2007).
 
 ## Concepts
 
-**Adversarial Review** (Fagan, 1976; Tetlock, 1985). Structured inspections detect 60–90% of defects before testing. The key mechanism is forcing the reviewer to articulate specific failures rather than offering vague approval. Accountability to an unknown audience (Tetlock, 1985) shifts the reviewer from confirmation bias ("looking for reasons it works") to adversarial search ("looking for reasons it breaks"). The reviewer MUST NOT modify any files (produce APPROVED or REJECTED report only. "Minor" is not a pass) acknowledged smells are still findings. Lint and type errors are convention concerns, not design concerns.
+**Adversarial review.** Fagan's (1976) inspections detected the bulk of defects before testing by fixing the process: separate the objectives so the team focuses on one at a time, classify error types and rank their frequency, then describe how to spot each type and condition the team to seek the high-occurrence, high-cost ones. The mechanism that makes it work is stance: Tetlock (1985) showed that accountability to an unknown audience shifts a reviewer out of confirmation bias ("looking for reasons it works") into adversarial search ("looking for reasons it breaks"). The reviewer begins from the assumption that the change is faulty and demands evidence to the contrary; vague approval is the failure mode the stance exists to prevent.
 
-**Fail-Fast Protocol**. Stop reviewing at the first defect found. Write a minimal REJECTED report containing: the defect, its file:line evidence, and the required action. Do not accumulate multiple findings. The first defect may invalidate everything that follows. Fix the defect, re-submit, and the reviewer starts over.
+**Fail fast.** Fagan's inspection stops at the first defect found, because a defect early in the artefact may invalidate the assumptions on which the rest of the review depends. Translated to a contract review: the moment a real defect is found, the reviewer writes a minimal REJECTED report — the defect, its file:line evidence, the required action — and stops. Accumulating further findings on a pass whose foundation is already broken wastes the reviewer's effort and the author's attention; the author fixes the defect, resubmits, and the reviewer starts over on a sound base.
 
-**Two-Tier Review**. Each tier checks a different quality dimension with different knowledge. Design review verifies alignment with domain spec, ADRs, and quality attributes, then independently verifies design principles (YAGNI > KISS > DRY > ObjCal > Smells > SOLID > patterns) by loading the relevant knowledge files. Structure review verifies test coverage, test quality, abstraction level matching, and functional lint (bug-catching rules only). Conventions (naming, docstrings, formatting, type annotations) are enforced in a separate polish state after feature acceptance, not during review.
+**Report-only; "minor" is never a pass.** The reviewer produces a verdict, not a patch: APPROVED or REJECTED, with findings, never an in-place edit, because the moment the reviewer starts fixing things the author stops owning the work and the review stops being independent. Within a review, "minor" is not a passing grade — a code smell that is acknowledged is still a finding and is still recorded. Downgrading a real defect to silence it defeats the inspection; the severity may shape the ordering of fixes, not whether they are reported.
 
-**Self-Declaration as Commitment Device** (Hattie & Timperley, 2007; Cialdini, 2001). Before handoff, the developer declares specific quality attributes as AGREE/DISAGREE. This forces explicit judgment on each criterion, preventing the "I skimmed it and nothing jumped out" pattern. DISAGREE is not automatic rejection. The developer states the reason, and the reviewer evaluates whether the reason is acceptable.
+**Two review modes, one method.** The workflow runs two reviews, each aligned to its phase. review-test-stubs reviews the `.pyi` set for coverage, scope, and happy-path completeness *against the interview* — it deliberately does not judge code quality, because the bodies do not exist yet; quality is gated later, on the `.py`. review-implementation reviews the built source *against its contract* for correctness, quality, drift, and green tests. The method — adversarial, fail-fast, structured — is the same in both; only the criteria change.
 
+**Structured self-declaration.** Hattie and Timperley (2007) show that feedback forces learning only when it demands a specific judgment; a checklist of AGREE/DISAGREE on named criteria prevents the "I skimmed it and nothing jumped out" approval. The PASS/FAIL record — Criterion, Verdict, Evidence, Action — is that device: each check must be articulated against a named criterion with file:line evidence, so approval is explicit about what was verified rather than gestured at.
 
 ## Content
 
-### Two-Tier Review Structure
+### Adversarial review
 
-| Tier | Checks | Key Knowledge |
-|---|---|---|
-| Design | Domain alignment, ADR consistency, quality attributes, design principles (YAGNI > KISS > DRY > ObjCal > Smells > SOLID > patterns) | [[architecture/reconciliation]], [[architecture/adr]], [[software-craft/tdd]], [[software-craft/object-calisthenics]], [[software-craft/smell-catalogue]], [[software-craft/solid]], [[software-craft/design-patterns]] |
-| Structure | Test coverage, test quality, abstraction level, observable behaviour, functional lint | [[software-craft/test-design]], [[software-craft/tdd]] |
+Fagan (1976) reported that structured inspection caught most defects before any test execution, and the SmartBear Cisco study (2006) — the largest published peer-review dataset — quantified the pace at which the inspection stays effective:
 
-Conventions (naming, docstrings, formatting, type annotations, full lint) are enforced in a separate polish state after feature acceptance via `task conventions`, `ruff format`, and `task static-check`.
+| Practice | Finding |
+|---|---|
+| review < 200–400 LOC at a time | defect density drops sharply above this |
+| review < 300–500 LOC/hour | faster review misses defects |
+| author preparation | the author's own annotation before review saves reviewer time on obvious defects |
 
-### Review Stance Declaration
+The stance is the part that travels: the reviewer adopts "I will actively search for defects, not confirm correctness," and conditions the search toward the error types this codebase produces most. A review that begins from "probably fine" is, in Fagan's terms, an inspection with its objective inverted.
 
-Before performing any review tier, declare:
+### Fail fast
 
-- Adversarial stance: "I will actively search for defects, not confirm correctness."
-- Fail-fast: "I will stop at the first failure and write a minimal REJECTED report."
+The protocol is a loop, not a batch:
 
-### PASS/FAIL Report Format
+1. review against the first criterion;
+2. IF a real defect is found THEN write a minimal REJECTED report (defect, file:line evidence, required action) and STOP;
+3. ELSE proceed to the next criterion;
+4. repeat until every criterion is checked → APPROVED.
 
-For each criterion checked, the reviewer records:
+The discipline is to stop, not to stockpile. A second finding written on top of a first that may have invalidated it is effort spent on a pass the author cannot act on without re-review anyway.
 
-- **Criterion**: Which specific quality attribute was checked
-- **Verdict**: PASS or FAIL
-- **Evidence**: File:line reference and specific observation
-- **Action**: What must change (only on FAIL)
+### Report-only; "minor" is not a pass
 
-A REJECTED report contains: the first failure found, its evidence, and the required action. No additional findings are needed. Fix the defect and re-submit.
+The reviewer's output is a verdict plus findings, never an edit. Conventions — formatting, naming, the no-docstring policy — are NOT a review concern in this workflow: ruff (with `PYI`) runs in CI as the enforcement backstop, and review is spent on contract, quality, drift, and behaviour. Within the review's own criteria, no defect is too small to report: a smell that is noticed is a finding, recorded at whatever severity; it is never downgraded out of the report to keep a change moving.
 
-### Planned Code vs Dead Code
+### Two review modes, one method
 
-During design review, distinguish between planned code and dead code:
+| Mode | Phase | Criteria | NOT judged here |
+|---|---|---|---|
+| review-test-stubs | after test `.pyi` authoring | coverage against the interview; scope (integration + E2E only); happy-path completeness | code quality (no bodies yet) |
+| review-implementation | after green | impl-matches-contract; source-quality-clean (SOLID/DRY/KISS/YAGNI/Object Calisthenics, per [[software-craft/solid]] and [[software-craft/object-calisthenics]]); stubtest-clean; tests-green | — |
 
-- **Planned code** matches the domain spec, technical design, or interview notes but has not been exercised by a test yet. Flag as WARN (planned-not-reached), not REJECT. The stubs created at feature planning time are breadcrumbs from the domain spec: the SE will reach them as TDD progresses through examples.
-- **Dead code** contradicts the architecture or was superseded by a design decision. Flag as REJECT and require removal.
+Both modes apply the same adversarial, fail-fast, structured method; the difference is only what the criteria are. A happy-path gap at review-test-stubs and a SOLID violation at review-implementation are both REJECTED with the same kind of report.
 
-Before flagging code as dead or unnecessary, verify against domain spec, technical design, and interview notes. Code that matches the architecture is planned, even if no test exercises it yet.
+### The PASS/FAIL report
+
+For every criterion checked, the reviewer records a row, whether the verdict is PASS or FAIL:
+
+| Field | Holds |
+|---|---|
+| Criterion | the named quality attribute being checked |
+| Verdict | PASS or FAIL |
+| Evidence | file:line reference and the specific observation |
+| Action | the required change (FAIL only) |
+
+A REJECTED report is the first FAIL row plus nothing more — the defect, the evidence, the action. APPROVED is the complete table with every row at PASS. There is no third verdict; "looks good" is not one of them.
 
 ## Related
 
-- [[architecture/reconciliation]]: adversarial cross-document consistency checking
-- [[software-craft/test-design]]: what makes a good test vs a bad test
-- [[software-craft/tdd]]: the design principle priority used in design review
-- [[software-craft/object-calisthenics]]: the 9 Object Calisthenics rules checked in design review
-- [[software-craft/smell-catalogue]]: smells checked during review
-- [[software-craft/design-patterns]]: patterns verified during review
-- [[software-craft/solid]]: SOLID violations checked during review
-- [[software-craft/refactoring]]: when and how to refactor, clean code, technical debt
-- [[requirements/ubiquitous-language]]: naming conventions checked in conventions review
+- [[software-craft/test-design]] — the criteria a review checks tests against
+- [[software-craft/test-stubs]] — the `.pyi` surface review-test-stubs inspects
+- [[software-craft/solid]], [[software-craft/object-calisthenics]], [[software-craft/smell-catalogue]] — the quality bar review-implementation enforces
+- [[software-craft/source-stubs]] — the source `.pyi` a contract review reads first

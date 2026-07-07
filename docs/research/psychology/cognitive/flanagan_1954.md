@@ -3,18 +3,11 @@
 ## Citation
 
 Flanagan, J. C. (1954). "The critical incident technique." *Psychological Bulletin*, 51(4), 327–357. https://doi.org/10.1037/h0061470
-
-## Source Type
-
-Academic Paper
+URL: https://doi.org/10.1037/h0046049
 
 ## Method
 
 Observational
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

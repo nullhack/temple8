@@ -3,18 +3,11 @@
 ## Citation
 
 Brandolini, A. (2012–present). *Event Storming*. eventstorming.com. Originally developed as "Event-based modelling" circa 2012; refined and published through workshops and online resources.
-
-## Source Type
-
-Practitioner Book
+URL: https://ziobrando.blogspot.com/2013/11/introducing-event-storming.html
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

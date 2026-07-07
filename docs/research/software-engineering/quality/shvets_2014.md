@@ -3,18 +3,11 @@
 ## Citation
 
 Shvets, A. (2014–present). *Refactoring.Guru*. https://refactoring.guru/
-
-## Source Type
-
-Blog/Article
+URL: https://refactoring.guru/
 
 ## Method
 
 Case Study
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

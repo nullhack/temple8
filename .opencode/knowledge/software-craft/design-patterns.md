@@ -1,106 +1,83 @@
 ---
 domain: software-craft
-tags: [design-patterns, gof, oop, refactoring, architecture]
-last-updated: 2026-04-30
+tags: [design-patterns, gof, oop, refactor, architecture]
+last-updated: 2026-07-02
 ---
 
 # Design Patterns
 
 ## Key Takeaways
 
-- Apply patterns only when a smell triggers them; never speculatively (Shvets, 2014).
-- Creational smells (scattered construction, multi-step setup) trigger Factory Method, Abstract Factory, or Builder.
-- Structural smells (type-switching, feature envy, parallel hierarchies) trigger Strategy, Visitor, Move Method, or Bridge.
-- Behavioral smells (large state machines, scattered notifications, repeated algorithm skeletons) trigger State, Observer, or Template Method.
-- When procedural code requires modifying existing functions for new variants, OOP is the fix: the smell is always a place that must change every time the domain grows.
+- Patterns are applied **only when a smell triggers them**, never speculatively — the smell points at the gap, the pattern supplies the structure (Gamma et al., 1994; Shvets, 2014).
+- The GoF sort the patterns into three families by what they structure: **creational** (how objects are built), **structural** (how types are wired together), **behavioural** (how responsibility is distributed).
+- The single thread through selection is the **Open-Closed Principle**: a place in the code edited every time the domain grows is the defect a pattern removes, turning modification into extension.
+- **Prefer the simplest structure that removes the smell.** A pattern is one option alongside the smaller refactoring moves, not a default — reach for it when the simpler move (Extract Method, Move Field, a parameter object) cannot carry the weight (KISS, YAGNI).
+- Patterns are **language-neutral structures**; the idiom that realises them is the host language's choice (a function reference, a generic, a trait). The pattern names the relationship; the language supplies the syntax.
 
 ## Concepts
 
-**Pattern Selection from Smells** (Shvets, 2014; Gamma et al., 1994). GoF design patterns provide structural solutions to recurring code smells. Patterns are applied only when a smell triggers them, never speculatively. The smell catalogue identifies the gap; the pattern provides the structural solution.
+**Applied when triggered, not collected.** A pattern is a named structural fix for a recurring problem, and the problem announces itself as a smell (Gamma et al., 1994; Shvets, 2014). Applying a pattern without the smell is Speculative Generality — an abstraction bought against a future that never arrives, which the smell catalogue rejects on sight. The discipline is to let the smell name the gap and the pattern fill it, never to fit the code to a pattern because the pattern is familiar.
 
-**Creational Smells and Patterns**. Scattered object construction (same object built in 3+ places) triggers Factory Method or Factory Function. Multi-step construction with optional parts (object requires several setup calls before valid) triggers Builder. The key change is centralizing creation knowledge or making invalid intermediate states impossible.
+**Three families.** Creational patterns address *how objects are built* — scattered construction, telescoping setup — and yield Factory, Builder, Prototype. Structural patterns address *how types are wired* — a switch on a kind, parallel hierarchies, an incompatible interface — and yield Strategy, Adapter, Bridge, Composite, Facade. Behavioural patterns address *how responsibility flows* — a state machine outgrowing its class, a change fanning out to listeners, two algorithms sharing a skeleton — and yield State, Observer, Template Method, Visitor. The family is read off the smell, not chosen in advance.
 
-**Structural Smells and Patterns**. Type-switching (function branches on a type flag) triggers Strategy (behaviour varies per call) or Visitor (operation varies over fixed structure). Feature envy (method uses another class's data more than its own) triggers Move Method. Parallel inheritance hierarchies (two class hierarchies growing in lockstep) trigger Bridge.
+**Open for extension, closed for modification.** Procedural code is open to modification: every new variant edits an existing branch. The pattern closes that branch and opens it to extension instead — a new variant arrives as a new type fitting an existing interface. This is the OCP heartbeat: a site that must be re-edited on every domain change is the precise defect the pattern removes.
 
-**Behavioral Smells and Patterns**. Large state machines in one class trigger State pattern. Scattered notification (source directly calls multiple downstream systems) triggers Observer. Repeated algorithm skeletons (two functions sharing structure but differing in one step) trigger Template Method.
+**Simplest structure that removes the smell.** A pattern is not the first move; it is the move that remains after Extract Method, Move Field, or a parameter object have proven insufficient. Reaching for Abstract Factory where a function would do, or Builder where two arguments would suffice, imports structure the smell did not justify. The rule is KISS and YAGNI applied to structure itself: the lightest fix that dissolves the smell is the right one, and a pattern earns its weight only when the lighter moves cannot carry it.
 
-**Core Heuristic**. When procedural code requires modifying existing functions to add new variants, OOP is the fix. Procedural code is open to modification; OOP closes existing code to modification and opens it to extension through new types. The smell is always the same: a place in the codebase that must change every time the domain grows.
+**Language-neutral; idiom is local.** A Strategy is a polymorphic family whether it is realised by a class hierarchy, a function reference, or a first-class callable; an Adapter is a translation layer whether it wraps by composition or by a language's trait. The pattern names the relationship; the host language supplies the idiomatic syntax. Modern languages fold several GoF patterns into single constructs (a callable replaces Command and Strategy; a generator replaces Iterator; a protocol/interface replaces Adapter scaffolding) — the pattern is still present where the relationship is, just without ceremony.
 
 ## Content
 
-### GoF Pattern Catalogue
+### The catalog
 
-#### Creational
-
-| Pattern | Intent | Problem | Applicability |
-|---|---|---|---|
-| Factory Method | Delegate object creation to a subclass or factory function | Direct construction couples code to concrete classes; adding a new type requires changes throughout | Don't know exact types beforehand; framework users extend components; reuse existing objects (caching, pooling) |
-| Abstract Factory | Create families of related objects without specifying concrete classes | Code depends on families of related objects and must work with any family | Multiple product variants that must be used together; configuration-driven object creation |
-| Builder | Construct complex objects step-by-step, separating construction from representation | Telescoping constructor with many optional parameters; subclass explosion for every configuration | Eliminate telescoping constructor; different representations with similar construction steps; construct Composite trees |
-| Prototype | Clone existing objects instead of creating new ones from scratch | Object creation is expensive or complex; object configuration is the hard part, not the class | Object has many configuration options; deep copy needed; avoid subclass explosion for configuration |
-| Singleton | Ensure a class has only one instance (use sparingly (prefer dependency injection) | Shared resource that must have exactly one instance | Database connection, configuration, logger) but prefer DI over Singleton |
-
-#### Structural
-
-| Pattern | Intent | Problem | Applicability |
-|---|---|---|---|
-| Adapter | Wrap an incompatible interface to match an expected interface | Existing class has the right behaviour but the wrong interface | Integrate third-party or legacy code; make incompatible interfaces work together |
-| Bridge | Separate abstraction from implementation so both can vary independently | Parallel inheritance hierarchies: creating a subclass for one forces a subclass for another | Two dimensions of variation that must evolve independently; avoid permanent binding between abstraction and implementation |
-| Composite | Treat individual objects and compositions uniformly via a shared interface | Code must treat primitive and container objects the same way | Tree structures; UI components; any part-whole hierarchy |
-| Decorator | Add responsibilities to an object dynamically without subclassing | Subclass explosion from combining optional features; need to add behaviour without modifying existing classes | Layered features (logging, caching, compression); avoid "God Object" from feature accumulation |
-| Facade | Provide a simplified interface to a complex subsystem | Complex subsystem requires initializing many objects, tracking dependencies, correct ordering; business logic coupled to implementation details | Limited straightforward interface to complex subsystem; structure subsystem into layers. Caution: can become god object |
-| Flyweight | Share fine-grained objects to reduce memory when many similar instances are needed | Too many similar objects consuming excessive memory | Large numbers of similar objects (characters in a text editor, tiles in a game); intrinsic vs extrinsic state separation |
-| Proxy | Control access to an object via a surrogate (lazy init, access control, logging) | Object is expensive to create, needs access control, or requires remote access | Lazy initialization; access control; logging; remote object access |
-
-#### Behavioral
-
-| Pattern | Intent | Problem | Applicability |
-|---|---|---|---|
-| Chain of Responsibility | Pass a request along a chain of handlers until one handles it | Multiple handlers may process a request, but which one is determined at runtime | Event bubbling; logging levels; validation pipelines; middleware stacks |
-| Command | Encapsulate a request as an object, enabling undo/redo and queuing | Requests are tied to specific callers; undo/redo needed; request execution must be deferred | Undo/redo; job queues; macro recording; UI action handling |
-| Iterator | Provide sequential access to elements without exposing the underlying structure | Collection internals are exposed to clients; different collection types need uniform traversal | Custom collection traversal; filtering; lazy iteration over large datasets |
-| Mediator | Centralize complex communication between objects through a mediator object | Many-to-many communication between objects; objects know too much about each other | UI form coordination; air traffic control; chat room; replace complex fan-out with central hub |
-| Memento | Capture and restore object state without violating encapsulation | Direct state access violates encapsulation; need to save/restore state | Undo/redo (with Command); snapshots; transaction rollback |
-| Observer | Define a one-to-many dependency so dependents are notified automatically | Either observers poll subject (wasteful) or subject notifies all (wasteful if not all interested); set of dependents is unknown or dynamic | State change in one object requires changing others; dynamic subscribe/unsubscribe; event systems. Structure: Publisher + Subscriber interface + Concrete Subscribers |
-| State | Allow an object to alter its behaviour when its internal state changes | State machine with conditionals grows into bloated mess; each new state requires changing conditionals in every method. States may know about each other and initiate transitions | Object behaves differently per current state with many states and frequent changes; class polluted with massive conditionals on state fields. Key distinction from Strategy: states may trigger transitions |
-| Strategy | Define a family of algorithms, encapsulate each, and make them interchangeable | Class has many variants of same algorithm, each adding bloat, merge conflicts, changes to one algorithm affect whole class. Strategies are independent and unaware of each other | Massive conditional switching between algorithm variants; many similar classes differing only in behavior execution; isolating business logic from algorithm details. Key distinction from State: strategies don't know about each other |
-| Template Method | Define the skeleton of an algorithm; let subclasses fill in specific steps | Two methods share the same algorithm structure but differ in one or two steps | Framework design; invariant algorithm with variable steps; avoid duplicate control flow in subclasses |
-| Visitor | Separate an algorithm from the object structure it operates on | Adding operations to a stable object structure requires modifying every element class | Compiler AST passes; reporting over stable data structures; double dispatch needs |
-
-### Quick Smell to Pattern Lookup
-
-| Smell | Pattern |
-|---|---|
-| Same object constructed in 3+ places | Factory Method / Factory Function |
-| Multi-step setup before object is valid | Builder |
-| Branching on a type, kind, or status field | Strategy |
-| Method uses another class's data more than its own | Move Method (Fowler) |
-| Two class hierarchies that grow in lockstep | Bridge |
-| Many methods branch on the same state field | State |
-| Object directly calls multiple downstream systems on change | Observer |
-| Two functions share the same algorithm skeleton, differ in one step | Template Method |
-| Subsystem is complex and callers need a simple entry point | Facade |
-| Need to add behaviour to objects without modifying their classes | Decorator |
-| Incompatible interface between collaborating classes | Adapter |
-| Need to treat individual and composite objects uniformly | Composite |
-
-### Pattern Smell Checks (Verification)
-
-| Code smell | Pattern missed | How to check |
+| Pattern | Intent | Triggers (smell) |
 |---|---|---|
-| Multiple if/elif on type/state | State or Strategy | Search for `isinstance` chains |
-| Complex `__init__` | Factory or Builder | Check line count and side effects |
-| Callers know multiple components | Facade | Check caller coupling |
-| External dep without Protocol | Adapter or Repository | Check dependency injection |
-| 0 domain classes, many functions | Missing domain model | Count classes vs functions |
-| Repeated algorithm skeleton | Template Method | Find duplicate control flow |
-| Direct calls to multiple listeners | Observer | Find fan-out call sites |
+| **Creational** | | |
+| Factory Method | one object creation, deferred to subclasses | same object constructed in 3+ places; construction scattered |
+| Abstract Factory | a family of related objects, kept consistent | cross-family construction that must not mix |
+| Builder | separate complex construction from its representation | telescoping constructor; multi-step setup before valid |
+| Prototype | new objects by copying a prototype | expensive or duplicated construction; state-only differences |
+| Singleton | one instance, global access | shared state accessed widely *(use with caution — often a coupling smell)* |
+| **Structural** | | |
+| Adapter | make an incompatible interface usable | an external service with the wrong interface |
+| Bridge | split abstraction from implementation; vary both | parallel inheritance hierarchies |
+| Composite | treat individuals and compositions uniformly | primitive and composite must be handled the same (trees) |
+| Decorator | add behaviour without subclassing | combinatorial explosion of optional behaviours |
+| Facade | one simplified entry to a subsystem | a complex subsystem needs one simple front |
+| Flyweight | share fine-grained state | vast numbers of near-identical objects |
+| Proxy | a placeholder controlling access | lazy load, access control, remote indirection |
+| **Behavioural** | | |
+| Chain of Responsibility | pass a request along handlers until one handles | a request with an unknown handler; sequential fallback |
+| Command | encapsulate a request as an object | queueing, undo, parameterised callbacks |
+| Iterator | sequential access without exposing structure | traversal coupled to the collection's representation |
+| Mediator | centralise how peers interact | many-to-many coupling between colleagues |
+| Memento | capture and restore internal state | rollback / undo of state |
+| Observer | notify dependents of state change | a change fans out to many listeners |
+| State | change behaviour as internal state changes | one state field sprouting conditionals across methods |
+| Strategy | a family of interchangeable algorithms | variant behaviour selected by a flag or switch |
+| Template Method | a skeleton with steps deferred to subclasses | two functions share a skeleton, differ in a step |
+| Visitor | separate an operation from the structure it runs on | operations accumulating on a stable class set |
+
+### Patterns at the type surface
+
+A pattern becomes visible at the **type-definition layer** — the signatures, relationships, and compositions that the contract surface declares — before any behaviour is written. A signature that branches on a kind field (a `type: str` later switched on) is Strategy or State asking to be born; two hierarchies declared in lockstep are Bridge; construction repeated across several entry points is Factory; a type that exposes another's internals to its callers is a Facade waiting to hide the subsystem. The defining step is where these signals are read, because the relationship is the contract: the shape declared there is what every caller will depend on, and reshaping it later costs more than reading it now. A pattern chosen at the type surface is chosen from the smells the relationships themselves emit.
+
+### The patterns this workflow hosts
+
+| Pattern | Where it appears in this flow |
+|---|---|
+| Adapter | wraps an external service behind an interface the domain speaks (cassettes replay through it) |
+| Repository | loads and stores aggregates; hides persistence behind a collection-like interface |
+| Facade / application service | the entry point — a CLI command, a handler — that composes the pieces and owns no domain logic |
+| Strategy / State | replaces a type-field switch with a polymorphic family |
+| Factory | centralises construction shared by several callers |
+| value object | a small, immutable, domain-typed wrapper — the domain value, not a bare primitive |
+
+A contract that needs none of these is the common case; a contract that needs one announces it through a smell that the review and refactor steps surface.
 
 ## Related
 
-- [[software-craft/smell-catalogue]]: smells trigger pattern selection
-- [[software-craft/refactoring-techniques]]: refactoring techniques that resolve smells before patterns are needed
-- [[software-craft/refactoring]]: when and how to refactor, clean code, technical debt
-- [[software-craft/solid]]: patterns resolve SOLID violations
-- [[software-craft/object-calisthenics]]: Object Calisthenics rules complement pattern application
-- [[software-craft/tdd]]: patterns are applied when improving code structure
+- [[software-craft/smell-catalogue]] — the smells that trigger pattern selection
+- [[software-craft/solid]] — OCP, the principle behind "open for extension, closed for modification"
+- [[software-craft/refactoring-techniques]] — the smaller moves tried before a pattern is warranted
+- [[software-craft/source-stubs]] — the type surface where pattern relationships are first declared

@@ -3,18 +3,11 @@
 ## Citation
 
 Procida, D. (2021). *Diátaxis: A systematic approach to technical documentation authoring*. https://diataxis.fr/
-
-## Source Type
-
-Specification
+URL: https://diataxis.fr/
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

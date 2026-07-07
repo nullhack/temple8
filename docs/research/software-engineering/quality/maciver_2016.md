@@ -3,18 +3,11 @@
 ## Citation
 
 MacIver, D. R. (2016). "What is Property Based Testing?" *Hypothesis*. https://hypothesis.works/articles/what-is-property-based-testing/
-
-## Source Type
-
-Blog/Article
+URL: https://hypothesis.works/
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 

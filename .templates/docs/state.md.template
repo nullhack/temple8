@@ -1,0 +1,65 @@
+# Specification (current state)
+
+> The living specification of this project's current state — what it is and
+> where it is in its build. Regenerated each pipeline cycle by the refresh step
+> from the truth: test `.pyi`, pending marks, cassettes, migrations, and the
+> glossary. Never hand-edited; hand-authoring creates a second source of truth
+> that drifts. Tests are the source of truth for behaviour — this file is a
+> derived view. When prose and a test disagree, the test wins.
+
+## Snapshot
+
+- **Project:** <name>
+- **Version:** <version from `pyproject.toml`>
+- **Generated:** <YYYY-MM-DD> by flowr session `<session_id>`
+- **Suite:** <green | red> · **Contracts:** <built>/<built+pending> built (<N> pending)
+- **Purpose:** → see `README.md`
+
+## Entry points & boundaries
+
+**Entry points:** <how execution enters — CLI command / API routes / scheduled jobs>
+
+**Boundary:**
+- *Internal (ours):* <module list — the contracts this project owns>
+- *External (depends on):* <service list — see Dependencies>
+
+## Contract index
+
+The derived map of what this system does. Each row points at the test (the
+behavioural truth) and the source `.pyi` (the type surface). Intent is
+regenerator-authored from the test body and self-corrects each cycle.
+
+| Contract | Module | Test | Intent (one line) | Status |
+|---|---|---|---|---|
+| <Name> | `<package>.<mod>` | `<test_file>` | <one line, read from the test body> | <built \| pending> |
+
+## Composition & data flow
+
+How the contracts assemble into the e2e path, and the data that flows through
+it. Entity names follow `docs/glossary.md`.
+
+<e2e call chain as an arrow sequence: `Entry.main → ContractA.method(...) → ContractB.method(...) → ...`>
+
+**Data flow:** <entity → entity → entity → store; where the data persists>
+
+## Dependencies
+
+**External services** — wire shapes live in the cassettes (the authoritative
+external contract); this table points at them and never restates the shape.
+
+| Service | Purpose | Protocol | Cassette | Env vars |
+|---|---|---|---|---|
+| <name> | <what for> | <HTTPS / ...> | `tests/cassettes/<svc>/...` | <VAR names> |
+
+**Persistence** — schema lives in the migrations (the migration IS the schema
+spec); this table points at them and never restates the DDL.
+
+| Entity | Store | Migration |
+|---|---|---|
+| <name> | <db / file / ...> | `migrations/<NNN>_<name>.py` |
+
+## Status & last cycle
+
+- **Built:** <N> · **Pending:** <N> — backlog: <contract names, or "none">
+- **Last cycle:** <what the last pipeline pass delivered>
+- **Next:** <next target, or "none — shipped">

@@ -1,1 +1,0 @@
-"""CLI entrypoint feature tests."""

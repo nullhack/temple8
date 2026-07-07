@@ -1,36 +1,88 @@
 ---
 domain: software-craft
-tags: [source-stubs, typed-stubs, package-structure]
-last-updated: 2026-05-08
+tags: [source-stubs, pyi, contract, derive-from-tests, pep-484]
+last-updated: 2026-07-01
 ---
 
 # Source Stubs
 
 ## Key Takeaways
 
-- Stubs are created at two levels: project-level creates the package skeleton; feature-level creates typed source stubs per feature.
-- Typed stubs are derived from the three contract types in technical design (API, event, interface); they compile but have no behaviour.
-- Source stubs contain the absolute minimum to compile and trace: Protocol signatures with `raise NotImplementedError` bodies, no docstrings, no type hints beyond the contract.
-- Package structure mirrors the module structure from technical design; the domain package depends on nothing.
-- Feature branches are created from the latest main.
-- Create artifacts in this order: branch, directories, port interfaces, Protocol stubs, run beehave generate to create test stubs, verify with `beehave check` and `beehave status` for development stage confirmation per [[software-craft/test-stubs#concepts]].
+- A source stub is a PEP 484 `.pyi` **derived from the test bodies** — the inverse of conventional stub authoring. Every type the tests construct, every method they call, every relationship they assert is the specification of the source surface; the stub records exactly that and nothing speculative.
+- `...` bodies only (PEP 484); never `raise NotImplementedError`. The stub is signature-only and compiles for the type checker with no runtime behaviour — behaviour lands in build's green.
+- The source `.pyi` is a **fixed contract during build**: green implements the `.py` to satisfy it; refactor cannot edit it; if the body cannot satisfy the `.pyi` without changing it, that is a contract gap escalated at review — never an in-place stub edit.
+- **No prescribed layout**, and config is twelve-factor with the secrets/config split of [[software-craft/secrets-and-config]] (non-secret workspace `.env`; secrets out-of-workspace via `dotenv_values()`); a typed Settings model is optional and, if warranted, a normal source stub. External adapters and connectors sit under the package alongside everything else, not as a separate category.
+- Structural artifacts are **keyed on what a module is**: an ORM model carries an Alembic migration (the migration IS the schema spec); an external adapter replays the cassettes captured in explore.
+- stubtest gates the source pair at green/review/merge — it imports the runtime module (transitive deps must be installed), runs scoped per cycle (the whole-suite run waits until every `.py` exists), and type-only imports go under `TYPE_CHECKING`. The drift mechanics are those of the test pair ([[software-craft/test-stubs]]).
 
 ## Concepts
 
-**Two-Level Stub Creation**. Stubs are created at two levels of granularity. **Project-level**: the SA creates the package skeleton only: directory structure mirroring the module layout, `__init__.py` files, port interfaces (Protocol abstractions from hexagonal architecture), and aggregate root class signatures. No entity, value object, or use case stubs are created at this level. **Feature-level**: the SA creates minimum typed stubs for the entities, value objects, and use cases referenced by the current feature's Examples. These feature-level stubs are breadcrumbs from the domain spec. The SE can add, remove, or modify them as the real implementation shape emerges from TDD.
+**Derived from the tests, not imagined.** Conventional `.pyi` authoring describes an existing or imagined library's public interface for consumers (typing.python.org). Here the source `.pyi` is derived from the test bodies the plan phase already wrote: each type the tests construct, each method they call, each composition they wire is a demand for a definition, and the stub supplies it with an ellipsis body, placed wherever the source lives. Nothing enters the stub that no test references — speculative generality is structurally impossible, because the tests are the truth and the stub is their shadow.
 
-**Typed Stubs from Contracts**. At feature level, Protocol interfaces are derived from the three contract types defined in technical design: API contracts (REST endpoints → Protocol methods), event contracts (domain events → dataclasses with event schema), and interface definitions (hexagonal ports → Protocol abstractions). These stubs compile but have no behaviour. They serve as the architecture's skeleton.
+**Signature-only; `...` not `NotImplementedError`.** PEP 484 specifies that a stub's function bodies be a single ellipsis. `raise NotImplementedError` is runtime behaviour — it executes, and a stub that executes is no longer a pure signature. A `.pyi` with `...` bodies compiles for the type checker and is inert at runtime; the green step replaces each `...` with a real body in the sibling `.py`, never in the `.pyi`.
 
-**Minimum Stub Principle**. Source stubs contain the absolute minimum needed to compile and trace. Protocol method signatures with `raise NotImplementedError` bodies: no docstrings, no type hints beyond the contract (return types and parameter types required by the Protocol). Docstrings, type hints, and lint compliance (ruff check, ruff format) are added when reviewers require them, not proactively. Adding them early is waste because refactoring changes code shape and invalidates them.
+**Fixed during build.** Once derived, the source `.pyi` is frozen for the whole build cycle: green writes the `.py` to satisfy it, refactor restructures the `.py` while the `.pyi` stays put, and the tests (already written) stay put too. If implementation discovers the `.pyi` is wrong — a missing parameter, a wrong return type, an impossible signature — the response is never to edit the stub in place; it is to escalate a contract gap at review, which routes back to plan for a proper re-derivation. The frozen stub is what keeps the contract the single source of truth.
 
-**Package Structure from Module Structure**. The module structure section of technical design maps directly to the package layout: each module becomes a Python package, each Protocol becomes a file in that package, and each test module mirrors its production counterpart. The domain package depends on nothing; infrastructure packages depend on domain Protocols, never the reverse.
+**No layout, no config artifact.** The tests say where the source lives and what it is called; the stub does not prescribe a package structure on top. Adapters, connectors, and domain types live under the package alongside one another. Configuration follows the secrets/config split of [[software-craft/secrets-and-config]] — non-secret config in a workspace `.env`, secrets loaded from out-of-workspace with `dotenv_values()` into a frozen Settings; a Settings model is optional and, if it earns its place, a normal source stub alongside the rest.
 
-**Branch Setup**. Implementation begins on a feature branch (`feat/<stem>`) created from the latest main. Branch naming follows [[software-craft/git-conventions]].
+**Structural artifacts keyed to the module.** Some modules carry an artifact beyond the `.py` pair. An ORM model owns an Alembic migration — the migration is the schema spec, born in green, committed in ship, never edited only appended. An external adapter replays the cassettes captured during explore (`VCR_RECORD_MODE=none`). The stub itself does not generate these; it declares the module's surface, and green emits whatever that surface implies.
 
-**Creation Order**. Create artifacts in this order: (1) feature branch from main, (2) package directories from module structure, (3) port interfaces and aggregate root signatures, (4) per-feature: Protocol stubs from contracts + run `beehave generate <feature_title>` to create test stubs per [[software-craft/test-stubs#key-takeaways]], (5) run `beehave check` to verify all Examples have corresponding test stubs.
+**stubtest, scoped.** The source pair is drift-checked by `mypy.stubtest` at green, review, and merge. The run is scoped to the modules built this cycle, because a whole-suite stubtest before every `.py` exists fails on unbuilt sibling stubs. stubtest imports the runtime module, so every transitive dependency must be installed in the project venv; imports that exist only for types go under `if typing.TYPE_CHECKING:` so stubtest does not drag heavy runtime deps in for type-only references. The mechanism — why the checker hides drift, why stubtest is the only detector — is the same as for the test pair.
+
+## Content
+
+### Derived from the tests
+
+| The test body asserts | The stub must declare |
+|---|---|
+| `RatesAdapter(base).fetch_rate("USD")` returns a `Rate` | class `RatesAdapter` with `__init__(self, base: str)` and `fetch_rate(...) -> Rate` |
+| `History(db_url).record(c)` then `.recent()` | class `History` with `__init__(self, db_url: str)`, `record(...)`, `recent()` returning the iterator the test consumes |
+| `Settings.from_env()` yields `.api_base` and `.db_url` | class `Settings` (frozen) with those attributes and the `from_env()` classmethod |
+
+If a value's representation is ambiguous across tests — a database URL passed as a bare filesystem path in one and a `sqlite:///path` URL in another — pin one canonical form once (the URL form) and state it in the stub, so every consumer agrees rather than each test improvising a shape the others break on.
+
+### Signature-only
+
+```
+class Rate:
+    base: str
+    value: float
+    def __init__(self, base: str, value: float) -> None: ...
+    def convert(self, amount: float) -> float: ...
+```
+
+No `raise NotImplementedError`, no `pass` body, no docstring — `...` only. The `.py` written in green fills these bodies with real logic; the `.pyi` never carries it.
+
+### Fixed during build
+
+| Phase | Who moves | Who stays |
+|---|---|---|
+| green | the `.py` (written to satisfy the `.pyi`) | `.pyi`, tests |
+| refactor | the `.py` (restructured for quality) | `.pyi`, tests |
+| review (gap found) | escalate to plan — re-derive | nothing edited in place |
+
+The asymmetry is deliberate: the `.pyi` and the tests are the contract, and contracts do not move while one party is implementing. A green or refactor that needs to change the `.pyi` is signalling the contract was wrong, which is a plan-phase decision, not a build-phase liberty.
+
+### No layout, no config artifact
+
+The package takes whatever shape the tests import from. Configuration is twelve-factor with the secrets/config split of [[software-craft/secrets-and-config]]: non-secret config in the workspace `.env` loaded with `load_dotenv()`; secrets in `~/.secrets/<project>.env` loaded with `dotenv_values()` — never into `os.environ`. A `Settings` model is optional; if it is worth the code, it is one normal source stub among the rest.
+
+### Structural artifacts keyed to the module
+
+| Module kind | Extra artifact | Born in | Lifecycle |
+|---|---|---|---|
+| ORM model | Alembic migration (the schema spec) | green | committed in ship; a new cycle adds a new migration, never edits an old one |
+| external adapter | replayed cassette (`VCR_RECORD_MODE=none`) | explore | committed; re-recorded only on a real mismatch |
+
+The stub declares the module's surface; green emits whatever that surface implies. A pure domain service with no persistence and no external boundary carries no extra artifact at all.
+
+### stubtest, scoped
+
+stubtest gates the source pair the same way it gates the test pair; the mechanics — `.pyi`-preferred hides drift from pyright, stubtest imports at runtime via `inspect`, it checks structure not return-type accuracy — are in [[software-craft/test-stubs]]. The source-specific discipline is scoping: `stubtest <package>.<mod> tests.<test_mod>` at green/review covers only the modules touched this cycle, because sibling source `.pyi` whose `.py` are not yet built would all false-fail a whole-suite run. The whole-suite `stubtest <package> tests` runs once, at merge, when every `.py` exists. stubtest checks the public surface declared in the `.pyi`; runtime imports the `.py` uses internally (`os`, `httpx`, sibling modules) need not be mirrored in the stub (validated empirically — a source module importing `httpx` internally, with no `httpx` in its `.pyi`, passed stubtest) — do not over-mirror implementation imports.
 
 ## Related
 
-- [[architecture/contract-design]]: the three contract types that define stub shapes
-- [[architecture/technical-design]]: module structure and package layout
-- [[software-craft/test-stubs]]: test stub format and title-based traceability chain
+- [[software-craft/test-stubs]] — the shared drift mechanics (`.pyi`-preferred; stubtest as the sole detector); the test pair
+- [[software-craft/tdd]] — the red/green/refactor cycle that implements these stubs
+- [[software-craft/design-patterns]] — patterns the implementation may apply to satisfy a stub cleanly
+- [[software-craft/solid]], [[software-craft/object-calisthenics]] — the quality bar the implementation is held to

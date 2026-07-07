@@ -3,18 +3,12 @@
 ## Citation
 
 Rogers, C. R., & Farson, R. E. (1957). "Active Listening." Industrial Relations Center, University of Chicago. Reprinted in Newman, R. G., Danziger, M. A., & Cohen, M. (1987). *Communicating in Business Today*. D.C. Heath & Company.
+URL: http://www.ask-force.org/web/Discourse/Rogers-Farson-ActiveListening-1957.pdf
 
-## Source Type
-
-Academic Paper
 
 ## Method
 
 Theoretical
-
-## Verification Status
-
-Verified
 
 ## Confidence
 
