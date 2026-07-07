@@ -10,14 +10,17 @@ last-updated: 2026-07-01
 
 - Simulation is a **mental execution of the contract set** — the test `.pyi`, the test `.py`, and the source `.pyi` together — asking whether a correct implementation that passes every test would actually work end-to-end and be complete.
 - The e2e-affecting failures live in **composition and cross-test coherence**, where tools are blind: a type imported from a module that does not re-export it, a value whose shape differs between the tests that produce and consume it, a shared module no test drives, a dependency graph with no valid build order. These surface only when a human walks the contracts.
-- **Walk the e2e path hop by hop** — entry point → adapter → domain → persistence. At each hop confirm the type passed, the value carried, and the side effect performed each trace to a backing contract; a broken hop is the simulation's main catch.
+- Simulation is a **compiler, not a ceremony**. It does not validate that the model "works" — the model (`data-model.md`) is already a binding input. It takes the contract set and simulates how the real application would run if a correct implementation made every test pass, the way a compiler walks an AST to prove the program type-checks and links before any code executes. The goal is to **disprove or confirm** the system works, mentally, before any source `.py` is written.
+- **Walk the e2e path hop by hop, journal at each hop** — entry point → adapter → domain → persistence. At each hop confirm the type passed, the value carried, and the side effect performed each trace to a backing contract, and **append the observation to `.cache/<session_id>/journal.md` at that hop** — not only the verdict at the end. A broken hop is the simulation's main catch.
 - **Trace each domain value across every test that touches it.** If two tests pass the same concept in different shapes, the contract is incoherent; pin one canonical form or split the concept. No tool performs this — it is a reading, not a check.
-- The tool floor is **necessary but not sufficient**: pyright (zero errors, tolerate `reportMissingModuleSource` pre-build), stubtest over the test pairs (drift), no-orphans (every source symbol exercised, every test reference backed), traceability (every interview finding → a test or deferral; every external service → a captured cassette). Each catches a class of defect; none catches composition.
-- The output is a **judgment with evidence**: the gate decision — advance, or a named gap — backed by the walkthroughs and traces that justify it. The simulation's value is the understanding that informs the decision.
+- **Spec-diff is not traceability.** Traceability counts whether a finding has any test; spec-diff asks whether the test would actually fail if the finding were violated. A finding named in a test but not enforced — a vacuous assertion, a lower-bound-only check, an `assert True`, an effect asserted without pinning how — is a gap, not a pass.
+- **Build-implied gaps** are ambiguities a correct implementation would surface: two impls both pass but only one matches spec; an effect asserted without pinning how; a side effect no test observes; a persistence shape the test asserts but the model doesn't declare. The gate question expands from "would passing = working?" to "would passing = working **and unambiguous**?".
+- The tool floor is **necessary but not sufficient**: pyright (zero errors, tolerate `reportMissingModuleSource` pre-build), stubtest over the test pairs (drift), no-orphans (every source symbol exercised, every test reference backed), traceability (every interview finding → a test or deferral; every external service → a captured cassette). Each catches a class of defect; none catches composition or ambiguity.
+- The output is a **judgment with evidence**: the gate decision — advance, or a named gap — backed by the per-hop walkthroughs, the value traces, the spec-diff, and the build-implied-gap sweep, all recorded in the journal. The simulation's value is the understanding that informs the decision.
 
 ## Concepts
 
-**Mental execution of the contract set.** The plan phase produces the contract set: every test written as an executable body, every source symbol recorded as a `.pyi` signature. Simulation is the act of reading that set as if it were already implemented and asking the one question that gates the build: *if a correct implementation made every one of these tests pass, would the resulting system work as intended and be complete?* It is a prediction of the future, made by walking the contracts the future will be built from. Because the contracts are executable, the prediction is answerable: every type, call, and side effect the simulation reasons about is one a test will enforce.
+**Mental execution of the contract set.** The plan phase produces the contract set: every test written as an executable body, every source symbol recorded as a `.pyi` signature, the schema recorded in `data-model.md`. Simulation is the act of reading that set as if it were already implemented and asking the one question that gates the build: *if a correct implementation made every one of these tests pass, would the resulting system work as intended and be unambiguous?* It is a prediction of the future, made by walking the contracts the future will be built from. Because the contracts are executable, the prediction is answerable: every type, call, and side effect the simulation reasons about is one a test will enforce. Simulation is a compiler, not a ceremony: it does not validate that the model works (the model is a binding input, already authored), it compiles the contract set in the reader's head to disprove — or confirm — that the system runs, before any source `.py` exists.
 
 **Why the tool floor is not enough.** pyright, stubtest, and the traceability counts each police a class of defect the others miss, and together they form a real floor — but every one of them reads files in isolation or checks a structural invariant, and none of them reads *across* the contract set the way a reader does. A type imported from a module that does not re-export it resolves fine for the checker and breaks at the composition. A value carried as a bare filesystem path by one test and as a `sqlite:///` URL by another is typed `str` in both stubs and passes every check, while the contract it implies is incoherent. A shared data module with no external boundary of its own has no test driving it, and no tool notices the gap. These are the failures that ship to build and surface as e2e breakage; simulation is the step that exists to catch them, because nothing else does.
 
@@ -54,6 +57,31 @@ A finding that cannot be grounded in one of these artefacts is not a simulation 
 | an e2e test whose hops do not all trace to a `.pyi` | a passing test on paper | an end-to-end path with a gap in the middle |
 
 These are the e2e-affecting failures; each ships silently to build if simulation does not catch it.
+
+### The build-implied gaps
+
+Ambiguities a correct implementation would surface — the contract under-determines the behaviour, so two impls both pass but only one matches the spec. Each is a gap even when the tool floor is clean.
+
+| Gap | What the tool sees | What the simulation sees |
+|---|---|---|
+| two impls both pass, only one matches spec | a green test set | an under-determined contract — the test does not pin the behaviour the spec requires |
+| an effect asserted without pinning how | a green test set | a test that asserts an outcome but not the mechanism; a constant, a no-op, or a real computation all pass |
+| a side effect no test observes | a green test set | a contract that claims a side effect (a write, a publish) but no test observes it; the impl could omit it and pass |
+| a persistence shape the test asserts but `data-model.md` doesn't declare (or vice versa) | a green test set | a contract that disagrees with the modeled schema — incoherent, the model is canonical |
+
+The gate question expands from "would passing = working?" to "would passing = working **and unambiguous**?". A contract set with a build-implied gap is not `accepted`; it routes to `needs-test-bodies` (or `needs-source-stubs` if the ambiguity is at the source-stub surface) with the gap cited.
+
+### Spec-diff
+
+For each consolidated interview finding, confirm the test set **enforces** it, not merely names it. This is distinct from traceability (which counts coverage); spec-diff asks whether the test would actually fail if the finding were violated.
+
+| The finding | Traceability says | Spec-diff says |
+|---|---|---|
+| "the report carries a generated_at timestamp" | a test references `generated_at` | the test asserts a *value* (a real timestamp, its type, its presence under a non-trivial impl) — `hasattr(report, "generated_at")` is naming, not enforcing |
+| "the renderer escapes HTML" | a test calls the renderer | the test asserts the *escaped output* against input that would break a constant-string renderer — a constant-satisfiable test is naming, not enforcing |
+| "the adapter returns JSON-serialisable values" | a test calls `_to_jsonable` | the test asserts *round-trip through `json.dumps`* — `_to_jsonable(value: object) -> object: return value` is naming, not enforcing |
+
+A finding named in a test but not enforced is a gap, routed to `needs-test-bodies` with the finding and the offending test cited.
 
 ### The e2e hop-by-hop walkthrough
 
@@ -92,10 +120,10 @@ Two shapes for one concept is a defect to resolve at plan, not a tolerance for b
 
 The simulation produces one of two outcomes, and nothing else:
 
-- **coherent and complete** — the walkthrough reached no broken hop, the value traces found no disagreement, the tool floor is clean; advance to build.
-- **a named gap** — which hop broke, which value disagreed, which module has no driver; route back to plan with the specifics.
+- **coherent, complete, and unambiguous** — the walkthrough reached no broken hop, the value traces found no disagreement, the spec-diff found no named-but-not-enforced finding, the build-implied-gap sweep found no ambiguity, the tool floor is clean; advance to build. The journal holds the per-hop observations that justify the verdict, not only the verdict.
+- **a named gap** — which hop broke, which value disagreed, which finding was named but not enforced, which ambiguity a correct impl would surface, which persistence shape disagreed with the model; route back to plan (or explore, or discover) with the specifics.
 
-The understanding is the output, and it lives in the gate decision.
+The understanding is the output, and it lives in the gate decision — recorded in the journal at the hop it was made, not only at the verdict.
 
 ## Related
 

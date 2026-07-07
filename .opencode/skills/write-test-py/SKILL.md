@@ -6,7 +6,7 @@ description: "Transform the reviewed test stubs into executable test bodies, wit
 # Write Test Py
 
 1. Load [[software-craft/solid]], [[software-craft/object-calisthenics]], [[software-craft/smell-catalogue]], [[software-craft/test-design]] — the quality criteria and body patterns.
-2. Read `.cache/<session_id>/journal.md` IF present — it carries escalation findings from build. Edit the bodies of the contracts it names to match the reworked stubs; skip if absent (first pass).
+2. Read `.cache/<session_id>/journal.md` (always present — bootstrapped at plan entry by `model-data-schema`). IF it carries escalation findings from build THEN edit the bodies of the contracts it names to match the reworked stubs; otherwise skip.
 3. Write the test bodies — no docstrings, no comments; the body is the spec. Bodies define how entities relate, compose, and collaborate: wire classes, data, and objects following best practices.
 4. Apply the code-quality gate here: SOLID, DRY, KISS, YAGNI, Object Calisthenics per [[software-craft/solid]], [[software-craft/object-calisthenics]]. IF a smell is present THEN reject it per [[software-craft/smell-catalogue]].
 5. Mark each test with the pending marker; the conftest hook skips pending tests so the suite stays green-with-skips until source is built.

@@ -65,6 +65,20 @@ The line that is *never* crossed is mocking an internal collaborator. Replacing 
 
 If a value the interview supplied does not fit the test naturally, that is a signal the spec is unclear about why the value matters — not licence to absorb it as noise.
 
+### Vacuous assertions
+
+A vacuous assertion is one a trivial implementation satisfies — a constant return, an empty collection, an identity function, a `return True`. A test that cannot fail under a trivial impl tests nothing, and the worst case is that it sails through every gate and ships as if it were a contract. The discipline: for every assertion in a test body, ask whether it would fail under a trivial implementation of the system under test; if it would not, the assertion is the smell, not the test surface.
+
+| Smell | Example | Why it's vacuous |
+|---|---|---|
+| `hasattr`-only | `assert hasattr(report, "generated_at")` | asserts the attribute exists, nothing about its value — a constant attribute passes |
+| no-op helper | `_to_jsonable(value: object) -> object: return value` | identity function passes as "JSON-serialisable"; `return True`, `assert True` are the same |
+| lower-bound-only | `assert x >= 0` against an empty fixture | trivially true when no value is negative |
+| constant-satisfiable | a renderer test that a constant-string renderer passes | any constant output satisfies — the assertion pins nothing about the renderer's behaviour |
+| tautology | `assert result == compute(...)` where `result` is `compute(...)` | the expected value is derived from the computation under test; the test cannot fail |
+
+The vacuous-assertion check is gated at `review-test-stubs` (the `vacuous-assertion-free` evidence key), not deferred to `simulate-contracts`. A vacuous test that reaches the simulation gate has already failed the review gate; the simulation catches what review missed, but review is where the smell belongs.
+
 ### Property tests prove invariants
 
 An example can only confirm a rule holds for the chosen case; it cannot prove the rule holds generally. Hypothesis (MacIver, 2016) generates inputs across the declared strategy and shrinks any failing case to the smallest counterexample, so a property test is the right tool when the requirement is universal:
@@ -82,4 +96,5 @@ Property tests live alongside the example tests in the same suite; they are not 
 - [[software-craft/test-stubs]] — the `.pyi` signature file each test is authored against first
 - [[software-craft/external-fixtures]] — the cassettes and fixtures that replace the external collaborator at the boundary
 - [[software-craft/code-review]] — the review method that checks these criteria are met
+- [[software-craft/smell-catalogue]] — a vacuous test is dead weight in the Dispensables sense; the smell catalogue cross-links back
 - [[software-craft/solid]], [[software-craft/object-calisthenics]] — the design discipline the bodies are held to

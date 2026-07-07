@@ -1,0 +1,45 @@
+# Journal: <session_id>
+
+> Per-session carry-over across the pipeline. Three kinds of entries, each
+> appended by the state that produced it; each routes a transition back to
+> an earlier subflow. On a first pass the journal is EMPTY (expected, not a
+> missing input) — entries appear only when a gate finds a contract gap or a
+> missing capture, or when simulate-contracts walks the e2e path. The first
+> reader (model-data-schema) bootstraps this file from the template if it
+> does not exist; absence on a first pass is never a deliberation point.
+
+## Build-phase escalations
+
+> Appended by confirm-red-failure and review-implementation when the
+> contract itself is the problem (not the implementation). Routed back to
+> plan on reveals-gap.
+
+### <contract>
+- **Gap:** <the contract, the gap, the evidence>
+- **Routed from:** <state that fired reveals-gap>
+
+## Capture gaps
+
+> Appended by simulate-contracts and model-data-schema when an external
+> exchange is missing or ambiguous. Routed back to explore on needs-capture.
+
+### <service>
+- **Missing case:** <what was not captured>
+- **Routed from:** <state that fired needs-capture>
+
+## Simulation walk
+
+> Appended by simulate-contracts during the per-hop walkthrough. One entry
+> per hop; the verdict at the end. Not routed — internal record that
+> justifies the verdict.
+
+### Hop <N>: <name>
+- **Type handed across:** <type>
+- **Value carried:** <shape>
+- **Side effect performed:** <contract that specifies it, or "none">
+- **Spec cross-check:** <finding cited, or "carries">
+- **Gap:** <which hop, which value, which finding — or "none">
+
+### Verdict
+<accepted | needs-test-bodies | needs-source-stubs | needs-capture | needs-elicitation>
+<one-line justification, citing the hop or finding that decided it>

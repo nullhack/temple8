@@ -63,6 +63,37 @@ Two independent scrubs apply to every cassette, and vcrpy performs neither (Mosk
 
 A cassette records what the service actually did. If the adapter test fails against it, the implementation is wrong or the contract drifted — never hand-edit the cassette to make the test pass, because the moment you do, the test is asserting against a wish, not reality. When the service itself changes — a new required field, a restructured error — the correct response is to re-record (our flow signals a mismatch and re-enters discovery), replacing the stale capture entirely. Version control holds the history of what the cassette used to be; the working tree holds only what the service does now.
 
+### Replay mechanism — vcr.use_cassette, not pytester
+
+The cassette is replayed in-process by the adapter test. The mechanism is fixed by the service kind:
+
+| Service kind | Replay mechanism | Why |
+|---|---|---|
+| HTTP API (httpx) | `with vcr.use_cassette(cassette_path(NAME)):` around the adapter call | vcrpy intercepts the httpx transport in-process; the cassette is the contract the test asserts against |
+| Library-boundary vcrpy cannot intercept (e.g. ddgs/primp) | `monkeypatch` on the adapter's transport | the library calls a non-HTTP transport vcrpy has no hook into; monkeypatch is the in-process replacement |
+| CLI subprocess | `pytester` (the pytest subprocess runner) | the SUT is a CLI process, not a function call; pytester spawns it and asserts on stdout/exit |
+
+The wrong tool for an httpx adapter test is `pytester`. It spawns a child pytest process, which breaks collection (the cassette lives in the parent's `tests/cassettes/`), hides the cassette contract from the type surface (the `.pyi` cannot name a cassette a subprocess owns), and runs the adapter out-of-process so the vcrpy interceptor never sees the call. The cassette contract must be visible in the test `.pyi` — the `cassette_path(NAME)` constant is declared at module level and the `with vcr.use_cassette(...)` block is in the test body — so stubtest and the simulation can see it.
+
+```
+# WRONG — pytester spawns a subprocess; the cassette is invisible to the .pyi
+#         and vcrpy never intercepts the call; the test cannot assert against
+#         the captured exchange
+def test_fetch(self, pytester) -> None: ...
+
+# RIGHT — in-process replay against the captured exchange; the cassette constant
+#         is declared at module level (visible to stubtest) and the
+#         use_cassette block is in the body (visible to the simulation)
+CASSETTE: str
+
+class TestRatesAdapter:
+    rates: RatesAdapter
+    def setup_method(self) -> None: ...
+    def test_fetches_rate(self) -> None: ...
+```
+
+The exception — a library-boundary adapter vcrpy cannot intercept (ddgs wraps primp, which is not an httpx transport) — uses `monkeypatch` on the adapter's transport, in-process. `pytester` remains reserved for CLI subprocess tests, where the SUT genuinely is a child process.
+
 ## Related
 
 - [[software-craft/test-design]] — the adapter test that replays a cassette and asserts against the captured shapes

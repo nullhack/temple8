@@ -64,6 +64,7 @@ last-updated: 2026-07-01
 | Data Class | fields with getters/setters, no behaviour | Move Method into it; Encapsulate Field |
 | Dead Code | unreachable, unused | delete it |
 | Speculative Generality | abstraction with no current caller | Inline Class/Method; remove the unused parameter |
+| Vacuous Test | an assertion a trivial implementation (constant, identity, `assert True`) satisfies | rewrite the assertion to pin observable behaviour per [[software-craft/test-design]] |
 
 ### Couplers
 
