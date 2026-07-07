@@ -176,10 +176,6 @@ No. temple8 is a project template: flows, agent definitions, skills, and knowled
 
 The default flows cover software development (discovery, exploration, data modeling, TDD cycles, review). Any repeatable process with steps and conditions can be expressed as a flowr state machine: ops runbooks, compliance audits, content pipelines, incident response.
 
-### What changed in 10.0?
-
-A new `model-data-schema` state runs at plan entry, producing `data-model.md` as a binding input to every downstream plan state. `simulate-contracts` is now a compiler: it walks the contract surface hop-by-hop, journals one observation per hop, runs a spec-diff, and surfaces build-implied gaps before any source `.py` is written. The `review-test-stubs` gate adds a vacuous-assertion sweep (five named smells) and an inverted-traceability (`scope-minimal`) check. The interview funnel asks a simplicity question at every level and drops speculative items before they become contracts. Replay is unambiguous: `vcr.use_cassette()` for HTTP, `pytester` for CLI, `monkeypatch` for library boundaries.
-
 ---
 
 ## Documentation
