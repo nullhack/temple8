@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "temple8"
-version = "10.1.0"
+version = "10.2.0"
 description = "Test-driven agent orchestration template with YAML flow definitions, staged test contracts, and BDD traceability"
 readme = "README.md"
 requires-python = ">=3.13"

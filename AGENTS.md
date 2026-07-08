@@ -17,14 +17,26 @@ through flowr.
 
 ## Driving a state
 
-**Two hats.** AGENTS.md addresses the **orchestrator** — the agent holding the flowr session that drives state to state. A **dispatched agent** (invoked via a state's `dispatch_to`) does one state's work and returns: load the skill, read the inputs, write only the outputs, assert the evidence, and never transition, skip, or hold the todo. If you were invoked to do a state's work, you are the dispatched agent — produce, return, stop.
+**Two hats.** AGENTS.md addresses the **orchestrator** — the agent holding the flowr session that drives state to state. A **dispatched agent** (invoked via a state's `dispatch_to`) does one state's work and returns. Its operating contract is ordered and mandatory:
+
+- **(0) Load the named skill** via the `skill` tool — the skill is the procedure; do not improvise.
+- **(1) Execute the skill's Load step** — resolve every `[[wikilink]]` and Read each cited knowledge file before any other step. The skill and its knowledge citations ARE the method; skipping them collapses the work to the agent's native lens.
+- **(2) Follow the skill's steps in order** — read every `input artifact`, write only to `output artifacts`, assert only verified evidence.
+- **(3) Never transition, skip, or hold the todo** — produce, return, stop (7).
+
+If you were invoked to do a state's work, you are the dispatched agent.
 
 One state at a time. The orchestrator keeps **one todo per state** — the todo *is* this loop:
 
 0. **Create the todo** — `todowrite` the phases below before any other action (8).
 1. **Read** — `flowr check --session <id>`; parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
 2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (3).
-3. **Dispatch** — invoke `dispatch_to` with the full handoff: skill paths, input artifacts, output artifacts (write only here), evidence keys, and the boundary — *do only this state's work; do not transition, do not skip; the orchestrator moves the flow* (2, 7). It returns the output artifacts and asserted evidence.
+3. **Dispatch** — invoke `dispatch_to` with a handoff whose **first instruction** is to load the skill and follow it. Use this template verbatim, filling the slots from `check`:
+
+   > Load the skill `<skills[0]>` via the `skill` tool and follow its steps in order, beginning with its Load step — resolve every `[[wikilink]]` and Read each cited knowledge file before working.
+   > Inputs (read all): `<input artifacts>`. Outputs (write only here): `<output artifacts>`. Evidence keys to assert (guarded only): `<conditions keys>`. Boundary: do only this state's work; do not transition, skip, or hold the todo — the orchestrator moves the flow (2, 7).
+
+   It returns the output artifacts and asserted evidence.
 4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (4).
 5. **Transition** — `flowr transition <trigger> --session <id> --evidence k=v …`, then regenerate the todo from the next state's `check`.
 
