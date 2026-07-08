@@ -1,14 +1,10 @@
-"""Strip docstrings from Python source files (surgical, line-range based).
+"""Strip docstrings from Python source files.
 
-Used by the tdd `select` state to naked a target source `.py` at cycle entry,
-removing docstrings carried over from the last merge's generation pass. Tests
-and stubs are never passed through here — they stay naked permanently.
-
-The edit is line-range only: each docstring's `[lineno, end_lineno]` is removed
-and every other line (formatting, comments, blank lines) is preserved, so the
-file does not get reformatted as a side-effect. Assumes bodies are not
-docstring-only (true for real rework `.py`); a docstring-only body would need a
-`pass` substituted, which this script does not do.
+Deletes each docstring's `[lineno, end_lineno]` from the bottom up; every other
+line (formatting, comments, blanks) is preserved — no reformat. Accepts many
+files, edits each in place. Stubs (`.pyi`) are skipped by the caller's
+`-name '*.py'` glob; `PYI021` handles them in lint. Assumes bodies are not
+docstring-only.
 """
 
 import ast

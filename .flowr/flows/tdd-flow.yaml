@@ -10,7 +10,7 @@ states:
         Pull the next source contract to build from the pending backlog,
         respecting outside-in layer order.
       dispatch_to: product-owner
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [select-build-target]
       input artifacts:
         - "<package>/**/*.pyi"
@@ -28,7 +28,7 @@ states:
         Confirm the target contract's tests fail for the right reason
         (ImportError for new work, assertion failure for rework).
       dispatch_to: software-engineer
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [confirm-red-failure]
       input artifacts:
         - ".cache/<session_id>/build-target.md"
@@ -54,7 +54,7 @@ states:
         its fixed .pyi; emit migrations/fixtures as needed.
       dispatch_to: software-engineer
       specialists: [data-architect, integration-engineer, ux-engineer, security-engineer]
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [implement-from-stub]
       input artifacts:
         - ".cache/<session_id>/build-target.md"
@@ -80,7 +80,7 @@ states:
         Improve the source structure under green tests with the .pyi and tests
         fixed.
       dispatch_to: software-engineer
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [refactor-green]
       input artifacts:
         - "<package>/**/*.pyi"
@@ -98,7 +98,7 @@ states:
         quality, drift, and green tests.
       dispatch_to: reviewer
       specialists: [security-engineer]
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [review-implementation]
       input artifacts:
         - "<package>/**/*.pyi"
@@ -126,7 +126,7 @@ states:
         Commit the unit as one logical change with a descriptive imperative
         message.
       dispatch_to: software-engineer
-      git branch: feature
+      git branch: feature/<session_id>
       skills: [ship-unit]
       input artifacts:
         - "<package>/**/*.py"

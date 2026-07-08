@@ -13,7 +13,7 @@ last-updated: 2026-07-01
 - Green writes the **minimum code** to turn the tests green, implementing the `.py` from its fixed `.pyi`. YAGNI and KISS override every other principle; a hard-coded value is correct when the test needs only that value (Beck & Jeffries, 1999; North, 2006).
 - Refactor restructures the `.py` while the `.pyi` and the tests stay **frozen and green**; it is design-only, never convention compliance — conventions run in CI. A change that needs the `.pyi` is a contract gap escalated at review.
 - The cycle runs **per contract** — a source module and the tests that exercise it — in outside-in dependency order; stubtest is scoped to the modules built this cycle.
-- Source `.py` is kept **naked of docstrings** across the whole cycle — `select` strips any carried over from the last merge, and docstrings are regenerated at deliver/merge from the stable code per [[software-craft/docstring-lifecycle]]. Tests and stubs are naked permanently.
+- Source `.py` stays **docstring-free** across the cycle; docstrings are regenerated at merge per [[software-craft/docstring-lifecycle]]. Stubs stay docstring-free via `PYI021`.
 
 ## Concepts
 
@@ -78,4 +78,4 @@ Removing the `@pytest.mark.pending` decorator can orphan its `import pytest` whe
 - [[software-craft/source-stubs]] — the fixed `.pyi` green implements to
 - [[software-craft/refactoring-techniques]] — the moves refactor applies
 - [[software-craft/code-review]] — the review that gates the cycle's output
-- [[software-craft/docstring-lifecycle]] — source `.py` stays naked through the cycle; docstrings regenerate at merge
+- [[software-craft/docstring-lifecycle]] — source `.py` stays docstring-free through the cycle; docstrings regenerate at merge

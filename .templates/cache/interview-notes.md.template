@@ -1,0 +1,35 @@
+# Interview Notes — <session_id>
+
+> The running record of the discovery funnel (general → cross-cutting →
+> building-blocks → consolidate). Each level appends to this file; consolidate
+> replaces the running notes with the full synthesis. On a first pass the
+> skeleton is EMPTY (expected, not a missing input) — the product-owner
+> bootstraps this file from the template at `interview-general` if it does not
+> exist; absence on a first pass is never a deliberation point. Findings are
+> grounded in cited stakeholder needs (CIT incidents, laddered constraints);
+> speculative items are dropped at consolidation per
+> [[methodology/simplicity-discipline]].
+
+## Level 1 — General
+
+> Seven big-picture questions (Who, What, Why, When/Where, Success, Failure,
+> Out-of-scope), probed with CIT and Laddering. No category or topic labels
+> imposed — the stakeholder's own categories emerge first.
+
+## Level 2 — Cross-cutting
+
+> Behaviour groups, bounded contexts, integration points, lifecycle, and
+> quality attributes — the structure of the domain.
+
+## Level 3 — Building blocks (tactical decomposition)
+
+> Block names and rough boundaries only — no spec. Gap analysis: every
+> bounded context and quality attribute maps to ≥1 block. Findings that
+> MODIFY an existing block are flagged here so plan can mark the matching
+> tests `@pytest.mark.pending` as rework backlog.
+
+## Consolidation
+
+> The full synthesis across all three levels, presented for stakeholder
+> approval; the accuracy gate for plan. Speculative items dropped, each drop
+> flagged.

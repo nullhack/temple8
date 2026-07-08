@@ -1103,7 +1103,7 @@ wheels = [
 
 [[package]]
 name = "temple8"
-version = "10.0.0"
+version = "10.1.0"
 source = { editable = "." }
 
 [package.optional-dependencies]
