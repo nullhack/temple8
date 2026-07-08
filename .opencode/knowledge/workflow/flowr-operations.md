@@ -106,6 +106,7 @@ The temple8 flows' guarded transitions and the evidence the orchestrator asserts
 | tdd / green | `test-green` | `test-status=green`, `stubtest-clean=true` |
 | tdd / review | `approved` | `impl-matches-contract`, `source-quality-clean`, `stubtest-clean`, `tests-green` |
 | deliver / merge | `merged` | `tests-green-on-dev`, `stubtest-clean-on-dev` |
+| deliver / refresh | `refreshed` | `spec-regenerated`, `cache-summarized`, `docstrings-regenerated`, `docstrings-stripped` |
 
 Bare transitions (no `when:`) fire without evidence — e.g. the `select → red` advance, the escalate exits (`needs-contracts`, `needs-elicitation`, `needs-capture`), and `all-built → shipped`.
 

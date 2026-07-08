@@ -6,24 +6,26 @@ through flowr.
 
 ## Binding constraints
 
-1. **flowr is the single router.** Every state change runs through flowr — no improvised routing, no skipping states.
-2. **The dispatched agent does the work.** Each state names one agent in `dispatch_to`; the orchestrator dispatches it, and that agent produces the artifacts and asserts the evidence. The orchestrator never authors the work.
+1. **flowr is the single router.** Every state change runs through flowr — no improvised routing, no skipping, no pre-empting a later state's work. One state's work is exactly its `output artifacts`; the next begins only when the orchestrator transitions.
+2. **The orchestrator dispatches; the dispatched agent does the work.** The orchestrator MUST invoke the state's `dispatch_to` agent — it never authors the work. The handoff gives the agent: `skills` paths, `input artifacts`, `output artifacts` (write only here), and the evidence keys to assert. The agent produces the artifacts and asserts evidence; it does not transition.
 3. **The state's contract is binding.** Read every `input artifact` before starting — missing means stop, not assume. Write only to `output artifacts`.
 4. **Assert only verified evidence; CI is the backstop.** On a **guarded** transition flowr fires only on the dispatched agent's asserted evidence (`--evidence k=v`); assert nothing you did not check — CI catches the lie (`ruff` / `pyright` / `mypy.stubtest` / `pytest`). **Unguarded** transitions (discovery, explore) carry no flowr gate — the orchestrator verifies the output artifacts and the stakeholder's approval IS the gate.
-5. **Branch discipline.** Match the state's `git branch`; merge `feature` → `dev` only under the whole-suite gates. No dangling branches.
+5. **Branch discipline.** Match the state's `git branch`: discovery/explore/plan/deliver run on `dev`; build runs on `feature/<session_id>`, cut from dev at build entry. The contract surface is committed to `dev` at plan; the feature branch carries only the source implementation. Squash-merge `feature/<session_id>` → `dev` only under the whole-suite gates, then delete the branch. No dangling branches.
 6. **Every requirement traced.** Each interview finding maps to a test or an explicit deferral; an untraced requirement is a gap the simulate gate rejects.
+7. **Only the orchestrator transitions.** Producing artifacts is not finishing — the orchestrator's verified `flowr transition` is. A dispatched agent never runs `flowr transition` / `flowr session`, never assumes the next state, never declares the flow done.
+8. **Todo-first.** The first action on entering a state is to create its one-state todo (the loop below). No todo = no work. Only the orchestrator holds the todo; regenerate it after every transition.
 
 ## Driving a state
 
-One state at a time. The orchestrator keeps **one todo per state, regenerated at
-state entry** — the todo *is* this five-phase loop. "No todo = no work": work
-outside the loop is untracked. One state per todo; regenerate on every
-transition.
+**Two hats.** AGENTS.md addresses the **orchestrator** — the agent holding the flowr session that drives state to state. A **dispatched agent** (invoked via a state's `dispatch_to`) does one state's work and returns: load the skill, read the inputs, write only the outputs, assert the evidence, and never transition, skip, or hold the todo. If you were invoked to do a state's work, you are the dispatched agent — produce, return, stop.
 
+One state at a time. The orchestrator keeps **one todo per state** — the todo *is* this loop:
+
+0. **Create the todo** — `todowrite` the phases below before any other action (8).
 1. **Read** — `flowr check --session <id>`; parse `dispatch_to`, `skills`, `input artifacts`, `output artifacts`, `git branch`, `conditions`.
-2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (binding constraint 3).
-3. **Dispatch** — call the agent named in `dispatch_to` with the `skills` paths (`.opencode/skills/<name>/SKILL.md`) and the input artifacts. The dispatched agent writes only to `output artifacts` and returns asserted evidence.
-4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (binding constraint 4).
+2. **Verify inputs** — every `input artifact` exists on disk. Missing = stop (3).
+3. **Dispatch** — invoke `dispatch_to` with the full handoff: skill paths, input artifacts, output artifacts (write only here), evidence keys, and the boundary — *do only this state's work; do not transition, do not skip; the orchestrator moves the flow* (2, 7). It returns the output artifacts and asserted evidence.
+4. **Verify outputs + evidence** — the `output artifacts` were produced; if the transition is guarded, its `conditions` evidence is real (4).
 5. **Transition** — `flowr transition <trigger> --session <id> --evidence k=v …`, then regenerate the todo from the next state's `check`.
 
 Routing is one flow with five subflows: `pipeline-flow` → discovery → explore →
@@ -59,11 +61,19 @@ then builds it: **discover** elicits requirements (interview funnel → glossary
 external contract); **plan** writes tests up front (`*_test.pyi` → `*_test.py`
 `@pytest.mark.pending` → source `.pyi` → simulate); **build** implements each
 source `.py` from its fixed `.pyi` one contract per cycle (red → green →
-refactor → review → ship); **deliver** squash-merges to dev and publishes.
-`@pytest.mark.pending` is the backlog signal (new work + rework); an empty
-backlog is done. flowr's gates collect EVIDENCE the agent asserts; CI is the
-enforcement backstop (ruff / pyright / `mypy.stubtest` / pytest). When prose and
-a test disagree, the test wins.
+refactor → review → ship); **deliver** squash-merges the feature branch to dev
+(then deletes it), optionally publishes on approval, and **refresh** closes the
+cycle:
+regenerates `docs/state.md` from the current tests, summarizes the carry-over
+cache files to ~1000 words so the next cycle starts compact, and closes the
+docstring lifecycle (regenerate the public source surface then strip all `.py`
+— source and test — docstring-free for the next cycle). Rework enters the backlog from two trigger sources: build-escalation
+findings in the journal, and discovery findings in the interview that flag a
+modification to an existing block; both surface as `@pytest.mark.pending` at
+plan so `select-build-target` pulls them. An empty backlog is done. flowr's
+gates collect EVIDENCE the agent asserts; CI is the enforcement backstop (ruff /
+pyright / `mypy.stubtest` / pytest). When prose and a test disagree, the test
+wins.
 
 Authoring detail (staged contracts, evidence vs enforcement, the docstring/lint
 lifecycle, separation-of-concerns, secrets/config) lives in the knowledge layer
@@ -80,6 +90,7 @@ Committed (the source of truth):
 | `tests/cassettes/`, `tests/fixtures/` | recorded vcrpy cassettes; fixtures |
 | `migrations/` | Alembic migrations — the schema spec |
 | `docs/glossary.md` | ubiquitous language |
+| `docs/state.md` | living specification — regenerated each cycle by refresh from the tests |
 | `.flowr/flows/` | flow definitions |
 | `.opencode/`, `.templates/`, `.github/` | methodology, templates, CI |
 
@@ -87,7 +98,7 @@ Gitignored (local working state, regenerated on demand):
 
 | Path | Holds |
 |------|-------|
-| `.cache/<session_id>/` | interview notes, external contracts, probe research, build target |
+| `.cache/<session_id>/` | interview notes, external contracts, data model, journal (carry-over, summarized to ~1000 words at cycle close); build target, probe target/research (transient per-pass) |
 | `.cache/explore/` | throwaway probe scripts (run once; never imported) |
 | `.cache/sessions/` | flowr session state |
 | `.env` | non-secret local config (12-factor) |

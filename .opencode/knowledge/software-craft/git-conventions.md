@@ -1,7 +1,7 @@
 ---
 domain: software-craft
 tags: [git, commits, conventional-commits, branching, squash-merge]
-last-updated: 2026-07-01
+last-updated: 2026-07-08
 ---
 
 # Git Conventions
@@ -11,7 +11,7 @@ last-updated: 2026-07-01
 - Commits follow **Conventional Commits**: `<type>(<scope>): <imperative description>` — types `feat`, `fix`, `test`, `refactor`, `chore`, `docs`, `ci`; no `wip`, `temp`, or untyped commit (Conventional Commits 1.0.0).
 - **One logical change per commit** — `ship-unit` commits the built contract's `.py` plus the structural artifacts it required as one change, and the `.pyi` is unchanged (contracts are fixed during build).
 - **Refactor commits are separate from feature commits**; a structural change is never mixed with a behaviour addition, so history stays bisectable and every commit leaves the tests green.
-- The branch model is **`feature` → `dev` → `release`/`main`**: the build cycle runs on `feature`, squash-merges accumulate on `dev`, and publish targets `release` or `main`. Feature branches are short-lived and deleted after their squash-merge.
+- The branch model is **`feature/<session_id>` → `dev` → `release`/`main`**: the build cycle runs on a session-specific feature branch, squash-merges accumulate on `dev`, and publish targets `release` or `main`. Feature branches are short-lived and deleted after their squash-merge. The contract surface (tests + source stubs) is committed to `dev` at plan, so the feature branch carries only the source implementation — contracts consolidated in dev don't diverge across branches.
 - `merge-to-dev` squash-merges the feature commits into `dev` as one commit, then verifies the whole suite and the whole-suite stubtest are clean — no pending markers remain, and no drift was smuggled in by the batch.
 
 ## Concepts
@@ -22,9 +22,9 @@ last-updated: 2026-07-01
 
 **Refactor separate from feature.** A behaviour addition and a structural cleanup are different changes even when they land together, so they are different commits. Mixing them forces a reader (or a `git bisect`) to attribute a test failure to two unrelated changes at once; keeping them apart lets each commit stand as one defensible step, and every commit along the way leaves the tests green.
 
-**The three-branch model.** Work flows in one direction: a `feature` branch carries a build cycle (red through ship), `dev` accumulates squash-merged contracts and is where integration is verified, and `release` or `main` is the publish target. Feature branches are short-lived — created for a contract, deleted after the squash-merge — so only `dev` and the publish branch are long-lived.
+**The three-branch model.** Work flows in one direction: a session-specific `feature/<session_id>` branch carries one build cycle (red through ship), `dev` accumulates squash-merged contracts and is where integration is verified, and `release` or `main` is the publish target. The contract surface — test stubs, test bodies, and source stubs — is committed to `dev` at plan; the feature branch is cut from dev at build entry and carries only the source implementation. Keeping contracts in dev (not on feature branches) is deliberate: feature branches that hold their own contracts diverge, and reconciling them is cheaper to avoid than to do. Feature branches are short-lived — created at build entry off dev, deleted after the squash-merge — so only `dev` and the publish branch are long-lived.
 
-**Squash-merge into dev.** The granular per-contract commits on `feature` collapse into one commit on `dev`, carrying the contract's summary in its message. The merge is the gate where the whole suite and the whole-suite stubtest run: by now every `.pyi` has its `.py`, every pending marker is gone, and any drift the per-cycle scope hid is exposed across the full set.
+**Squash-merge into dev.** The granular per-contract commits on `feature/<session_id>` collapse into one commit on `dev`, carrying the contract's summary in its message. The merge is the gate where the whole suite and the whole-suite stubtest run: by now every `.pyi` has its `.py`, every pending marker is gone, and any drift the per-cycle scope hid is exposed across the full set. The branch is deleted after the merge.
 
 ## Content
 
@@ -32,8 +32,8 @@ last-updated: 2026-07-01
 
 | Branch | Lives | Carries |
 |---|---|---|
-| `feature` | short — one build cycle | the per-contract commits (red → green → refactor → ship) |
-| `dev` | long | squash-merged contracts; integration truth |
+| `feature/<session_id>` | short — one build cycle | the source implementation commits (red → green → refactor → ship) |
+| `dev` | long | the contract surface (committed at plan) + squash-merged source; integration truth |
 | `release` / `main` | long | the publish target |
 
 ### Commit format
@@ -64,9 +64,10 @@ last-updated: 2026-07-01
 
 | Step | Check |
 |---|---|
-| squash `feature` → `dev` | one commit, contract summary in the message |
+| squash `feature/<session_id>` → `dev` | one commit, contract summary in the message |
 | run the full suite | every test green; no pending markers remain |
 | run whole-suite `stubtest <package> tests` | every source and test pair agrees — no batch drift |
+| delete `feature/<session_id>` | no dangling branches |
 
 ## Related
 

@@ -1,13 +1,14 @@
 flow: deliver-flow
-version: 1.3.0
+version: 1.5.0
 exits:
   - delivered
 states:
   - id: merge
     attrs:
       description: >
-        Squash-merge the feature commits into dev with the full suite and
-        whole-suite stubtest green on dev.
+        Squash-merge the feature branch into dev with the full suite and
+        whole-suite stubtest green on dev, then delete the branch. Publishing
+        is optional and on stakeholder approval.
       dispatch_to: release-engineer
       git branch: dev
       skills: [merge-to-dev]
@@ -20,8 +21,11 @@ states:
         tests-green-on-dev: "==true"
         stubtest-clean-on-dev: "==true"
     next:
-      merged:
+      approved:
         to: publish
+        when: merged
+      declined:
+        to: refresh
         when: merged
 
   - id: publish
@@ -36,4 +40,49 @@ states:
       output artifacts:
         - "release"
     next:
-      published: delivered
+      published: refresh
+
+  - id: refresh
+    attrs:
+      description: >
+        Close the cycle: regenerate the living specification (docs/state.md)
+        from the current tests, summarize the carry-over cache files to ~1000
+        words so the next cycle starts compact, regenerate docstrings for the
+        full source surface, then strip all .py.
+      dispatch_to: system-architect
+      git branch: dev
+      skills: [refresh-cycle]
+      input artifacts:
+        - "dev"
+        - "<package>/**/*.pyi"
+        - "<package>/**/*.py"
+        - "tests/integration/**/*_test.pyi"
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.pyi"
+        - "tests/e2e/**/*_test.py"
+        - "tests/cassettes/**"
+        - "migrations/**"
+        - "docs/glossary.md"
+        - ".cache/<session_id>/interview-notes.md"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - ".cache/<session_id>/journal.md"
+      output artifacts:
+        - "docs/state.md"
+        - ".cache/<session_id>/interview-notes.md"
+        - ".cache/<session_id>/external-contracts.md"
+        - ".cache/<session_id>/data-model.md"
+        - ".cache/<session_id>/journal.md"
+        - "<package>/**/*.py"
+        - "tests/integration/**/*_test.py"
+        - "tests/e2e/**/*_test.py"
+    conditions:
+      refreshed:
+        spec-regenerated: "==true"
+        cache-summarized: "==true"
+        docstrings-regenerated: "==true"
+        docstrings-stripped: "==true"
+    next:
+      refreshed:
+        to: delivered
+        when: refreshed

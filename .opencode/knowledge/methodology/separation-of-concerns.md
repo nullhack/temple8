@@ -65,6 +65,15 @@ A gate `conditions` key (e.g. `stubtest-clean=true`) is EVIDENCE the dispatched 
 
 When a state exits on `reveals-gap` / `needs-capture` / `needs-elicitation`, its finding must reach the phase it re-enters. The finding rides two carriers: the discovering state **appends** it to `.cache/<session_id>/journal.md` (its `output artifacts`), and the re-dispatch prompt carries it verbatim. The receiving state **reads** `journal.md` on entry (its `input artifacts`) and re-derives the detail from the artifacts — the tests, source stubs, and cassettes that *are* the spec. The journal is a transient per-session safety net against context lost mid-escalation (e.g. a compress between the discovering state and re-entry); it is not a second spec and never duplicates what the tests express. One stable file absorbs every escalation — present and future — so new edges never spawn new artifact types.
 
+### Rework trigger sources
+
+The `@pytest.mark.pending` backlog is fed by two distinct trigger sources, read at `author-test-stubs` and `write-test-py`:
+
+- **Build escalation** — a contract gap discovered mid-build is appended to `.cache/<session_id>/journal.md` (the carrier above) and re-enters plan as rework on the named contract.
+- **Discovery flag** — a finding in `.cache/<session_id>/interview-notes.md` that implies *modifying* an existing block (flagged `rework — modifies existing <block>` at `interview-building-blocks`) re-enters plan as rework on that block's contracts.
+
+Both surface as `@pytest.mark.pending` so `select-build-target` pulls them from the queue. The journal carries build-phase escalations; the interview notes carry requirements-level modification flags — two carriers, one backlog, no third artifact type. A discovery finding that adds a *new* block is new work, not rework, and authors a fresh stub without the pending marker.
+
 ### Loading model
 
 The orchestrator reads the flow once per state and dispatches; it does not load the methodology layer up front. An agent loads when its role is dispatched; a skill loads when the state's `skills` names it; knowledge loads when a wikilink resolves. No session pays for the whole layer.

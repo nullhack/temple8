@@ -55,8 +55,9 @@ states:
   - id: deliver
     attrs:
       description: >
-        Squash-merge the feature commits into dev with the full suite green,
-        then publish (notes / PR / tag).
+        Squash-merge the feature branch into dev with the full suite green and
+        delete it; optionally publish (notes / PR / tag) on approval, then
+        refresh closes the cycle.
     flow: deliver-flow
     flow-version: "^1"
     next:
