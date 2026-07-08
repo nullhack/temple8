@@ -1,5 +1,5 @@
 flow: plan-flow
-version: 1.6.0
+version: 1.7.0
 exits:
   - contracts-ready
   - needs-capture
@@ -129,7 +129,7 @@ states:
       description: >
         Gate. Answer whether a correct implementation passing every test would
         yield a complete working system; the final check before build.
-      dispatch_to: reviewer
+      dispatch_to: simulator
       git branch: dev
       skills: [simulate-contracts]
       input artifacts:
